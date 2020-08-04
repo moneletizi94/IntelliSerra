@@ -10,9 +10,9 @@ script:
   - ./gradlew clean
   - ./gradlew scalastyleCheck
   - ./gradlew test
-  - ./gradlew testScoverage
   - ./gradlew checkScoverage
   - ./gradlew reportScoverage
+  - ./gradlew reportTestScoverage
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
