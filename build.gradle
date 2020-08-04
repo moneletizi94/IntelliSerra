@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'scala'
     id "com.github.alisiikh.scalastyle" version "3.4.1"
+    id "org.scoverage" version "4.0.2"
 }
 
 group 'org.example'

@@ -4,10 +4,18 @@ os:
   - osx
 scala:
   - 2.12.6
+before_install:
+  - chmod +x gradlew
 script:
   - ./gradlew clean
   - ./gradlew scalastyleCheck
   - ./gradlew test
+  - ./gradlew testScoverage
+  - ./gradlew checkScoverage
+  - ./gradlew reportScoverage
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
