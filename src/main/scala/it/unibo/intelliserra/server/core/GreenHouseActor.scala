@@ -6,12 +6,25 @@ import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, St
 private[server] object GreenHouseActor {
 
   sealed trait ServerCommand
+
+  /**
+   * Start the server
+   */
   case object Start extends ServerCommand
 
+  /**
+   * Responses to server commands
+   */
   sealed trait ServerResponse
   case object Started extends ServerResponse
-  case class ServerError(throwable: Throwable) extends ServerResponse
+  final case class ServerError(throwable: Throwable) extends ServerResponse
 
+  /**
+   * Create a green house server actor
+   * @param name        the name of server actor
+   * @param actorSystem the actor system for create the actor
+   * @return an actor ref of green house server actor
+   */
   def apply(name: String)(implicit actorSystem: ActorSystem): ActorRef = {
     actorSystem actorOf (Props[GreenHouseActor], name = name)
   }
