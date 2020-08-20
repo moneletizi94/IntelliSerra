@@ -51,7 +51,7 @@ object GreenHouseServer {
    * @param host  the hostname of the server
    * @param port  the port of the server
    */
-  private[server] class GreenHouseServerImpl(override val name: String,
+  private[core] class GreenHouseServerImpl(override val name: String,
                                              private val host: String,
                                              private val port: Int) extends GreenHouseServer {
 

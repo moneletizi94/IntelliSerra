@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 
-private[server] object GreenHouseActor {
+private[core] object GreenHouseActor {
 
   sealed trait ServerCommand
 
@@ -30,7 +30,7 @@ private[server] object GreenHouseActor {
   }
 }
 
-private[server] class GreenHouseActor extends Actor {
+private[core] class GreenHouseActor extends Actor {
 
   private def idle: Receive = {
     case Start =>

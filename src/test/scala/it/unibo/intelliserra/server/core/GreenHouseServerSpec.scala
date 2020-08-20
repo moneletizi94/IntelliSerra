@@ -1,6 +1,5 @@
-package it.unibo.intelliserra.server
+package it.unibo.intelliserra.server.core
 
-import it.unibo.intelliserra.server.core.GreenHouseServer
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
