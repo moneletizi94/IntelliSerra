@@ -17,7 +17,7 @@ private class ExampleEntityManagerTest extends TestKit(ActorSystem("MySpec"))
   with BeforeAndAfter
   with BeforeAndAfterAll  {
 
-  private val entityManager : TestActorRef[EntityManagerActor] = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])
+  private var entityManager : TestActorRef[EntityManagerActor] = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])
   private val mockSensorID = "sensorID"
   private val mockSensorCapability = SensingCapability(Temperature)
   private val mockActuatorID = "actuatorID"
@@ -35,5 +35,7 @@ private class ExampleEntityManagerTest extends TestKit(ActorSystem("MySpec"))
     }
   }
 
-
+  override def afterAll: Unit = {
+    TestKit.shutdownActorSystem(system)
+  }
 }
