@@ -10,3 +10,7 @@ trait DeviceDeploy {
   def deployActuator(actuator: Actuator): Future[Unit]
 }
 
+ object DeviceDeploy{
+
+   //def apply(entityManager : EntityMa)
+}
