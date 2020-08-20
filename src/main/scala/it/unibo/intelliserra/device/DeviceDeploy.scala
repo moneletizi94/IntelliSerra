@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.device
 
+import akka.actor.ActorSystem
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
 
@@ -11,6 +12,11 @@ trait DeviceDeploy {
 }
 
  object DeviceDeploy{
+   //private val entityManager: EntityManager
+   private implicit val actorSystem: ActorSystem = ActorSystem()
 
-   //def apply(entityManager : EntityMa)
+   //def terminate(): Future[Unit] = {
+     //actorSystem.stop(entityActor)
+     //actorSystem.terminate().flatMap(_ => Future.unit)
+   //}
 }
