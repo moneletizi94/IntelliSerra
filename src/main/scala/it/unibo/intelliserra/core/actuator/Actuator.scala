@@ -1,8 +1,10 @@
 package it.unibo.intelliserra.core.actuator
 
-import it.unibo.intelliserra.core.entity.Entity
+import it.unibo.intelliserra.core.entity.ActingCapability
 
-trait Actuator extends Entity {
+trait Actuator {
+  def identifier: String
+  def capability: ActingCapability
   def state: OperationalState
   def doAction(action : Action)
 }
