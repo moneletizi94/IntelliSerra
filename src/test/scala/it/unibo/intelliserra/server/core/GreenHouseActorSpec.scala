@@ -3,16 +3,12 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.common.communication._
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-import akka.pattern.{ask, pipe}
-import it.unibo.intelliserra.common.communication._
-
-import scala.concurrent.Await
-import scala.util.{Failure, Success}
 
 @RunWith(classOf[JUnitRunner])
 class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()))
@@ -42,7 +38,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
 
     "handle route for zone creation" in {
       serverActor ! CreateZone("zoneTest")
-      expectMsg(ZoneCreationOk)
+      expectMsg(ZoneCreated)
     }
   }
 }
