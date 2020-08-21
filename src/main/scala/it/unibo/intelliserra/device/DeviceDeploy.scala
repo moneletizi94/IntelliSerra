@@ -65,7 +65,7 @@ trait DeviceDeploy{
      *
      * @return a Future[Unit]
      */
-    def terminate(error : String, entity: ActorRef): Future[Unit] = {
+    private def terminate(error : String, entity: ActorRef): Future[Unit] = {
       actorSystem.stop(entity)
       Future.failed(new IllegalArgumentException(error))
     }
