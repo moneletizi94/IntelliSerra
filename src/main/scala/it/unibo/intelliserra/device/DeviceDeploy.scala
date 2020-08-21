@@ -3,6 +3,8 @@ package it.unibo.intelliserra.device
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unibo.intelliserra.common.akka.RemotePath
+import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.server.{ActuatorActor, EntityManager, SensorActor}
@@ -14,7 +16,7 @@ import it.unibo.intelliserra.common.communication._
 /**
  *
  */
-trait DeviceDeploy{
+trait DeviceDeploy {
   def deploySensor(sensor: Sensor): Future[Unit]
   def deployActuator(actuator: Actuator): Future[Unit]
 }
@@ -24,13 +26,22 @@ trait DeviceDeploy{
  */
  object DeviceDeploy {
 
-  def apply()(implicit actorSystem: ActorSystem): DeviceDeploy = new DeviceDeployImpl()
+  def apply(greenHouseName: String, serverHost: String, serverPort: Int): DeviceDeploy = {
+    val managerPath = RemotePath.entityManager(greenHouseName, serverHost, serverPort).toString
+    new DeviceDeployImpl(managerPath, ActorSystem("device", GreenHouseConfig.client()))
+  }
 
-  private[device] class DeviceDeployImpl(private implicit val actorSystem: ActorSystem) extends DeviceDeploy {
+  def local(entityManagerRef: ActorRef)(implicit actorSystem: ActorSystem): DeviceDeploy = {
+    new DeviceDeployImpl(entityManagerRef.path.toString, actorSystem)
+  }
+
+  private[device] class DeviceDeployImpl(val entityManagerPath: String,
+                                         private val actorSystem: ActorSystem) extends DeviceDeploy {
 
     private implicit val ec: ExecutionContext = actorSystem.dispatcher
     private implicit val timeout : Timeout = Timeout(5 seconds)
-    private val entityActor = EntityManager()
+
+    private val entityManagerActor = actorSystem actorSelection entityManagerPath
 
     /**
      * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManager]] to insert a new sensor in the system
@@ -39,8 +50,8 @@ trait DeviceDeploy{
      * @return a Future[Unit] that is completed or failed following a message
      */
     override def deploySensor(sensor: Sensor): Future[Unit] = {
-      val sensorActor = SensorActor(sensor)
-      entityActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap{
+      val sensorActor = SensorActor(sensor)(actorSystem)
+      entityManagerActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap {
         case JoinOK => Future.unit
         case JoinError(error) => terminate(error, sensorActor)
       }
@@ -53,8 +64,8 @@ trait DeviceDeploy{
      * @return a Future[Unit] that is completed or failed following a message
      */
     override def deployActuator(actuator: Actuator): Future[Unit] = {
-      val actuatorActor = ActuatorActor(actuator)
-      entityActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap{
+      val actuatorActor = ActuatorActor(actuator)(actorSystem)
+      entityManagerActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap {
         case JoinOK => Future.unit
         case JoinError(error) => terminate(error, actuatorActor)
       }
