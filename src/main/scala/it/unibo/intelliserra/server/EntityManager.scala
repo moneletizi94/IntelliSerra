@@ -11,10 +11,10 @@ class EntityManagerActor extends Actor{
 
   override def receive: Receive = {
     case JoinSensor(identifier, capabilities, sensorRef) => {
-      addEntityAndSendResponse(RegisteredSensor(identifier, capabilities), sensorRef)
+      addEntityAndSendResponse(RegisteredSensor(identifier, capabilities), sensorRef, sender)
     }
     case JoinActuator(identifier, capabilities, actuatorRef) => {
-      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities),actuatorRef)
+      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities),actuatorRef, sender)
     }
   }
 
@@ -23,7 +23,7 @@ class EntityManagerActor extends Actor{
             .fold[Option[Map[RegisteredEntity, ActorRef]]](Some(entities + (registeredEntity -> actorRef)))(_ => None)
   }
 
-  private def addEntityAndSendResponse(registeredEntity: RegisteredEntity, entityRef : ActorRef)(implicit sender: ActorRef) = {
+  private def addEntityAndSendResponse(registeredEntity: RegisteredEntity, entityRef : ActorRef, sender: ActorRef) = {
     addEntityIfNotExists(registeredEntity,entityRef) match {
       case Some(newMap) => entities = newMap ; sender ! JoinOK
       case None => sender ! JoinError
