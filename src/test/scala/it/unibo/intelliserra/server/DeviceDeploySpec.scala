@@ -16,7 +16,7 @@ import scala.util.{Failure, Success, Try}
 
 
 @RunWith(classOf[JUnitRunner])
-private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
+private class DeviceDeploySpec extends TestKit(ActorSystem("MySpec"))
  with WordSpecLike
  with BeforeAndAfter
  with BeforeAndAfterAll {
