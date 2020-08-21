@@ -26,7 +26,7 @@ class EntityManagerActor extends Actor{
 
 object EntityManager{
   val name = "entityManager"
-  def apply(implicit actorSystem: ActorSystem): ActorRef = {
+  def apply()(implicit actorSystem: ActorSystem): ActorRef = {
     actorSystem.actorOf(Props[EntityManagerActor], name)
   }
   case class RegisteredActuator(identifier: String, capability : ActingCapability)
