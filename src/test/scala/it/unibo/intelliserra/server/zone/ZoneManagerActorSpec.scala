@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import it.unibo.intelliserra.server.zone.ZoneManagerActor.{CreateZone, NoZone, Zone, ZoneCreationError, ZoneCreationOk, ZoneExists}
+import it.unibo.intelliserra.common.communication._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

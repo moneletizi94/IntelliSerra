@@ -4,9 +4,15 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
+import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+import akka.pattern.{ask, pipe}
+import it.unibo.intelliserra.common.communication._
+
+import scala.concurrent.Await
+import scala.util.{Failure, Success}
 
 @RunWith(classOf[JUnitRunner])
 class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()))
@@ -14,11 +20,13 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with Matchers
   with WordSpecLike
   with BeforeAndAfter
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll
+  with TestUtility {
 
   private val GREENHOUSE_NAME = "serra1"
   private val serverActor: ActorRef = GreenHouseActor(GREENHOUSE_NAME)
 
+  implicit val executionContext = system.dispatcher
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
@@ -32,6 +40,11 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
     "send a ServerError if is already running" in {
       serverActor ! Start
       expectMsgType[ServerError]
+    }
+
+    "handle route for zone creation" in {
+      serverActor ! CreateZone("zoneTest")
+      expectMsg(ZoneCreationOk)
     }
   }
 }
