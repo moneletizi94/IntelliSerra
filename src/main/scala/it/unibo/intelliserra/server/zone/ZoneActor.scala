@@ -1,10 +1,13 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import it.unibo.intelliserra.common.communication._
 
 class ZoneActor extends Actor with ActorLogging {
   override def receive: Receive = {
-    case _ => "fake"
+    case DestroyYourself =>
+
+      context stop self
   }
 }
 

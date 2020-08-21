@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import it.unibo.intelliserra.server.zone.ZoneManagerActor.{CreateZone, NoZone, Zone, ZoneCreationError, ZoneCreationOk, ZoneExists}
+import it.unibo.intelliserra.common.communication._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -16,13 +16,13 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   with BeforeAndAfterAll {
 
   private val zoneIdentifier = "Zone1"
-  private val zoneIdentifierNotAdded = "NoZone"
+  private val zoneIdentifierNotAdded = "FakeZone"
   private val zoneManager: ActorRef = ZoneManagerActor()
 
   "A zoneManagerActor" must {
     "accept the creation of a zone with a never-used identifier" in {
       zoneManager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreationOk)
+      expectMsg(ZoneCreated)
     }
   }
 
@@ -44,6 +44,28 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "not have an unexisting identifier" in {
       zoneManager ! ZoneExists(zoneIdentifierNotAdded)
       expectMsg(NoZone)
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "delete an existing zone when requested" in {
+      zoneManager ! RemoveZone(zoneIdentifier)
+      expectMsg(ZoneRemoved)
+      zoneManager ! ZoneExists(zoneIdentifier)
+      expectMsg(NoZone)
+      /*var zone = expectMsgPF() {
+        case Zone(zoneRef: ActorRef) => zoneRef
+      }*/
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "refuse to delete an unexisting zone when requested" in {
+      zoneManager ! RemoveZone(zoneIdentifierNotAdded)
+      expectMsg(NoZone)
+      /*var zone = expectMsgPF() {
+        case Zone(zoneRef: ActorRef) => zoneRef
+      }*/
     }
   }
   override def afterAll(): Unit = {

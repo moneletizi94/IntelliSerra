@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.server.zone.ZoneManagerActor._
+import it.unibo.intelliserra.common.communication._
 
 
 /**
@@ -18,24 +18,18 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
     case CreateZone(identifier) if zones.contains(identifier) => sender() ! ZoneCreationError
     case CreateZone(identifier) => val zoneActorRef: ActorRef = ZoneActor(identifier)
       zones = zones + (identifier -> zoneActorRef)
-      sender() ! ZoneCreationOk
+      sender() ! ZoneCreated
     case ZoneExists(identifier) if zones.contains(identifier) => sender() ! Zone(zones(identifier))
     case ZoneExists(_) => sender() ! NoZone
+    case RemoveZone(identifier) if zones.contains(identifier) =>
+      zones(identifier) ! DestroyYourself
+      zones = zones - identifier
+      sender() ! ZoneRemoved
+    case RemoveZone(_) => sender() ! NoZone
   }
 }
 
 object ZoneManagerActor {
   val name = "ZoneManager"
   def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor], name)
-
-  //A client ask for a new Zone
-  case class CreateZone(identifier: String)
-  //An entity could ask whether a zone exists (used also for testing createZone and removeZone)
-  case class ZoneExists(identifier: String)
-
-  case object ZoneCreationOk
-  case object ZoneCreationError
-
-  case class Zone(zoneRef: ActorRef)
-  case object NoZone
 }
