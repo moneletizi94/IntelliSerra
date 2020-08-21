@@ -40,5 +40,20 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
       serverActor ! CreateZone("zoneTest")
       expectMsg(ZoneCreated)
     }
+    
+    "handle route for removing an existing zone" in {
+      serverActor ! RemoveZone("zoneTest")
+      expectMsg(ZoneRemoved)
+    }
+
+    "handle route for removing a not existing zone" in {
+      serverActor ! RemoveZone("zoneFake")
+      expectMsg(NoZone)
+    }
+
+    "handle route for path for removing a zone that has already been removed" in {
+      serverActor ! RemoveZone("zoneTest")
+      expectMsg(NoZone)
+    }
   }
 }
