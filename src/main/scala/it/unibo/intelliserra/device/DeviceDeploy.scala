@@ -1,11 +1,12 @@
 package it.unibo.intelliserra.device
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.server.{ActuatorActor, EntityManager, SensorActor}
+
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import it.unibo.intelliserra.common.communication._
@@ -41,7 +42,7 @@ trait DeviceDeploy{
       val sensorActor = SensorActor(sensor)
       entityActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap{
         case JoinOK => Future.unit
-        case JoinError(error) => terminate(error)
+        case JoinError(error) => terminate(error, sensorActor)
       }
     }
 
@@ -55,7 +56,7 @@ trait DeviceDeploy{
       val actuatorActor = ActuatorActor(actuator)
       entityActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap{
         case JoinOK => Future.unit
-        case JoinError(error) => terminate(error)
+        case JoinError(error) => terminate(error, actuatorActor)
       }
     }
 
@@ -64,9 +65,9 @@ trait DeviceDeploy{
      *
      * @return a Future[Unit]
      */
-    def terminate(error : String): Future[Unit] = {
-      actorSystem.stop(entityActor)
-      actorSystem.terminate().flatMap(_ => Future.failed(new IllegalArgumentException(error)))
+    def terminate(error : String, entity: ActorRef): Future[Unit] = {
+      actorSystem.stop(entity)
+      Future.failed(new IllegalArgumentException(error))
     }
 
   }
