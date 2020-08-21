@@ -1,8 +1,7 @@
 package it.unibo.intelliserra.server
 
 import akka.actor.{ActorSystem, Props}
-import akka.pattern.ask
-import akka.testkit.{TestActorRef, TestKit, TestProbe}
+import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
@@ -13,7 +12,6 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 import scala.concurrent.{Await}
 import scala.concurrent.duration._
-import it.unibo.intelliserra.common.communication._
 import scala.util.{Failure, Success, Try}
 
 
@@ -78,28 +76,24 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
 
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {
-      val sensorProbe = TestProbe()
       deploySensor(sensor)
     }
   }
 
   "A deviceDeploy " must {
     "ask for a sensor assignment with an identify that already exists" in {
-      val sensorProbe = TestProbe()
       deployExistingSensor(sensor2)
     }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment" in {
-      val actuatorProbe = TestProbe()
       deployActuator(actuator)
     }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment with an identify that already exists" in {
-      val sensorProbe = TestProbe()
       deployExistingActuator(actuator2)
     }
   }
