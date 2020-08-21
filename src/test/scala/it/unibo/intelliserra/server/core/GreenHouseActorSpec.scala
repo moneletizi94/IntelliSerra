@@ -23,10 +23,8 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with BeforeAndAfterAll
   with TestUtility {
 
-  private val GREENHOUSE_NAME = "serra1"
   private val serverActor: ActorRef = GreenHouseActor(GREENHOUSE_NAME)
 
-  implicit val executionContext = system.dispatcher
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
