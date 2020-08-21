@@ -4,7 +4,8 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
-import it.unibo.intelliserra.server.EntityManager.{JoinOK, JoinSensor, RegisteredActuator, RegisteredSensor}
+import it.unibo.intelliserra.server.EntityManager.{RegisteredActuator, RegisteredSensor}
+import it.unibo.intelliserra.common.communication._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

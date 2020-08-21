@@ -10,5 +10,5 @@ trait EntityProtocol {
 
   sealed trait JoinResult
   case object JoinOK extends JoinResult
-  case object JoinError extends JoinResult
+  case class JoinError(error:String) extends JoinResult
 }
