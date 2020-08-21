@@ -7,7 +7,7 @@ import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
-import it.unibo.intelliserra.server.{ActuatorActor, EntityManager, SensorActor}
+import it.unibo.intelliserra.server.{ActuatorActor, EntityManagerActor, SensorActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +44,7 @@ trait DeviceDeploy {
     private val entityManagerActor = actorSystem actorSelection entityManagerPath
 
     /**
-     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManager]] to insert a new sensor in the system
+     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManagerActor]] to insert a new sensor in the system
      *
      * @param sensor the sensor to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message
@@ -58,7 +58,7 @@ trait DeviceDeploy {
     }
 
     /**
-     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManager]] to insert a new actuator in the system
+     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManagerActor]] to insert a new actuator in the system
      *
      * @param actuator the actuator to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message

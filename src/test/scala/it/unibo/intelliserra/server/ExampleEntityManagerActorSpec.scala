@@ -11,7 +11,7 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-private class ExampleEntityManagerSpec extends TestKit(ActorSystem("MySpec"))
+private class ExampleEntityManagerActorSpec extends TestKit(ActorSystem("MySpec"))
   with ImplicitSender
   with Matchers
   with WordSpecLike
@@ -19,13 +19,9 @@ private class ExampleEntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   with BeforeAndAfterAll  {
 
   private var entityManager : TestActorRef[EntityManagerActor] = _
-  private val mockSensorID = "sensorID"
-  private val mockSensorCapability = SensingCapability(Temperature)
-  private val mockActuatorID = "actuatorID"
-  private val mockActuatorCapability = ActingCapability(Set())
-
+  private val mockedJoinSensorMessage = JoinSensor("sensorID", SensingCapability(Temperature), TestProbe().ref)
+  private val mockedJoinActuatorMessage = JoinActuator("actuatorID", ActingCapability(Set()), TestProbe().ref)
   case object Temperature extends Category
-  case object Humidity extends Category
 
   before{
     entityManager = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])
@@ -33,29 +29,25 @@ private class ExampleEntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
   "An Entity Manager" must {
     "register a sensor after receiving join" in {
-      val sensorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
+      sendJoinMessageAndCheckInsertion(mockedJoinSensorMessage)
     }
   }
 
   "An Entity Manager" must {
     "register an actuator after receiving join" in {
-      val actuatorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinActuator(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
+      sendJoinMessageAndCheckInsertion(mockedJoinActuatorMessage)
     }
   }
 
   "An Entity Manager " should  {
     "not permit adding of sensor with existing identifier" in {
-      val sensorActorProbe = TestProbe()
-      checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
+      checkNoDuplicateInsertion(mockedJoinSensorMessage)
     }
   }
 
   "An Entity Manager " should  {
     "not permit adding of actuator with existing identifier" in {
-      val actuatorActorProbe = TestProbe()
-      checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, actuatorActorProbe.ref))
+      checkNoDuplicateInsertion(mockedJoinActuatorMessage)
     }
   }
 
@@ -65,7 +57,7 @@ private class ExampleEntityManagerSpec extends TestKit(ActorSystem("MySpec"))
     }
   }
 
-  private def sendJoinEntityMessage(joinRequestMessage: JoinRequest){
+  private def sendJoinMessageAndCheckInsertion(joinRequestMessage: JoinRequest){
     entityManager ! joinRequestMessage
     expectMsg(JoinOK)
     joinRequestMessage match {

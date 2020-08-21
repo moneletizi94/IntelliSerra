@@ -24,7 +24,7 @@ private class DeviceDeploySpec extends TestKit(ActorSystem("MySpec"))
 
   private implicit val timeout : Timeout = Timeout(5 seconds)
 
-  private val entityManagerActor = EntityManager()
+  private val entityManagerActor = EntityManagerActor()
   private val deviceDeploy : DeviceDeploy = DeviceDeploy.local(entityManagerActor)
 
   private val sensor:Sensor = new Sensor {

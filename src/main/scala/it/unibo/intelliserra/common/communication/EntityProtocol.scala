@@ -9,7 +9,7 @@ trait EntityProtocol {
   case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
   case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
 
-  sealed trait JoinResult
-  case object JoinOK extends JoinResult
-  case class JoinError(error:String) extends JoinResult
+  sealed trait JoinResponse
+  case object JoinOK extends JoinResponse
+  case class JoinError(error:String) extends JoinResponse
 }
