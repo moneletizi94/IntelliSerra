@@ -57,6 +57,7 @@ private[core] class GreenHouseActor extends Actor {
 
   def routeZoneHandling: Receive = {
     case CreateZone(zoneName) => zoneManagerActor ? CreateZone(zoneName) pipeTo sender()
+    case RemoveZone(zoneName) => zoneManagerActor ? RemoveZone(zoneName) pipeTo sender()
   }
 
   override def receive: Receive = idle
