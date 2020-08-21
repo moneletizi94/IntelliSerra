@@ -44,7 +44,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
   private val actuator:Actuator = new Actuator {
     override def identifier: String = "actuatorID"
 
-    override def capability: ActingCapability = ActingCapability(Set(DaiAcqua))
+    override def capability: ActingCapability = ActingCapability(Set(Water))
 
     override def state: OperationalState = ???
 
@@ -54,7 +54,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
   private val actuator2:Actuator = new Actuator {
     override def identifier: String = "actuatorID"
 
-    override def capability: ActingCapability = ActingCapability(Set(ApriFinestra))
+    override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
 
     override def state: OperationalState = ???
 
@@ -63,8 +63,8 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
 
   case object Temperature extends Category
   case object Humidity extends Category
-  case object DaiAcqua extends Action
-  case object ApriFinestra extends Action
+  case object Water extends Action
+  case object OpenWindow extends Action
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
@@ -98,6 +98,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
     }
   }
 
+  //noinspection NameBooleanParameters
   def deploySensor(sensor: Sensor) : Unit = {
     Try(Await.ready(deviceDeploy.deploySensor(sensor), timeout.duration)) match {
       case Success(_) => assert(true)
@@ -105,6 +106,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
     }
   }
 
+  //noinspection NameBooleanParameters
   def deployExistingSensor(sensor: Sensor) : Unit = {
     Try(Await.ready(deviceDeploy.deploySensor(sensor), timeout.duration)) match {
       case Success(_) => fail()
@@ -112,6 +114,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
     }
   }
 
+  //noinspection NameBooleanParameters
   def deployActuator(actuator: Actuator) : Unit = {
     Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
       case Success(_) => assert(true)
@@ -119,6 +122,7 @@ private class DeviceDeployTest extends TestKit(ActorSystem("MySpec"))
     }
   }
 
+  //noinspection NameBooleanParameters
   def deployExistingActuator(actuator: Actuator) : Unit = {
     Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
       case Success(_) => fail()
