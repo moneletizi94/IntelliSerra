@@ -18,4 +18,10 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
   private val zoneIdentifierNotAdded = "FakeZone"
   private val zone: ActorRef = ZoneActor(zoneIdentifier)
 
+  "A zoneActor" must {
+    "inform its sensor when it is deleted" in {
+      
+    }
+  }
+
 }
