@@ -16,7 +16,8 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case CreateZone(identifier) if zones.contains(identifier) => sender() ! ZoneCreationError
-    case CreateZone(identifier) => val zoneActorRef: ActorRef = ZoneActor(identifier)
+    case CreateZone(identifier) =>
+      val zoneActorRef = ZoneActor(identifier)
       zones = zones + (identifier -> zoneActorRef)
       sender() ! ZoneCreated
     case ZoneExists(identifier) if zones.contains(identifier) => sender() ! Zone(zones(identifier))

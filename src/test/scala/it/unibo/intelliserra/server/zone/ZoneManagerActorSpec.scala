@@ -63,9 +63,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "refuse to delete an unexisting zone when requested" in {
       zoneManager ! RemoveZone(zoneIdentifierNotAdded)
       expectMsg(NoZone)
-      /*var zone = expectMsgPF() {
-        case Zone(zoneRef: ActorRef) => zoneRef
-      }*/
     }
   }
   override def afterAll(): Unit = {

@@ -23,6 +23,12 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
 
     }
   }
+
+  "A zoneActor" must {
+    "not be reachable after shutdown" in {
+      //non risponde se chiedo identity?
+    }
+  }
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
