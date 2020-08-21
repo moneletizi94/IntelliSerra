@@ -13,6 +13,12 @@ private[core] object GreenHouseActor {
   case object Start extends ServerCommand
 
   /**
+   * Create a new zone
+   * @param zoneName
+   */
+  case class CreateZone(zoneName: String) extends ServerCommand
+
+  /**
    * Responses to server commands
    */
   sealed trait ServerResponse
