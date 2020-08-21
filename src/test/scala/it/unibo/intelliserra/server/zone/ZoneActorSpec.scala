@@ -20,8 +20,11 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
 
   "A zoneActor" must {
     "inform its sensor when it is deleted" in {
-      
+
     }
+  }
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system)
   }
 
 }
