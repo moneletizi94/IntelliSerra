@@ -34,7 +34,7 @@ object EntityManagerActor{
   val name = "entityManager"
 
   /**
-   * Create a green house server actor
+   * Create an entity manager actor
    * @param actorSystem the actor system for create the actor
    * @return an actor ref of entity manager actor
    */
