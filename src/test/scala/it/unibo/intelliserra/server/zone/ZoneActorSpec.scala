@@ -1,10 +1,11 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{ImplicitSender, TestKit}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+import it.unibo.intelliserra.common.communication._
 
 @RunWith(classOf[JUnitRunner])
 class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
@@ -15,18 +16,22 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
   with BeforeAndAfterAll {
 
   private val zoneIdentifier = "Zone1"
-  private val zoneIdentifierNotAdded = "FakeZone"
   private val zone: ActorRef = ZoneActor(zoneIdentifier)
 
-  "A zoneActor" must {
-    "inform its sensor when it is deleted" in {
 
+  "A zoneActor" must {
+    "inform its associated entities when it is deleted" in {
+      //TODO when associate is ready
+      //non riesco a testarlo senza entità a cui mandare il dissociateFromMe
     }
   }
 
   "A zoneActor" must {
     "not be reachable after shutdown" in {
-      //non risponde se chiedo identity?
+      val testProbe = TestProbe()
+      testProbe watch zone
+      zone ! DestroyYourself
+      testProbe.expectTerminated(zone)
     }
   }
   override def afterAll(): Unit = {

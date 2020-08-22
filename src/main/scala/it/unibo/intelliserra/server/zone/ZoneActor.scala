@@ -11,7 +11,7 @@ private[zone] class ZoneActor extends Actor with ActorLogging {
       context stop self
   }
 
-  private def associatedEntities(): List[ActorRef] = List()
+  def associatedEntities(): List[ActorRef] = List()
 }
 
 object ZoneActor {
