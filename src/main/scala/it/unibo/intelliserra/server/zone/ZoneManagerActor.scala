@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 
 
 /**

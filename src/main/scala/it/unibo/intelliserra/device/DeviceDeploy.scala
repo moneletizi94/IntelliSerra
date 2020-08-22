@@ -11,7 +11,7 @@ import it.unibo.intelliserra.server.{ActuatorActor, EntityManager, SensorActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 
 /**
  *

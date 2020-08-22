@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredEntity, RegisteredSensor}
 
 class EntityManagerActor extends Actor{

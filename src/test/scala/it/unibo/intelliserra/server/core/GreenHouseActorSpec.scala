@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -19,7 +19,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with BeforeAndAfterAll
   with TestUtility {
 
-  private val serverActor: ActorRef = GreenHouseActor(GREENHOUSE_NAME)
+  private val serverActor: ActorRef = GreenHouseActor()
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
