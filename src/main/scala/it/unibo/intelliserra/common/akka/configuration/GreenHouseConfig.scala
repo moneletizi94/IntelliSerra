@@ -13,6 +13,8 @@ object GreenHouseConfig {
     createConfigWithFallback(properties)
   }
 
+  def client(host: String = "localhost", port: Int = 0): Config = GreenHouseConfig(host, port)
+
   private def createConfigWithFallback(properties: Map[String, _]): Config = {
     val config = properties.map(kv => s"${kv._1}=${kv._2.toString}").mkString(",")
     ConfigFactory.parseString(config).withFallback(defaultConfig)
