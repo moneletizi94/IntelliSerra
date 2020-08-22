@@ -52,8 +52,8 @@ object GreenHouseServer {
    * @param port  the port of the server
    */
   private[core] class GreenHouseServerImpl(override val name: String,
-                                             private val host: String,
-                                             private val port: Int) extends GreenHouseServer {
+                                           private val host: String,
+                                           private val port: Int) extends GreenHouseServer {
 
     private val config = GreenHouseConfig(host, port)
 
@@ -61,7 +61,7 @@ object GreenHouseServer {
     private implicit val actorSystem: ActorSystem = ActorSystem(name, config)
     private implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
 
-    private val serverActor = GreenHouseActor(name)
+    private val serverActor = GreenHouseActor()
 
     override def start(): Future[Unit] =
       (serverActor ? Start)
