@@ -16,12 +16,6 @@ trait GreenHouseClient extends ZoneClient {
   override type Zone = String
 }
 
-trait ZoneClient {
-  type Zone
-  def createZone(zone: Zone): Future[Zone]
-  def removeZone(zone: Zone): Future[Zone]
-}
-
 object GreenHouseClient {
 
   def apply(serverUri: String): GreenHouseClient = new GreenHouseClientImpl(serverUri)
@@ -40,7 +34,11 @@ object GreenHouseClient {
         case Failure(ex) => Future.failed(ex)
       }
 
-    override def removeZone(zone: Zone): Future[Zone] = ???
+    override def removeZone(zone: Zone): Future[Zone] =
+      client ? RemoveZone(zone) flatMap {
+        case Success(_) => Future.successful(zone)
+        case Failure(ex) => Future.failed(ex)
+      }
   }
 
 }

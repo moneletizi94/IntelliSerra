@@ -43,7 +43,6 @@ object GreenHouseServer {
   def apply(name: String,
             host: String = "localhost",
             port: Int = 8080): GreenHouseServer = new GreenHouseServerImpl(name, host, port)
-  }
 
   /**
    * Implementation of a greenhouse server. It uses Akka ActorSystem as a server
@@ -75,4 +74,5 @@ object GreenHouseServer {
       actorSystem.stop(serverActor)
       actorSystem.terminate().flatMap(_ => Future.unit)
     }
+  }
 }

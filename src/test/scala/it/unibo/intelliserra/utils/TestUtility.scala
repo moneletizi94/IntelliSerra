@@ -10,7 +10,9 @@ trait TestUtility {
   import scala.concurrent.duration.{Duration, _}
   import it.unibo.intelliserra.common.communication._
 
-  val GREENHOUSE_NAME = "myserra"
+  val Hostname = "localhost"
+  val Port = 8080
+  val GreenhouseName = "mySerra"
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val duration: FiniteDuration = 5 seconds

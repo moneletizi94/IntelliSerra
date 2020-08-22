@@ -26,18 +26,11 @@ trait DeviceDeploy {
  */
  object DeviceDeploy {
 
-  def apply(greenHouseName: String, serverHost: String, serverPort: Int): DeviceDeploy = {
-    val managerPath = RemotePath.entityManager(greenHouseName, serverHost, serverPort).toString
-    new DeviceDeployImpl(managerPath, ActorSystem("device", GreenHouseConfig.client()))
-  }
+  def apply(serverUri: String): DeviceDeploy = new DeviceDeployImpl(serverUri)
 
-  def local(entityManagerRef: ActorRef)(implicit actorSystem: ActorSystem): DeviceDeploy = {
-    new DeviceDeployImpl(entityManagerRef.path.toString, actorSystem)
-  }
+  private[device] class DeviceDeployImpl(val entityManagerPath: String) extends DeviceDeploy {
 
-  private[device] class DeviceDeployImpl(val entityManagerPath: String,
-                                         private val actorSystem: ActorSystem) extends DeviceDeploy {
-
+    private implicit val actorSystem: ActorSystem = ActorSystem("device", GreenHouseConfig.client())
     private implicit val ec: ExecutionContext = actorSystem.dispatcher
     private implicit val timeout : Timeout = Timeout(5 seconds)
 
