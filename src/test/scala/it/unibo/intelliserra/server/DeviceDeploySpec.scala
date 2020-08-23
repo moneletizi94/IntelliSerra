@@ -21,16 +21,23 @@ import scala.util.{Failure, Success, Try}
 
 
 @RunWith(classOf[JUnitRunner])
-private class DeviceDeploySpec extends TestKit(ActorSystem("MyTest", GreenHouseConfig()))
-  with WordSpecLike
+private class DeviceDeploySpec extends WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll
   with TestUtility {
 
-  private val entityManager = EntityManager()
-  private val deviceDeploy = DeviceDeploy("MyTest", Hostname, Port)
+  private var server: GreenHouseServer = _
+  private var deviceDeploy: DeviceDeploy = _
 
-  override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
+  override def beforeAll(): Unit = {
+    this.server = GreenHouseServer(GreenhouseName, Hostname, Port)
+    this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
+    awaitReady(this.server.start())
+  }
+
+  override def afterAll(): Unit = {
+    awaitReady(this.server.terminate())
+  }
 
   private val sensor:Sensor = new Sensor {
    override def identifier: String = "sensorID"

@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.server.EntityManager
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
@@ -42,10 +43,12 @@ private[core] class GreenHouseActor extends Actor {
   private implicit val timeout = Timeout(5 seconds)
 
   private var zoneManagerActor: ActorRef = _
+  private var entityManagerActor: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
       zoneManagerActor = ZoneManagerActor()
+      entityManagerActor = EntityManager()
       context.become(running orElse routeZoneHandling)
       sender ! Started
   }

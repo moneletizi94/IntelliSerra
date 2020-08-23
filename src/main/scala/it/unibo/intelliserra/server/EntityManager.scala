@@ -30,7 +30,7 @@ class EntityManagerActor extends Actor{
 
 }
 
-object EntityManager{
+object EntityManager {
   val name = "entityManager"
 
   def apply()(implicit actorSystem: ActorSystem): ActorRef = {
