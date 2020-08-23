@@ -3,6 +3,7 @@ package it.unibo.intelliserra.device
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.Actuator
@@ -26,15 +27,18 @@ trait DeviceDeploy {
  */
  object DeviceDeploy {
 
-  def apply(serverUri: String): DeviceDeploy = new DeviceDeployImpl(serverUri)
+  def apply(greenHouseName: String, serverAddress: String, serverPort: Int): DeviceDeploy =
+    new DeviceDeployImpl(greenHouseName, serverAddress, serverPort)
 
-  private[device] class DeviceDeployImpl(val entityManagerPath: String) extends DeviceDeploy {
+  private[device] class DeviceDeployImpl(private val greenHouseName: String,
+                                         private val serverAddress: String,
+                                         private val serverPort: Int) extends DeviceDeploy {
 
     private implicit val actorSystem: ActorSystem = ActorSystem("device", GreenHouseConfig.client())
     private implicit val ec: ExecutionContext = actorSystem.dispatcher
     private implicit val timeout : Timeout = Timeout(5 seconds)
 
-    private val entityManagerActor = actorSystem actorSelection entityManagerPath
+    private val entityManagerActor = actorSystem actorSelection RemotePath.entityManager(greenHouseName, serverAddress, serverPort)
 
     /**
      * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManager]] to insert a new sensor in the system

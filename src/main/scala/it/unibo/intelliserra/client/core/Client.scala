@@ -1,10 +1,18 @@
 package it.unibo.intelliserra.client.core
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
+import akka.actor.{Actor, ActorPath, ActorRef, ActorSystem, Address, Props, Stash}
 import it.unibo.intelliserra.common.communication.Protocol._
+
 import scala.util.{Failure, Success}
 
-object Client {
+private[core] object Client {
+
+  /**
+   * Create a client using akka actor
+   * @param serverUri   the uri of server actor
+   * @param actorSystem the actorSystem to be used for create the client actor
+   * @return a new instance of client
+   */
   def apply(serverUri: String)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf Props(new ClientImpl(serverUri))
 
   private[core] class ClientImpl(serverUri: String) extends Actor with Stash {
@@ -40,6 +48,5 @@ object Client {
     }
 
     override def receive: Receive = handleRequest
-
   }
 }

@@ -21,7 +21,7 @@ class ClientSpec extends WordSpecLike
 
   before {
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
-    client = GreenHouseClient(RemotePath.server(GreenhouseName, Hostname, Port))
+    client = GreenHouseClient(GreenhouseName, Hostname, Port)
 
     awaitReady(server.start())
   }

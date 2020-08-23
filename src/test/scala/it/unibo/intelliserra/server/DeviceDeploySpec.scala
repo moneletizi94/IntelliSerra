@@ -28,7 +28,7 @@ private class DeviceDeploySpec extends TestKit(ActorSystem("MyTest", GreenHouseC
   with TestUtility {
 
   private val entityManager = EntityManager()
-  private val deviceDeploy = DeviceDeploy(RemotePath.entityManager("MyTest", Hostname, Port))
+  private val deviceDeploy = DeviceDeploy("MyTest", Hostname, Port)
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
 
