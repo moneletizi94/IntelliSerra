@@ -1,9 +1,13 @@
 package it.unibo.intelliserra.client.core
 
-import akka.actor.{Actor, ActorPath, ActorRef, ActorSystem, Address, Props, Stash}
+import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, ActorSystem, Address, Props, Stash}
 import it.unibo.intelliserra.common.communication.Protocol._
 
 import scala.util.{Failure, Success}
+
+sealed trait ServerResponse[+T]
+case class SuccessResponse[T](content: T) extends ServerResponse[T]
+case class FailResponse(ex: Exception) extends ServerResponse[Nothing]
 
 private[core] object Client {
 
@@ -15,38 +19,48 @@ private[core] object Client {
    */
   def apply(serverUri: String)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf Props(new ClientImpl(serverUri))
 
-  private[core] class ClientImpl(serverUri: String) extends Actor with Stash {
+  private[core] class ClientImpl(serverUri: String) extends Actor with Stash with ActorLogging {
 
     private val serverActor = context actorSelection serverUri
 
     private def handleRequest: Receive = {
       case CreateZone(zone) =>
-        context.become(waitResponse(sender))
+        waitResponse(sender)
         serverActor ! CreateZone(zone)
 
       case RemoveZone(zone) =>
-        context.become(waitResponse(sender))
+        waitResponse(sender)
         serverActor ! RemoveZone(zone)
+
+      case GetZones =>
+        waitResponse(sender)
+        serverActor ! GetZones
+
+      case msg => log.debug(s"ignored unknown request $msg")
     }
 
-    private def waitResponse(replyTo: ActorRef): Receive = {
+    // TODO: refactor using a common request-response protocol
+    private def waitResponseBehaviour(replyTo: ActorRef): Receive = {
       case ZoneCreationError =>
-        context.become(handleRequest)
         replyTo ! Failure(new IllegalStateException("fail during zone creation"))
 
       case NoZone =>
-        context.become(handleRequest)
         replyTo ! Failure(new IllegalArgumentException("zone not found"))
 
       case ZoneCreated =>
-        context.become(handleRequest)
         replyTo ! Success(ZoneCreated)
 
       case ZoneRemoved =>
-        context.become(handleRequest)
         replyTo ! Success(ZoneRemoved)
+
+      case Zones(zones) =>
+        replyTo ! Success(zones)
     }
 
     override def receive: Receive = handleRequest
+
+    private def waitResponse(replyTo: ActorRef): Unit = {
+      context.become(waitResponseBehaviour(replyTo).andThen(_ => context.become(handleRequest)))
+    }
   }
 }
