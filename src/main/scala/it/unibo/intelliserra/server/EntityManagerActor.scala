@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredEntity, RegisteredSensor}
 
-class EntityManagerActor extends Actor{
+private[server] class EntityManagerActor extends Actor{
 
   private[server] var entities : Map[RegisteredEntity, ActorRef] = Map()
 
@@ -30,9 +30,14 @@ class EntityManagerActor extends Actor{
 
 }
 
-object EntityManager{
+object EntityManagerActor{
   val name = "entityManager"
 
+  /**
+   * Create an entity manager actor
+   * @param actorSystem the actor system for create the actor
+   * @return an actor ref of entity manager actor
+   */
   def apply()(implicit actorSystem: ActorSystem): ActorRef = {
     actorSystem.actorOf(Props[EntityManagerActor], name)
   }
