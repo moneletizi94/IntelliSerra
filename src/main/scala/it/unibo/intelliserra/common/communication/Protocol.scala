@@ -52,4 +52,12 @@ object Protocol {
   /* --- From GH to Zone --- */
   case class AssignActuator(actorRef: ActorRef, registeredEntity: RegisteredEntity)
   case class DeAssignActuator(actorRef: ActorRef)
+  case class IsEntityAssociated(entityRef : ActorRef)
+  /** -- From Zone to GH */
+  trait IsAssociatedResponse
+  case class IsAssociated(actorRef: ActorRef) extends IsAssociatedResponse
+  case object IsNotAssociated extends IsAssociatedResponse
+  /** -- From Zone to GH */
+  case object AssignOk
+
 }
