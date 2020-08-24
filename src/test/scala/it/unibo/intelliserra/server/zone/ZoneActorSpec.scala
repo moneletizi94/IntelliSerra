@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ActorRef, ActorSystem, Terminated}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -16,9 +16,15 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
   with BeforeAndAfterAll {
 
   private val zoneIdentifier = "Zone1"
-  private val zone: ActorRef = ZoneActor(zoneIdentifier)
+  private var zone: ActorRef = _
 
-
+  before {
+    zone = ZoneActor(zoneIdentifier)
+  }
+  after {
+    zone ! DestroyYourself
+    expectMsg(Terminated)
+  }
   "A zoneActor" must {
     "inform its associated entities when it is deleted" in {
       //TODO when associate is ready

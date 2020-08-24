@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{ImplicitSender, TestKit}
+import akka.actor.{ActorSystem, Props}
+import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Protocol._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -18,7 +18,60 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private val zoneIdentifier = "Zone1"
   private val zoneIdentifier2 = "Zone2"
   private val zoneIdentifierNotAdded = "FakeZone"
-  private val zoneManager: ActorRef = ZoneManagerActor()
+  private var zoneManager: TestActorRef[ZoneManagerActor] = _
+
+  before {
+    zoneManager =  TestActorRef.create(system, Props[ZoneManagerActor]())
+  }
+  after {
+    zoneManager.underlyingActor.zones.foreach({case (identifier, _) =>
+      zoneManager ! RemoveZone(identifier)
+      expectMsg(ZoneRemoved)
+    })
+  }
+
+  "A zoneManagerActor" must {
+    "create a zone with a never-used identifier" in {
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      zoneManager ! ZoneExists(zoneIdentifier)
+      expectMsgType[Zone]
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "refuse the creation of a zone with a yet-used identifier" in {
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreationError)
+    }
+  }
+
+
+  "A zoneManagerActor" should {
+    "not have a nonexistent identifier" in {
+      zoneManager ! ZoneExists(zoneIdentifierNotAdded)
+      expectMsg(NoZone)
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "delete an existing zone when requested" in {
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      zoneManager ! RemoveZone(zoneIdentifier)
+      expectMsg(ZoneRemoved)
+      zoneManager ! ZoneExists(zoneIdentifier)
+      expectMsg(NoZone)
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "refuse to delete a nonexistent zone when requested" in {
+      zoneManager ! RemoveZone(zoneIdentifierNotAdded)
+      expectMsg(NoZone)
+    }
 
   "A zoneManagerActor" must {
     "return an empty list when it hasn't zones" in {
@@ -43,8 +96,13 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zones shouldBe List(zoneIdentifier, zoneIdentifier2)
     }
   }
+
   "A zoneManagerActor" must {
     "return an empty list after removing created zones" in {
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      zoneManager ! CreateZone(zoneIdentifier2)
+      expectMsg(ZoneCreated)
       zoneManager ! RemoveZone(zoneIdentifier)
       expectMsg(ZoneRemoved)
       zoneManager ! RemoveZone(zoneIdentifier2)
@@ -57,51 +115,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
   }
 
-  "A zoneManagerActor" must {
-    "accept the creation of a zone with a never-used identifier" in {
-      zoneManager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreated)
-    }
-  }
 
-  "A zoneManagerActor" must {
-    "refuse the creation of a zone with a yet-used identifier" in {
-      zoneManager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreationError)
-    }
-  }
-
-  "A zoneManagerActor" must {
-    "memorize a just created zone" in {
-      zoneManager ! ZoneExists(zoneIdentifier)
-      expectMsgType[Zone]
-    }
-  }
-
-  "A zoneManagerActor" should {
-    "not have an unexisting identifier" in {
-      zoneManager ! ZoneExists(zoneIdentifierNotAdded)
-      expectMsg(NoZone)
-    }
-  }
-
-  "A zoneManagerActor" must {
-    "delete an existing zone when requested" in {
-      zoneManager ! RemoveZone(zoneIdentifier)
-      expectMsg(ZoneRemoved)
-      zoneManager ! ZoneExists(zoneIdentifier)
-      expectMsg(NoZone)
-      /*var zone = expectMsgPF() {
-        case Zone(zoneRef: ActorRef) => zoneRef
-      }*/
-    }
-  }
-
-  "A zoneManagerActor" must {
-    "refuse to delete an unexisting zone when requested" in {
-      zoneManager ! RemoveZone(zoneIdentifierNotAdded)
-      expectMsg(NoZone)
-    }
   }
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
