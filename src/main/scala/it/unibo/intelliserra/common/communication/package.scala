@@ -1,3 +1,3 @@
 package it.unibo.intelliserra.common
 
-package object communication extends EntityProtocol with ZoneProtocol
+package object communication extends EntityProtocol with ZoneProtocol with AssociationProtocol

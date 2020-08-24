@@ -18,6 +18,7 @@ class ExampleZoneActor extends Actor {
     case AssignSensor(sensor) => (sensor ? AssignToMe(self)).map(_ => AssignCompleted(sensor)).pipeTo(self)
     case DissociateSensor(sensor) => sensor ! DissociateFromMe(self)
     case AssignCompleted(sensor) => sensors = sensor :: sensors
+    _
   }
 }
 

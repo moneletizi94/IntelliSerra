@@ -33,6 +33,4 @@ trait ZoneProtocol {
   // the zone will not be reachable anymore. It should inform its sensor/actuator
   case object DestroyYourself
 
-  /* --- From Zone to Sensor/ Actuator --- */
-  case class DissociateFromMe(zoneRef: ActorRef)
 }
