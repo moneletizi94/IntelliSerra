@@ -8,5 +8,4 @@ import akka.actor.ActorRef
  */
 trait ZoneProtocol {
 
-
 }
