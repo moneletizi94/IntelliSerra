@@ -14,13 +14,14 @@ import akka.pattern.pipe
 import it.unibo.intelliserra.core.entity.{ActingCapability, Capability, SensingCapability}
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 private[zone] class ZoneActor extends Actor with ActorLogging {
 
   //var List[Aggregator] = Aggregators
-  var sensorsValue : Map[ActorRef, Measure] = Map()
-  var associatedEntities : Map[ActorRef, Capability] = Map() 
-  val actuatorsState : Map[ActorRef, OperationalState] = Map()
+  private[zone] var sensorsValue : Map[ActorRef, Measure] = Map()
+  private[zone] var associatedEntities : Map[ActorRef, Capability] = Map()
+  private[zone] var actuatorsState : Map[ActorRef, OperationalState] = Map()
 
   implicit val timeout : Timeout = Timeout(5 seconds)
   implicit val ec: ExecutionContext = context.dispatcher
@@ -30,13 +31,13 @@ private[zone] class ZoneActor extends Actor with ActorLogging {
     case DestroyYourself =>
       associatedEntities.keySet.foreach(entity => entity ! DissociateFromMe(self))
       context stop self
-    case AssignSensor(sensorRef, sensor: RegisteredEntity) =>
-      sensorRef ? AssociateToMe(self) map { _ => GetEntityInfo(sender ,sensorRef, sensor)} pipeTo self
+    case AssignEntity(sensorRef, sensor: RegisteredEntity) =>
+      sensorRef ? AssociateToMe(self) map { case Ack => GetEntityInfo(sender() , sensorRef, sensor)} pipeTo self
     case IsEntityAssociated(entityRef) =>
-      associatedEntities.keySet.find(associatedEntity => associatedEntity == entityRef)
-                                .map(entityRef => IsAssociated(entityRef)).getOrElse(IsNotAssociated)
-    case DeAssignSensor(entityRef: ActorRef) => entityRef ! DissociateFromMe(self)
-    case GetEntityInfo(replyTo , sensorRef, registeredSensor) =>
+      sender ! associatedEntities.keySet.find(associatedEntity => associatedEntity == entityRef)
+                                .map(entityRef => Some(entityRef))
+    case DeAssignEntity(entityRef: ActorRef) => entityRef ! DissociateFromMe(self)
+    case GetEntityInfo(replyTo, sensorRef, registeredSensor) =>
       associatedEntities += (sensorRef -> registeredSensor.capabilities)
       replyTo ! AssignOk
     case Tick =>

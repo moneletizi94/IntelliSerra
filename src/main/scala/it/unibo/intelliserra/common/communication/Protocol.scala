@@ -50,18 +50,14 @@ object Protocol {
   case class AssociateToMe(zoneRef: ActorRef)
 
   /* --- From GH to Zone --- */
-  case class AssignSensor(actorRef: ActorRef, registeredEntity: RegisteredEntity)
-  case class DeAssignSensor(actorRef: ActorRef)
-
-  /* --- From GH to Zone --- */
-  case class AssignActuator(actorRef: ActorRef, registeredEntity: RegisteredEntity)
-  case class DeAssignActuator(actorRef: ActorRef)
+  case class AssignEntity(actorRef: ActorRef, registeredEntity: RegisteredEntity)
+  case class DeAssignEntity(actorRef: ActorRef)
   case class IsEntityAssociated(entityRef : ActorRef)
-  /** -- From Zone to GH */
-  trait IsAssociatedResponse
-  case class IsAssociated(actorRef: ActorRef) extends IsAssociatedResponse
-  case object IsNotAssociated extends IsAssociatedResponse
-  /** -- From Zone to GH */
+
+  /** --- From Zone to GH --- */
   case object AssignOk
+
+  /** --- From Sensor/Actuator to ZoneActor*/
+  case object Ack
 
 }
