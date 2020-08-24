@@ -3,6 +3,7 @@ package it.unibo.intelliserra.device
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.Actuator
@@ -11,7 +12,7 @@ import it.unibo.intelliserra.server.{ActuatorActor, EntityManager, SensorActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 
 /**
  *
@@ -26,22 +27,18 @@ trait DeviceDeploy {
  */
  object DeviceDeploy {
 
-  def apply(greenHouseName: String, serverHost: String, serverPort: Int): DeviceDeploy = {
-    val managerPath = RemotePath.entityManager(greenHouseName, serverHost, serverPort).toString
-    new DeviceDeployImpl(managerPath, ActorSystem("device", GreenHouseConfig.client()))
-  }
+  def apply(greenHouseName: String, serverAddress: String, serverPort: Int): DeviceDeploy =
+    new DeviceDeployImpl(greenHouseName, serverAddress, serverPort)
 
-  def local(entityManagerRef: ActorRef)(implicit actorSystem: ActorSystem): DeviceDeploy = {
-    new DeviceDeployImpl(entityManagerRef.path.toString, actorSystem)
-  }
+  private[device] class DeviceDeployImpl(private val greenHouseName: String,
+                                         private val serverAddress: String,
+                                         private val serverPort: Int) extends DeviceDeploy {
 
-  private[device] class DeviceDeployImpl(val entityManagerPath: String,
-                                         private val actorSystem: ActorSystem) extends DeviceDeploy {
-
+    private implicit val actorSystem: ActorSystem = ActorSystem("device", GreenHouseConfig.client())
     private implicit val ec: ExecutionContext = actorSystem.dispatcher
     private implicit val timeout : Timeout = Timeout(5 seconds)
 
-    private val entityManagerActor = actorSystem actorSelection entityManagerPath
+    private val entityManagerActor = actorSystem actorSelection RemotePath.entityManager(greenHouseName, serverAddress, serverPort)
 
     /**
      * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManager]] to insert a new sensor in the system

@@ -4,14 +4,14 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredSensor}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-private class ExampleEntityManagerSpec extends TestKit(ActorSystem("MySpec"))
+private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   with ImplicitSender
   with Matchers
   with WordSpecLike

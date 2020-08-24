@@ -27,6 +27,7 @@ object GreenHouseConfig {
       |    # provider=remote is possible, but prefer cluster
       |    provider = remote
       |    allow-java-serialization = true
+      |    warn-about-java-serializer-usage = false
       |  }
       |  remote.artery.enabled = false
       |  remote.classic {
