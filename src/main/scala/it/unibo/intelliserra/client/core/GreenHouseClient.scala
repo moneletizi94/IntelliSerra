@@ -46,6 +46,11 @@ object GreenHouseClient {
         case Success(_) => Future.successful(zone)
         case Failure(ex) => Future.failed(ex)
       }
+
+    override def zones(): Future[List[Zone]] = client ? GetZones flatMap {
+      case Success(zones) => Future.successful(zones).asInstanceOf[Future[List[String]]]
+      case Failure(ex) => Future.failed(ex)
+    }
   }
 
 }

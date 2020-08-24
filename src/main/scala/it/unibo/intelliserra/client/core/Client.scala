@@ -27,6 +27,10 @@ private[core] object Client {
       case RemoveZone(zone) =>
         context.become(waitResponse(sender))
         serverActor ! RemoveZone(zone)
+
+      case GetZones =>
+        context.become(waitResponse(sender))
+        serverActor ! GetZones
     }
 
     private def waitResponse(replyTo: ActorRef): Receive = {
@@ -45,6 +49,10 @@ private[core] object Client {
       case ZoneRemoved =>
         context.become(handleRequest)
         replyTo ! Success(ZoneRemoved)
+
+      case Zones(zones) =>
+        context.become(handleRequest)
+        replyTo ! Success(zones)
     }
 
     override def receive: Receive = handleRequest

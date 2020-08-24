@@ -27,7 +27,7 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging with Stash 
       zones(identifier) ! DestroyYourself
       context.become(waitForZoneDead(sender(), identifier))
     case RemoveZone(_) => sender() ! NoZone
-    case getZones => sender() ! Zones(zones.keySet.toList)
+    case GetZones => sender() ! Zones(zones.keySet.toList)
   }
 
   private def waitForZoneDead(replyTo: ActorRef, identifier: String): Receive = {

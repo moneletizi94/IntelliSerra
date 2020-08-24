@@ -22,7 +22,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
 
   "A zoneManagerActor" must {
     "return an empty list when it hasn't zones" in {
-      zoneManager ! getZones
+      zoneManager ! GetZones
       val zones = expectMsgPF() {
         case Zones(zones: List[String]) => zones
       }
@@ -36,7 +36,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       expectMsg(ZoneCreated)
       zoneManager ! CreateZone(zoneIdentifier2)
       expectMsg(ZoneCreated)
-      zoneManager ! getZones
+      zoneManager ! GetZones
       val zones = expectMsgPF() {
         case Zones(zones: List[String]) => zones
       }
@@ -49,7 +49,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       expectMsg(ZoneRemoved)
       zoneManager ! RemoveZone(zoneIdentifier2)
       expectMsg(ZoneRemoved)
-      zoneManager ! getZones
+      zoneManager ! GetZones
       val zones = expectMsgPF() {
         case Zones(zones: List[String]) => zones
       }

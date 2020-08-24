@@ -22,7 +22,7 @@ object Protocol {
   //A client asks to remove a zone, the corresponding actor will be stopped
   case class RemoveZone(identifier: String)
   //GH asks for all the zones in the ZoneManager
-  case object getZones
+  case object GetZones
 
   /* --- From ZoneManager to GH --- */
   case object ZoneCreated
