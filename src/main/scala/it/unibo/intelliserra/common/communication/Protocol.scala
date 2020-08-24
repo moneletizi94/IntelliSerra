@@ -15,16 +15,20 @@ object Protocol {
   case class JoinError(error:String) extends JoinResponse
 
   /* --- From GH to ZoneManager --- */
-  //A client ask for a new Zone
+  //A client asks for a new Zone
   final case class CreateZone(identifier: String)
   //An entity could ask whether a zone exists (used also for testing createZone and removeZone)
   final case class ZoneExists(identifier: String)
-  //A client ask to remove a zone, the corresponding actor will be stopped
+  //A client asks to remove a zone, the corresponding actor will be stopped
   case class RemoveZone(identifier: String)
+  //GH asks for all the zones in the ZoneManager
+  case object getZones
 
   /* --- From ZoneManager to GH --- */
   case object ZoneCreated
   case object ZoneCreationError
+  //Used to Answer to getZones
+  case class Zones(zones: List[String])
 
   //Used to answer to ZoneExists
   case class Zone(zoneRef: ActorRef)
