@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.core
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{ImplicitSender, TestKit}
+import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
@@ -19,11 +19,18 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with BeforeAndAfterAll
   with TestUtility {
 
-  private val serverActor: ActorRef = GreenHouseActor()
+  private var serverActor: TestActorRef[GreenHouseActor] = TestActorRef.create(system, Props[GreenHouseActor]())
 
-  override def afterAll(): Unit = {
-    TestKit.shutdownActorSystem(system)
+  before {
+    serverActor = TestActorRef.create(system, Props[GreenHouseActor]())
   }
+
+  after {
+    killActors(serverActor, serverActor.underlyingActor.entityManagerActor, serverActor.underlyingActor.zoneManagerActor)
+  }
+
+
+  override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
 
   "A greenhouse actor" must {
     "send Started message when is successfully started" in {
@@ -33,27 +40,9 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
 
     "send a ServerError if is already running" in {
       serverActor ! Start
+      expectMsg(Started)
+      serverActor ! Start
       expectMsgType[ServerError]
-    }
-
-    "handle route for zone creation" in {
-      serverActor ! CreateZone("zoneTest")
-      expectMsg(ZoneCreated)
-    }
-    
-    "handle route for removing an existing zone" in {
-      serverActor ! RemoveZone("zoneTest")
-      expectMsg(ZoneRemoved)
-    }
-
-    "handle route for removing a not existing zone" in {
-      serverActor ! RemoveZone("zoneFake")
-      expectMsg(NoZone)
-    }
-
-    "handle route for path for removing a zone that has already been removed" in {
-      serverActor ! RemoveZone("zoneTest")
-      expectMsg(NoZone)
     }
   }
 }
