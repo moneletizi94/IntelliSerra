@@ -1,8 +1,6 @@
 package it.unibo.intelliserra.utils
 
-import akka.testkit.TestKit
-
-import scala.concurrent.{Await, Awaitable, ExecutionContextExecutor, Future}
+import scala.concurrent.{Await, Awaitable}
 
 trait TestUtility {
 
