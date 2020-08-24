@@ -6,6 +6,7 @@ import it.unibo.intelliserra.server.core.RegisteredEntity
 
 object Protocol {
 
+  /* Entity Manager */
   sealed trait JoinRequest
   case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
   case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
@@ -13,6 +14,9 @@ object Protocol {
   sealed trait JoinResponse
   case object JoinOK extends JoinResponse
   case class JoinError(error:String) extends JoinResponse
+
+  final case class Entity(registeredEntity: RegisteredEntity, actorRef: ActorRef)
+  final case class EntityExists(identifier: String)
 
   /* --- From GH to ZoneManager --- */
   //A client asks for a new Zone
