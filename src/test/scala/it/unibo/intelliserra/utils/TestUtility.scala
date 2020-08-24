@@ -1,10 +1,9 @@
 package it.unibo.intelliserra.utils
 
-import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{TestKit, TestProbe}
+import akka.testkit.{TestProbe}
 
-import scala.concurrent.{Await, Awaitable, ExecutionContextExecutor, Future}
+import scala.concurrent.{Await, Awaitable}
 
 trait TestUtility {
 

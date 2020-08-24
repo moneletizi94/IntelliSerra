@@ -1,30 +1,28 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem, Terminated}
-import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import akka.actor.{ActorSystem, Props}
+import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
+import it.unibo.intelliserra.common.communication.Protocol.DestroyYourself
+import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-import it.unibo.intelliserra.common.communication.Protocol._
 
 @RunWith(classOf[JUnitRunner])
-class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
+class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with ImplicitSender
   with Matchers
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll {
 
-  private val zoneIdentifier = "Zone1"
-  private var zone: ActorRef = _
+  private var zone: TestActorRef[ZoneActor] = _
 
-  before {
-    zone = ZoneActor(zoneIdentifier)
+  before{
+    zone = TestActorRef.create(system, Props[ZoneActor])
   }
-  after {
-    zone ! DestroyYourself
-    expectMsg(Terminated)
-  }
+
   "A zoneActor" must {
     "inform its associated entities when it is deleted" in {
       //TODO when associate is ready
@@ -40,6 +38,28 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
       testProbe.expectTerminated(zone)
     }
   }
+
+  "A zoneActor" must {
+    "have no entity associated just created" in {
+      zone.underlyingActor.associatedEntities.isEmpty
+    }
+  }
+
+  "A zoneActor" must {
+    "allow you to associate entities that have not been associated with it" in {
+      /*val entityActor = TestProbe()
+      val registeredSensor = RegisteredSensor("id",SensingCapability(Temperature))
+      zone ! AssignEntity(entityActor.ref, registeredSensor)
+      entityActor.expectMsg(AssociateToMe(zone))
+      zone.tell(Ack, entityActor.ref)
+      zone.underlyingActor.associatedEntities.contains(entityActor.ref)
+      expectMsg(AssignOk)*/
+    }
+  }
+
+  case object Temperature extends Category
+
+
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
