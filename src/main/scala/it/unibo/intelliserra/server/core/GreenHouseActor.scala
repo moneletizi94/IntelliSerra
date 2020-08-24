@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
@@ -27,12 +27,11 @@ private[core] object GreenHouseActor {
 
   /**
    * Create a green house server actor
-   * @param name        the name of server actor
    * @param actorSystem the actor system for create the actor
    * @return an actor ref of green house server actor
    */
-  def apply(name: String)(implicit actorSystem: ActorSystem): ActorRef = {
-    actorSystem actorOf (Props[GreenHouseActor], name = name)
+  def apply()(implicit actorSystem: ActorSystem): ActorRef = {
+    actorSystem actorOf (Props[GreenHouseActor], name = "serverActor")
   }
 }
 

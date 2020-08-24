@@ -2,7 +2,7 @@ package it.unibo.intelliserra.utils
 
 import akka.testkit.TestKit
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{Await, Awaitable, ExecutionContextExecutor, Future}
 
 trait TestUtility {
 
@@ -10,8 +10,13 @@ trait TestUtility {
   import scala.concurrent.duration.{Duration, _}
   import it.unibo.intelliserra.common.communication._
 
-  val GREENHOUSE_NAME = "myserra"
+  val Hostname = "localhost"
+  val Port = 8080
+  val GreenhouseName = "mySerra"
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val duration: FiniteDuration = 5 seconds
+
+  def awaitResult[T](awaitable: Awaitable[T])(implicit duration: Duration): T = Await.result(awaitable, duration)
+  def awaitReady[T](awaitable: Awaitable[T])(implicit duration: Duration): awaitable.type = Await.ready(awaitable, duration)
 }

@@ -3,10 +3,14 @@ package it.unibo.intelliserra.server
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
+import it.unibo.intelliserra.common.akka.RemotePath
+import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.server.core.GreenHouseServer
+import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -17,15 +21,16 @@ import scala.util.{Failure, Success, Try}
 
 
 @RunWith(classOf[JUnitRunner])
-private class DeviceDeploySpec extends TestKit(ActorSystem("MySpec"))
+private class DeviceDeploySpec extends TestKit(ActorSystem("MyTest", GreenHouseConfig()))
   with WordSpecLike
   with BeforeAndAfter
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll
+  with TestUtility {
 
-  private implicit val timeout : Timeout = Timeout(5 seconds)
+  private val entityManager = EntityManager()
+  private val deviceDeploy = DeviceDeploy("MyTest", Hostname, Port)
 
-  private val entityManagerActor = EntityManager()
-  private val deviceDeploy : DeviceDeploy = DeviceDeploy.local(entityManagerActor)
+  override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
 
   private val sensor:Sensor = new Sensor {
    override def identifier: String = "sensorID"
@@ -57,10 +62,6 @@ private class DeviceDeploySpec extends TestKit(ActorSystem("MySpec"))
   case object Humidity extends Category
   case object Water extends Action
   case object OpenWindow extends Action
-
-  override def afterAll(): Unit = {
-    TestKit.shutdownActorSystem(system)
-  }
 
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {
