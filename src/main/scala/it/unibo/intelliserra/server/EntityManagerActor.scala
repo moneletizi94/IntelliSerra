@@ -13,8 +13,10 @@ private[server] class EntityManagerActor extends Actor{
       addEntityAndSendResponse(RegisteredSensor(identifier, capabilities), sensorRef, sender)
 
     case JoinActuator(identifier, capabilities, actuatorRef) =>
-      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities),actuatorRef, sender)
+      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities), actuatorRef, sender)
 
+    case EntityExists(identifier) =>
+      sender ! entities.find(p => p._1.identifier == identifier).map(p => Entity(p._1, p._2))
   }
 
   private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[Map[RegisteredEntity, ActorRef]] = {

@@ -16,8 +16,46 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   with BeforeAndAfterAll {
 
   private val zoneIdentifier = "Zone1"
+  private val zoneIdentifier2 = "Zone2"
   private val zoneIdentifierNotAdded = "FakeZone"
   private val zoneManager: ActorRef = ZoneManagerActor()
+
+  "A zoneManagerActor" must {
+    "return an empty list when it hasn't zones" in {
+      zoneManager ! GetZones
+      val zones = expectMsgPF() {
+        case Zones(zones: List[String]) => zones
+      }
+      zones shouldBe List()
+    }
+  }
+
+  "A zoneManagerActor" must {
+    "return a list containing created zones" in {
+      zoneManager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      zoneManager ! CreateZone(zoneIdentifier2)
+      expectMsg(ZoneCreated)
+      zoneManager ! GetZones
+      val zones = expectMsgPF() {
+        case Zones(zones: List[String]) => zones
+      }
+      zones shouldBe List(zoneIdentifier, zoneIdentifier2)
+    }
+  }
+  "A zoneManagerActor" must {
+    "return an empty list after removing created zones" in {
+      zoneManager ! RemoveZone(zoneIdentifier)
+      expectMsg(ZoneRemoved)
+      zoneManager ! RemoveZone(zoneIdentifier2)
+      expectMsg(ZoneRemoved)
+      zoneManager ! GetZones
+      val zones = expectMsgPF() {
+        case Zones(zones: List[String]) => zones
+      }
+      zones shouldBe List()
+    }
+  }
 
   "A zoneManagerActor" must {
     "accept the creation of a zone with a never-used identifier" in {

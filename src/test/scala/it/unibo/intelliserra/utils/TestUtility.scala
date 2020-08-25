@@ -1,8 +1,9 @@
 package it.unibo.intelliserra.utils
 
-import akka.testkit.TestKit
+import akka.actor.{ActorRef, ActorSystem}
+import akka.testkit.{TestProbe}
 
-import scala.concurrent.{Await, Awaitable, ExecutionContextExecutor, Future}
+import scala.concurrent.{Await, Awaitable}
 
 trait TestUtility {
 
@@ -19,4 +20,14 @@ trait TestUtility {
 
   def awaitResult[T](awaitable: Awaitable[T])(implicit duration: Duration): T = Await.result(awaitable, duration)
   def awaitReady[T](awaitable: Awaitable[T])(implicit duration: Duration): awaitable.type = Await.ready(awaitable, duration)
+
+  def killActors(actors: ActorRef*)(implicit actorSystem: ActorSystem): Unit = {
+    val testProbe = TestProbe()
+    actors.foreach { testProbe.watch }
+    actors.foreach {
+      actor =>
+        actorSystem.stop(actor)
+        testProbe.expectTerminated(actor, duration)
+    }
+  }
 }

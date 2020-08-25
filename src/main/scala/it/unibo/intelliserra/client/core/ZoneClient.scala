@@ -19,4 +19,10 @@ trait ZoneClient {
    * @return if success, the name of zone, otherwise a failure
    */
   def removeZone(zone: Zone): Future[Zone]
+
+  /**
+   * Obtain all existing zones
+   * @return if success, a list of alla existing zones, otherwise a failure
+   */
+  def zones(): Future[List[Zone]]
 }

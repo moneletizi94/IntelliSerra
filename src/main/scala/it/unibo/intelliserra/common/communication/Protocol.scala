@@ -6,6 +6,7 @@ import it.unibo.intelliserra.server.core.RegisteredEntity
 
 object Protocol {
 
+  /* Entity Manager */
   sealed trait JoinRequest
   case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
   case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
@@ -14,17 +15,24 @@ object Protocol {
   case object JoinOK extends JoinResponse
   case class JoinError(error:String) extends JoinResponse
 
+  final case class Entity(registeredEntity: RegisteredEntity, actorRef: ActorRef)
+  final case class EntityExists(identifier: String)
+
   /* --- From GH to ZoneManager --- */
-  //A client ask for a new Zone
+  //A client asks for a new Zone
   final case class CreateZone(identifier: String)
   //An entity could ask whether a zone exists (used also for testing createZone and removeZone)
   final case class ZoneExists(identifier: String)
-  //A client ask to remove a zone, the corresponding actor will be stopped
+  //A client asks to remove a zone, the corresponding actor will be stopped
   case class RemoveZone(identifier: String)
+  //GH asks for all the zones in the ZoneManager
+  case object GetZones
 
   /* --- From ZoneManager to GH --- */
   case object ZoneCreated
   case object ZoneCreationError
+  //Used to Answer to getZones
+  case class Zones(zones: List[String])
 
   //Used to answer to ZoneExists
   case class Zone(zoneRef: ActorRef)
@@ -46,10 +54,14 @@ object Protocol {
   case class AssociateToMe(zoneRef: ActorRef)
 
   /* --- From GH to Zone --- */
-  case class AssignSensor(actorRef: ActorRef, registeredEntity: RegisteredEntity)
-  case class DeAssignSensor(actorRef: ActorRef)
+  case class AssignEntity(actorRef: ActorRef, registeredEntity: RegisteredEntity)
+  case class DeAssignEntity(actorRef: ActorRef)
+  case class IsEntityAssociated(entityRef : ActorRef)
 
-  /* --- From GH to Zone --- */
-  case class AssignActuator(actorRef: ActorRef, registeredEntity: RegisteredEntity)
-  case class DeAssignActuator(actorRef: ActorRef)
+  /** --- From Zone to GH --- */
+  case object AssignOk
+
+  /** --- From Sensor/Actuator to ZoneActor*/
+  case object Ack
+
 }

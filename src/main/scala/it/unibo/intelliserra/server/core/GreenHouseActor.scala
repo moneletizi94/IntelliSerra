@@ -43,8 +43,8 @@ private[core] class GreenHouseActor extends Actor {
   private implicit val executionContext: ExecutionContextExecutor = context.dispatcher
   private implicit val timeout: Timeout = Timeout(5 seconds)
 
-  private var zoneManagerActor: ActorRef = _
-  private var entityManagerActor: ActorRef = _
+  var zoneManagerActor: ActorRef = _
+  var entityManagerActor: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
@@ -61,6 +61,7 @@ private[core] class GreenHouseActor extends Actor {
   def routeZoneHandling: Receive = {
     case CreateZone(zoneName) => zoneManagerActor ? CreateZone(zoneName) pipeTo sender()
     case RemoveZone(zoneName) => zoneManagerActor ? RemoveZone(zoneName) pipeTo sender()
+    case GetZones => zoneManagerActor ? GetZones pipeTo sender()
   }
 
   override def receive: Receive = idle
