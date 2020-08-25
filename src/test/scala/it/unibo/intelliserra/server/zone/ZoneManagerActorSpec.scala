@@ -3,12 +3,13 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
+class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with ImplicitSender
   with Matchers
   with WordSpecLike
@@ -24,10 +25,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     zoneManager =  TestActorRef.create(system, Props[ZoneManagerActor]())
   }
   after {
-    zoneManager.underlyingActor.zones.foreach({case (identifier, _) =>
-      zoneManager ! RemoveZone(identifier)
-      expectMsg(ZoneRemoved)
-    })
+    killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
   }
 
   "A zoneManagerActor" must {
@@ -120,5 +118,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
+
 }
 
