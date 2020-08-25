@@ -53,12 +53,16 @@ object Protocol {
   /* --- From Zone to Sensor/ Actuator --- */
   case class AssociateToMe(zoneRef: ActorRef)
 
-  /* --- From GH to Zone --- */
+  /* --- From Controller to Zone --- */
   case class AssignEntity(actorRef: ActorRef, registeredEntity: RegisteredEntity)
   case class DeAssignEntity(actorRef: ActorRef)
   case class IsEntityAssociated(entityRef : ActorRef)
 
-  /** --- From Zone to GH --- */
+  /* --- From Gh to Controller --- */
+  case class Assign(idEntity: String, zone:String)
+  case class Dissociate(idEntity:String, zone:String)
+
+  /** --- From Zone to Controller --- */
   case object AssignOk
 
   /** --- From Sensor/Actuator to ZoneActor*/

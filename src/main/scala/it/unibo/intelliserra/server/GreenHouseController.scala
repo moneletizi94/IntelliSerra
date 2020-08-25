@@ -9,6 +9,7 @@ import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
 private[server] class GreenHouseController extends Actor with ActorLogging {
 
@@ -36,16 +37,33 @@ private[server] class GreenHouseController extends Actor with ActorLogging {
         entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
         zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
         if zoneOption.isDefined && entity.isDefined
-        //zoneRef <- zoneOption.get ? AssignEntity(entity.get._1, entity.get._2)
-      } yield sender ! ZoneResponse
+        _ <- zoneOption.get ? AssignEntity(entity.get._1, entity.get._2)
+      } yield sender ! AssignOk
 
     case Dissociate(idEntity, zone) =>
       for {
         entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
         zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
         if zoneOption.isDefined && entity.isDefined
-        //zoneRef <- zoneOption.get ? DissociateEntity(entity.get._1)
-      } yield sender ! ZoneResponse
+        _ <- zoneOption.get ? DeAssignEntity(entity.get._1)
+      } yield sender ! AssignOk
+
+
+    case CreateZone(identifier: String) =>
+      createRequest(CreateZone(identifier)) {
+        case ZoneCreated => Success(identifier)
+        case ZoneCreationError => Failure(new IllegalArgumentException("zone not found"))
+      }
+
+    case RemoveZone(identifier: String) =>
+      createRequest(RemoveZone(identifier)) {
+        case ZoneRemoved => Success(identifier)
+        case NoZone => Failure(new IllegalArgumentException("zone not found"))
+      }
+  }
+
+  private def createRequest(msg: => Any)(responseTransform: Any => Try[Any]) : Unit = {
+    zoneManagerActor ? msg flatMap{ msg => Future.fromTry(responseTransform(msg)) } pipeTo sender()
   }
 
   /*def receiveZoneResponse(sender: ActorRef): Receive = {
