@@ -17,15 +17,30 @@ private[server] class GreenHouseController extends Actor with ActorLogging {
   private implicit val timeout: Timeout = Timeout(5 seconds)
   private var zoneManagerActor: ActorRef = ZoneManagerActor()
   private var entityManagerActor: ActorRef = EntityManagerActor()
-  private var request: String = _
 
   override def receive: Receive = receiveEntityRequest
-
 
   implicit val ec: ExecutionContext = context.dispatcher
 
   def receiveEntityRequest: Receive = {
-    case Assign(idEntity, zone) =>
+
+    case CreateZone(zoneName) =>
+      createRequest(CreateZone(identifier)) {
+        case ZoneCreated => Success(identifier)
+        case ZoneCreationError => Failure(new IllegalArgumentException("zone not found"))
+      }
+
+    case DeleteZone(zoneName) =>
+      createRequest(RemoveZone(identifier)) {
+        case ZoneRemoved => Success(identifier)
+        case NoZone => Failure(new IllegalArgumentException("zone not found"))
+      }
+
+    case GetZones() => {
+
+    }
+
+    case AssignEntity(zoneName, entityId) =>
       /* (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]] flatMap {
          case None => Future.failed(new Exception("no entity"))
          case Some((entityRef, registeredEntity)) => (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]] map {
@@ -40,7 +55,7 @@ private[server] class GreenHouseController extends Actor with ActorLogging {
         _ <- zoneOption.get ? AssignEntity(entity.get._1, entity.get._2)
       } yield sender ! AssignOk
 
-    case Dissociate(idEntity, zone) =>
+    case DissociateEntity(entityId) =>
       for {
         entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
         zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
@@ -48,18 +63,11 @@ private[server] class GreenHouseController extends Actor with ActorLogging {
         _ <- zoneOption.get ? DeAssignEntity(entity.get._1)
       } yield sender ! AssignOk
 
+    case RemoveEntity(entityId) => {
 
-    case CreateZone(identifier: String) =>
-      createRequest(CreateZone(identifier)) {
-        case ZoneCreated => Success(identifier)
-        case ZoneCreationError => Failure(new IllegalArgumentException("zone not found"))
-      }
+    }
 
-    case RemoveZone(identifier: String) =>
-      createRequest(RemoveZone(identifier)) {
-        case ZoneRemoved => Success(identifier)
-        case NoZone => Failure(new IllegalArgumentException("zone not found"))
-      }
+
   }
 
   private def createRequest(msg: => Any)(responseTransform: Any => Try[Any]) : Unit = {
