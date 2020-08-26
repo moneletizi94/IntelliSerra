@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.core
 
 import it.unibo.intelliserra.core.entity.{ActingCapability, Capability, SensingCapability}
 
-sealed trait RegisteredEntity{
+sealed trait RegisteredEntity {
   def identifier : String
   def capabilities : Capability
 }

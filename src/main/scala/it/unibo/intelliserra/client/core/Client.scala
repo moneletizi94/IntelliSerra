@@ -1,13 +1,12 @@
 package it.unibo.intelliserra.client.core
 
-import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, ActorSystem, Address, Props, Stash}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.pattern.{ask, pipe}
+import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
 import it.unibo.intelliserra.common.communication.Protocol._
 
-import scala.util.{Failure, Success}
-
-sealed trait ServerResponse[+T]
-case class SuccessResponse[T](content: T) extends ServerResponse[T]
-case class FailResponse(ex: Exception) extends ServerResponse[Nothing]
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 private[core] object Client {
 
@@ -19,48 +18,37 @@ private[core] object Client {
    */
   def apply(serverUri: String)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf Props(new ClientImpl(serverUri))
 
-  private[core] class ClientImpl(serverUri: String) extends Actor with Stash with ActorLogging {
+  private[core] class ClientImpl(serverUri: String) extends Actor
+    with DefaultTimeout
+    with DefaultExecutionContext
+    with ActorLogging {
 
     private val serverActor = context actorSelection serverUri
 
     private def handleRequest: Receive = {
       case CreateZone(zone) =>
-        waitResponse(sender)
-        serverActor ! CreateZone(zone)
+        /*doRequest(CreateZone(zone)) {
+          case ZoneCreated => Success(zone)
+          case ZoneCreationError => Failure(new IllegalStateException("fail during zone creation"))
+        }*/
 
-      case RemoveZone(zone) =>
-        waitResponse(sender)
-        serverActor ! RemoveZone(zone)
+      case DeleteZone(zone) =>
+        /*doRequest(RemoveZone(zone)) {
+          case ZoneRemoved => Success(zone)
+          case NoZone => Failure(new IllegalArgumentException("zone not found"))
+        }*/
 
       case GetZones =>
-        waitResponse(sender)
-        serverActor ! GetZones
+        //doRequest(GetZones) { case ZoneResu(zones) => Success(zones) }
 
       case msg => log.debug(s"ignored unknown request $msg")
     }
 
-    // TODO: refactor using a common request-response protocol
-    private def waitResponseBehaviour(replyTo: ActorRef): Receive = {
-      case ZoneCreationError =>
-        replyTo ! Failure(new IllegalStateException("fail during zone creation"))
 
-      case NoZone =>
-        replyTo ! Failure(new IllegalArgumentException("zone not found"))
-
-      case ZoneCreated =>
-        replyTo ! Success(ZoneCreated)
-
-      case ZoneRemoved =>
-        replyTo ! Success(ZoneRemoved)
-
-      case Zones(zones) =>
-        replyTo ! Success(zones)
+    private def doRequest(msg: => Any)(responseTransform: Any => Try[Any]): Unit = {
+      serverActor ? msg flatMap { msg => Future.fromTry(responseTransform(msg)) } pipeTo sender()
     }
 
     override def receive: Receive = handleRequest
-
-    private def waitResponse(replyTo: ActorRef): Unit = {
-      context.become(waitResponseBehaviour(replyTo).andThen(_ => context.become(handleRequest)))
-    }
   }
 }

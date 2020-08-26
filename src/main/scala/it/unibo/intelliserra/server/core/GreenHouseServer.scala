@@ -64,7 +64,7 @@ object GreenHouseServer {
 
     override def start(): Future[Unit] =
       (serverActor ? Start)
-        .asInstanceOf[Future[ServerResponse]]
+        .mapTo[ServerResponse]
         .flatMap {
           case Started => Future.unit
           case ServerError(error) => Future.failed(error)

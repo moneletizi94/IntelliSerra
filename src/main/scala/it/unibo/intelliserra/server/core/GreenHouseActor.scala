@@ -3,7 +3,9 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import it.unibo.intelliserra.common.communication.Protocol._
+
+import it.unibo.intelliserra.common.communication.Messages
+import it.unibo.intelliserra.common.communication.Protocol.{CreateZone, DeleteZone, GetZones}
 import it.unibo.intelliserra.server.EntityManagerActor
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
@@ -59,9 +61,9 @@ private[core] class GreenHouseActor extends Actor {
   }
 
   def routeZoneHandling: Receive = {
-    case CreateZone(zoneName) => zoneManagerActor ? CreateZone(zoneName) pipeTo sender()
-    case RemoveZone(zoneName) => zoneManagerActor ? RemoveZone(zoneName) pipeTo sender()
-    case GetZones => zoneManagerActor ? GetZones pipeTo sender()
+    case CreateZone(zoneName) => zoneManagerActor ? Messages.CreateZone(zoneName) pipeTo sender()
+    case DeleteZone(zoneName) => zoneManagerActor ? Messages.RemoveZone(zoneName) pipeTo sender()
+    case GetZones() => zoneManagerActor ? Messages.GetZones pipeTo sender()
   }
 
   override def receive: Receive = idle

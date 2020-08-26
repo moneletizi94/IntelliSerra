@@ -2,6 +2,7 @@ package it.unibo.intelliserra.server
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
+import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinRequest, JoinSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.common.communication.Protocol._

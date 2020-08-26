@@ -1,45 +1,28 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Protocol._
 import akka.util.Timeout
-import it.unibo.intelliserra.common.communication._
+import it.unibo.intelliserra.common.communication.Messages.{Ack, AddEntity, AssociateToMe, DeleteEntity, DestroyYourself, DissociateFromMe}
 import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
 import it.unibo.intelliserra.core.sensor.Measure
-import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredEntity, RegisteredSensor}
-
-import scala.concurrent.duration._
-import akka.pattern.ask
-import akka.pattern.pipe
-import it.unibo.intelliserra.core.entity.{ActingCapability, Capability, SensingCapability}
+import it.unibo.intelliserra.server.core.RegisteredEntity
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.concurrent.duration._
 
 private[zone] class ZoneActor extends Actor with ActorLogging {
 
   //var List[Aggregator] = Aggregators
   private[zone] var sensorsValue : Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities : Map[ActorRef, Capability] = Map()
+  private[zone] var associatedEntities : Map[ActorRef, RegisteredEntity] = Map()
   private[zone] var actuatorsState : Map[ActorRef, OperationalState] = Map()
-
-  implicit val timeout : Timeout = Timeout(5 seconds)
-  implicit val ec: ExecutionContext = context.dispatcher
-  // TODO: do BaseActor 
 
   override def receive: Receive = {
     case DestroyYourself =>
       associatedEntities.keySet.foreach(entity => entity ! DissociateFromMe(self))
       context stop self
-    case AssignEntity(sensorRef, sensor: RegisteredEntity) =>
-      sensorRef ? AssociateToMe(self) map { case Ack => GetEntityInfo(sender() , sensorRef, sensor)} pipeTo self
-    case IsEntityAssociated(entityRef) =>
-      sender ! associatedEntities.keySet.find(associatedEntity => associatedEntity == entityRef)
-                                .map(entityRef => Some(entityRef))
-    case DeAssignEntity(entityRef: ActorRef) => entityRef ! DissociateFromMe(self)
-    case GetEntityInfo(replyTo, sensorRef, registeredSensor) =>
-      associatedEntities += (sensorRef -> registeredSensor.capabilities)
-      replyTo ! AssignOk
+    case AddEntity(entity, entityRef) => associatedEntities += (entityRef -> entity.capabilities)
+    case DeleteEntity(entity, entityRef: ActorRef) => associatedEntities -= entityRef // TODO: entity is required?
     case Tick =>
       /*sensorsValue.values.groupBy(measure => (measure.category, measure))
                           .map({case (category, measures) => state = (category, /*aggregators.aggregate(measures)*/measures)})*/
@@ -49,8 +32,6 @@ private[zone] class ZoneActor extends Actor with ActorLogging {
                           //.flatMap()*/
   }
 
-
-  private case class GetEntityInfo(replyTo : ActorRef, sensorRef : ActorRef, sensor: RegisteredEntity)
   private case object Tick
   private case class DoActions(actions : Set[Action])
 }
