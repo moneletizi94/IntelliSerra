@@ -27,19 +27,19 @@ private[core] object Client {
 
     private def handleRequest: Receive = {
       case CreateZone(zone) =>
-        doRequest(CreateZone(zone)) {
+        /*doRequest(CreateZone(zone)) {
           case ZoneCreated => Success(zone)
           case ZoneCreationError => Failure(new IllegalStateException("fail during zone creation"))
-        }
+        }*/
 
-      case RemoveZone(zone) =>
-        doRequest(RemoveZone(zone)) {
+      case DeleteZone(zone) =>
+        /*doRequest(RemoveZone(zone)) {
           case ZoneRemoved => Success(zone)
           case NoZone => Failure(new IllegalArgumentException("zone not found"))
-        }
+        }*/
 
       case GetZones =>
-        doRequest(GetZones) { case Zones(zones) => Success(zones) }
+        //doRequest(GetZones) { case ZoneResu(zones) => Success(zones) }
 
       case msg => log.debug(s"ignored unknown request $msg")
     }

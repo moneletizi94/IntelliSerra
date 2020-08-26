@@ -5,7 +5,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.common.communication.Protocol.{CreateZone, DeleteZone, GetZones}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,9 +37,9 @@ object GreenHouseClient {
 
     override def createZone(zone: Zone): Future[Zone] = (client ? CreateZone(zone)).mapTo[Zone]
 
-    override def removeZone(zone: Zone): Future[Zone] = (client ? RemoveZone(zone)).mapTo[Zone]
+    override def removeZone(zone: Zone): Future[Zone] = (client ? DeleteZone(zone)).mapTo[Zone]
 
-    override def zones(): Future[List[Zone]] = (client ? GetZones).mapTo[List[String]]
+    override def zones(): Future[List[Zone]] = (client ? GetZones()).mapTo[List[String]]
   }
 
 }

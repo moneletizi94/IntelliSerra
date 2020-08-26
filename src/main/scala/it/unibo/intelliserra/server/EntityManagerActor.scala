@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredEntity, RegisteredSensor}
 
 private[server] class EntityManagerActor extends Actor{
@@ -15,8 +15,8 @@ private[server] class EntityManagerActor extends Actor{
     case JoinActuator(identifier, capabilities, actuatorRef) =>
       addEntityAndSendResponse(RegisteredActuator(identifier, capabilities), actuatorRef, sender)
 
-    case EntityExists(identifier) =>
-      sender ! entities.find(p => p._1.identifier == identifier).map(p => Entity(p._1, p._2))
+    case GetEntity(identifier) =>
+      sender ! entities.find(p => p._1.identifier == identifier).map(p => EntityResult(p))
   }
 
   private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[Map[RegisteredEntity, ActorRef]] = {
