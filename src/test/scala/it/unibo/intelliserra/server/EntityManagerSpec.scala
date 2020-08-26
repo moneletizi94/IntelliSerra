@@ -3,10 +3,8 @@ package it.unibo.intelliserra.server
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinRequest, JoinSensor}
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
-import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredSensor}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -62,7 +60,7 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
   "An Entity Manager just created " should  {
     "have no entities" in {
-      entityManager.underlyingActor.entities shouldBe Map()
+      entityManager.underlyingActor.entities shouldBe List()
     }
   }
 
@@ -71,10 +69,10 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
     expectMsg(JoinOK)
     joinRequestMessage match {
       case JoinSensor(identifier, sensingCapability, sensorRef) => {
-        entityManager.underlyingActor.entities shouldBe Map(RegisteredSensor(identifier, sensingCapability) -> sensorRef)
+        entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef))
       }
       case JoinActuator(identifier, actingCapability, actuatorRef) => {
-        entityManager.underlyingActor.entities shouldBe Map(RegisteredActuator(identifier, actingCapability) -> actuatorRef)
+        entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef))
       }
     }
   }
