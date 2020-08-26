@@ -14,15 +14,12 @@ private[zone] class ZoneActor extends Actor with ActorLogging {
 
   //var List[Aggregator] = Aggregators
   private[zone] var sensorsValue : Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities : Map[ActorRef, EntityChannel] = Map()
+  private[zone] var associatedEntities : Set[EntityChannel] = Set()
   private[zone] var actuatorsState : Map[ActorRef, OperationalState] = Map()
 
   override def receive: Receive = {
-    case DestroyYourself =>
-      associatedEntities.keySet.foreach(entity => entity ! DissociateFromMe(self))
-      context stop self
-    case AddEntity(entityChannel) => //associatedEntities += (entityRef -> entity.capabilities)
-    case DeleteEntity(entityChannel) => //associatedEntities -= entityChannel. // TODO: entity is required?
+    case AddEntity(entityChannel) => associatedEntities += entityChannel
+    case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case Tick =>
       /*sensorsValue.values.groupBy(measure => (measure.category, measure))
                           .map({case (category, measures) => state = (category, /*aggregators.aggregate(measures)*/measures)})*/
