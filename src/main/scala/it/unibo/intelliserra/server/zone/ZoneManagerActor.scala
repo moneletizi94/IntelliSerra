@@ -20,7 +20,7 @@ POST /zones
 PUT /zones/{id} => { entity: "bibo" }
 DELETE /zones/{id}
  */
-private[zone] class ZoneManagerActor(val entityManager: ActorRef) extends Actor with ActorLogging with Stash {
+private[zone] class ZoneManagerActor extends Actor with ActorLogging with Stash {
 
   var zones: Map[String, ActorRef] = Map()
   implicit val system: ActorSystem = context.system
@@ -60,5 +60,5 @@ private[zone] class ZoneManagerActor(val entityManager: ActorRef) extends Actor 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor], name)
+  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor](), name)
 }

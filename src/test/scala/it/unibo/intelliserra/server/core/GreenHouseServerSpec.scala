@@ -28,10 +28,7 @@ class GreenHouseServerSpec extends WordSpecLike
   "Green house server facade " should {
 
     "allow to start server with success" in {
-      Try(awaitReady(server.start())) match {
-        case Failure(exception) => fail(exception)
-        case Success(_) => succeed
-      }
+      awaitReady(server.start())
     }
 
     "raise IllegalStateException when start is called on already running instance" in {

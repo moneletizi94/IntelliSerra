@@ -7,7 +7,7 @@ import it.unibo.intelliserra.common.communication.Protocol._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-
+/*
 @RunWith(classOf[JUnitRunner])
 class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   with ImplicitSender
@@ -108,4 +108,4 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     TestKit.shutdownActorSystem(system)
   }
 }
-
+*/
