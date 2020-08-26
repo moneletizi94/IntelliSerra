@@ -1,17 +1,13 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.DestroyYourself
+import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.core.entity.SensingCapability
-import it.unibo.intelliserra.core.sensor.Category
-import it.unibo.intelliserra.server.EntityManagerActor
-import it.unibo.intelliserra.server.core.RegisteredSensor
-import it.unibo.intelliserra.utils.TestUtility
 
 @RunWith(classOf[JUnitRunner])
 class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
