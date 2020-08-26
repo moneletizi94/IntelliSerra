@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import it.unibo.intelliserra.common.communication.Messages.{RemoveZone, ZoneCreated}
+import it.unibo.intelliserra.common.communication.Messages.{RemoveZone, ZoneCreated, ZoneRemoved}
 import it.unibo.intelliserra.common.communication.Protocol._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
