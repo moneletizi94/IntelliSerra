@@ -48,6 +48,7 @@ object Messages {
   case object AssignOk extends ZoneManagerResponse // From ZoneManager to GH
   case object DissociateOk extends ZoneManagerResponse // From ZoneManager to GH
   case class AssignError(error: String) extends ZoneManagerResponse
+  case object AlreadyDissociated extends ZoneManagerResponse
 
   // Zone Protocol (From ZoneManager to Zone)
   sealed trait ZoneRequest

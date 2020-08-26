@@ -1,102 +1,84 @@
 package it.unibo.intelliserra.server
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import akka.pattern.{ask, pipe}
+import akka.pattern.ask
 import akka.util.Timeout
+import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.server.core.RegisteredEntity
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
 
 private[server] class GreenHouseController extends Actor with ActorLogging {
 
   private implicit val system: ActorSystem = context.system
   private implicit val timeout: Timeout = Timeout(5 seconds)
-  private var zoneManagerActor: ActorRef = ZoneManagerActor()
-  private var entityManagerActor: ActorRef = EntityManagerActor()
-
-  override def receive: Receive = receiveEntityRequest
-
+  private val zoneManagerActor: ActorRef = ZoneManagerActor()
+  private val entityManagerActor: ActorRef = EntityManagerActor()
   implicit val ec: ExecutionContext = context.dispatcher
 
-  def receiveEntityRequest: Receive = {
+  override def receive: Receive = {
 
     case CreateZone(zoneName) =>
-      createRequest(CreateZone(identifier)) {
-        case ZoneCreated => Success(identifier)
-        case ZoneCreationError => Failure(new IllegalArgumentException("zone not found"))
+      zoneManagerActor ? Messages.CreateZone(zoneName) flatMap {
+        case Messages.ZoneCreated => Future.successful(sender ! Created)
+        case Messages.ZoneAlreadyExists => Future.successful(sender ! Conflict)
+      }
+      /*case CreateZone(zoneName) =>
+      createRequest(Messages.CreateZone(zoneName)){
+        case Messages.ZoneCreated => Success(sender ! Created )
+        case Messages.ZoneAlreadyExists => Success(sender ! Conflict)
+      }*/
+      zoneManagerActor ? Messages.CreateZone(zoneName) flatMap {
+        case Messages.ZoneCreated => Future.successful(sender ! Created)
+        case Messages.ZoneAlreadyExists => Future.successful(sender ! Conflict)
       }
 
     case DeleteZone(zoneName) =>
-      createRequest(RemoveZone(identifier)) {
-        case ZoneRemoved => Success(identifier)
-        case NoZone => Failure(new IllegalArgumentException("zone not found"))
+      zoneManagerActor ? Messages.RemoveZone(zoneName) flatMap {
+        case Messages.ZoneRemoved => Future.successful(sender ! Deleted)
+        case Messages.ZoneNotFound => Future.successful(sender ! NotFound)
       }
 
-    case GetZones() => {
-
+    case GetZones() => zoneManagerActor ? Messages.GetZones flatMap {
+      case Messages.ZonesResult(zones) =>
+        if (zones.nonEmpty) Future.successful(sender ! ServiceResponse(Ok, zones)) else Future.successful(sender ! ServiceResponse(NotFound, "No zones!"))
     }
 
     case AssignEntity(zoneName, entityId) =>
-      /* (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]] flatMap {
-         case None => Future.failed(new Exception("no entity"))
-         case Some((entityRef, registeredEntity)) => (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]] map {
-           case Some(value) => (value ? AssignSensor(entityRef, registeredEntity)).asInstanceOf[Future[ZoneResponse]] pipeTo sender()
-           case None => Future.failed(new Exception("no"))
-
-      }*/
-      for {
+      (entityManagerActor ? Messages.GetEntity(entityId)) flatMap {
+        case Messages.EntityResult(entity) => zoneManagerActor ? Messages.AssignEntityToZone(zoneName, entity) flatMap {
+          case Messages.ZoneNotFound => Future.successful(sender ! NotFound)
+          case Messages.AlreadyAssigned(zone) => Future.successful(sender ! ServiceResponse(Conflict, zone))
+          case Messages.AssignOk => Future.successful(sender ! Ok)
+          case Messages.AssignError(error) => Future.successful(sender ! ServiceResponse(Error, error))
+        }
+        case Messages.EntityNotFound => Future.successful(sender ! NotFound)
+      }
+    /* for {
         entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
         zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
         if zoneOption.isDefined && entity.isDefined
         _ <- zoneOption.get ? AssignEntity(entity.get._1, entity.get._2)
-      } yield sender ! AssignOk
+      } yield sender ! AssignOk*/
 
     case DissociateEntity(entityId) =>
-      for {
-        entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
-        zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
-        if zoneOption.isDefined && entity.isDefined
-        _ <- zoneOption.get ? DeAssignEntity(entity.get._1)
-      } yield sender ! AssignOk
+      (entityManagerActor ? Messages.GetEntity(entityId)) flatMap {
+        case Messages.EntityResult(entity) => zoneManagerActor ? Messages.DissociateEntityFromZone(entity) flatMap {
+          case Messages.DissociateOk => Future.successful(sender ! Ok)
+          case Messages.AlreadyDissociated => Future.successful(sender ! Error)
+        }
+        case Messages.EntityNotFound => Future.successful(sender ! NotFound)
+      }
 
-    case RemoveEntity(entityId) => {
-
+    case RemoveEntity(entityId) => entityManagerActor ? Messages.RemoveEntity(entityId) flatMap {
+      case Messages.EntityNotFound => Future.successful(sender ! NotFound)
+      case Messages.EntityRemoved => Future.successful(sender ! Deleted)
     }
-
-
   }
 
-  private def createRequest(msg: => Any)(responseTransform: Any => Try[Any]) : Unit = {
+  /*private def createRequest(msg: => Any)(responseTransform: Any => Try[Any]) : Unit = {
     zoneManagerActor ? msg flatMap{ msg => Future.fromTry(responseTransform(msg)) } pipeTo sender()
-  }
-
-  /*def receiveZoneResponse(sender: ActorRef): Receive = {
-    case ZoneResponse => sender ! ZoneResponse
-  }
-
-  def checked(idEntity: String, zone: String, toSend: (ActorRef, ActorRef, RegisteredEntity) => Unit): Unit = {
-    zoneManagerActor ? ZoneExists(zone)
-    context.become(receiveCheckedZone(idEntity, sender(), toSend))
-  }
-
-  def receiveCheckedZone(idEntity: String, sender: ActorRef, toSend: (ActorRef, ActorRef, RegisteredEntity) => Unit): Receive = {
-    case Zone(zones) =>
-      entityManagerActor ? EntityExists(idEntity)
-      context.become(receiveCheckedEntity(zones, sender, toSend))
-    case NoZone => sender ! NoZone
-  }
-
-  def receiveCheckedEntity(zones: ActorRef, sender: ActorRef, toSend: (ActorRef, ActorRef, RegisteredEntity) => Unit): Receive = {
-    case Entity(actorRef, registeredEntity) =>
-      toSend(zones, actorRef, registeredEntity)
-      context.become(receiveEntityRequest)
-    case NoEntity =>
-      sender ! NoEntity
-      context.become(receiveEntityRequest)
   }*/
 }
 
