@@ -2,8 +2,7 @@ package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.server.core.RegisteredEntity
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
 
 //noinspection ScalaStyle
 object Messages {
@@ -20,7 +19,7 @@ object Messages {
   sealed trait EntityManagerResponse
   sealed trait JoinResponse extends EntityManagerResponse
   case object JoinOK extends JoinResponse
-  case class EntityResult(entity: (RegisteredEntity, ActorRef)) extends EntityManagerResponse
+  case class EntityResult(entity: EntityChannel) extends EntityManagerResponse
   case object EntityNotFound extends EntityManagerResponse
   case object EntityRemoved extends EntityManagerResponse
   case class JoinError(error: String) extends JoinResponse
@@ -33,8 +32,8 @@ object Messages {
   case class RemoveZone(zoneName: String) extends ZoneManagerRequest
   //GH asks for all the zones in the ZoneManager
   case object GetZones extends ZoneManagerRequest
-  case class AssignEntityToZone(zoneName: String, entity: RegisteredEntity, entityRef: ActorRef) extends ZoneManagerRequest
-  case class DissociateEntityFromZone(entity: RegisteredEntity, entityRef: ActorRef) extends ZoneManagerRequest
+  case class AssignEntityToZone(zoneName: String, entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class DissociateEntityFromZone(entityChannel: EntityChannel) extends ZoneManagerRequest
 
   sealed trait ZoneManagerResponse
   case object ZoneCreated extends ZoneManagerResponse
@@ -52,8 +51,8 @@ object Messages {
 
   // Zone Protocol (From ZoneManager to Zone)
   sealed trait ZoneRequest
-  case class AddEntity(entity: RegisteredEntity, entityRef: ActorRef) extends ZoneRequest
-  case class DeleteEntity(entity: RegisteredEntity, entityRef: ActorRef) extends ZoneRequest
+  case class AddEntity(entityChannel: EntityChannel) extends ZoneRequest
+  case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
   case object GetState extends ZoneRequest
   case class DoActions(actions: Set[Action]) extends ZoneRequest
 
