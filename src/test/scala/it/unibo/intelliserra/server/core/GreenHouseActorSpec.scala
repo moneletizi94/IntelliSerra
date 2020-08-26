@@ -1,9 +1,8 @@
 package it.unibo.intelliserra.server.core
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
