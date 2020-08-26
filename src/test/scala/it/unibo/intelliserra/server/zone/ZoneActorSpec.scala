@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.DestroyYourself
+import it.unibo.intelliserra.common.communication.Protocol.DestroyYourself
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith

@@ -40,7 +40,6 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging with Stash 
 
   private def waitForZoneDead(replyTo: ActorRef, identifier: String): Receive = {
     case Terminated(_) =>
-      //TODO devo controllare se la zoneRef che mi arriva in terminated è una che è contenuta nella mia mappa?
       zones = zones - identifier
       context.become(idle)
       unstashAll()
