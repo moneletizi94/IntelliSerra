@@ -49,7 +49,7 @@ class ClientSpec extends WordSpecLike
 
     "fail to create zone if already exist" in {
       awaitResult(client.createZone(ZoneName)) shouldBe ZoneName
-      assertThrows[IllegalStateException] {
+      assertThrows[IllegalArgumentException] {
         awaitResult(client.createZone(ZoneName))
       }
     }
