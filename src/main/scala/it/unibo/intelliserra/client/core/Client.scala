@@ -10,6 +10,8 @@ import scala.util.{Failure, Success, Try}
 
 private[core] object Client {
 
+  type ServiceResponseMap[T] = PartialFunction[ServiceResponse, Try[T]]
+
   /**
    * Create a client using akka actor
    * @param serverUri   the uri of server actor
@@ -27,26 +29,36 @@ private[core] object Client {
 
     private def handleRequest: Receive = {
       case CreateZone(zone) =>
-        /*doRequest(CreateZone(zone)) {
-          case ZoneCreated => Success(zone)
-          case ZoneCreationError => Failure(new IllegalStateException("fail during zone creation"))
-        }*/
+        makeRequestWithFallback(CreateZone(zone)) {
+          case ServiceResponse(Created, _) => Success(zone)
+          case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
 
       case DeleteZone(zone) =>
-        /*doRequest(RemoveZone(zone)) {
-          case ZoneRemoved => Success(zone)
-          case NoZone => Failure(new IllegalArgumentException("zone not found"))
-        }*/
+        makeRequestWithFallback(DeleteZone(zone)) {
+          case ServiceResponse(Deleted, _) => Success(zone)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
 
-      case GetZones =>
-        //doRequest(GetZones) { case ZoneResu(zones) => Success(zones) }
+      case GetZones() =>
+        makeRequestWithFallback(GetZones()) {
+          case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
+        }
 
       case msg => log.debug(s"ignored unknown request $msg")
     }
 
+    private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
+      makeRequest(request)(function orElse fallback)
+    }
 
-    private def doRequest(msg: => Any)(responseTransform: Any => Try[Any]): Unit = {
-      serverActor ? msg flatMap { msg => Future.fromTry(responseTransform(msg)) } pipeTo sender()
+    private def makeRequest[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
+      (serverActor ? request).mapTo[ServiceResponse] flatMap { response => Future.fromTry(function(response)) } pipeTo sender()
+    }
+
+    private def fallback[T]: ServiceResponseMap[T] = {
+      case ServiceResponse(Error, errMsg) => Failure(new Exception(errMsg.toString))
+      case _ => Failure(new Exception())
     }
 
     override def receive: Receive = handleRequest

@@ -24,7 +24,6 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging with Stash 
   //private var assignedEntity = Map[String, List[RegisteredEntity]]()
 
   private def idle : Receive = {
-    case AssignEntityToZone(identifier, entityChannel) => ???
     case CreateZone(identifier) if zones.contains(identifier) => sender() ! ZoneAlreadyExists
     case CreateZone(identifier) =>
       val zoneActorRef = ZoneActor(identifier)

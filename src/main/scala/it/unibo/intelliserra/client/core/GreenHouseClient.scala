@@ -9,7 +9,7 @@ import it.unibo.intelliserra.common.communication.Protocol.{CreateZone, DeleteZo
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.Try
 
 trait GreenHouseClient extends ZoneClient
 
