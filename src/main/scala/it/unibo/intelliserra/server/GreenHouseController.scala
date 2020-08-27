@@ -20,8 +20,8 @@ private[server] class GreenHouseController extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case CreateZone(zoneName) =>
-      zoneManagerActor ? Messages.CreateZone(zoneName) flatMap {
-        case Messages.ZoneCreated => Future.successful(sender ! Created)
+      zoneManagerActor ? Messages.CreateZone(zoneName) onComplete  {
+        case Messages.ZoneCreated => sender ! Created
         case Messages.ZoneAlreadyExists => Future.successful(sender ! Conflict)
       }
       /*case CreateZone(zoneName) =>

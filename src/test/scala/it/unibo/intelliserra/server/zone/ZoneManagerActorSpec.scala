@@ -15,7 +15,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtili
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll {
-
+/*
   private val zoneIdentifier = "Zone1"
   private val zoneIdentifier2 = "Zone2"
   private val zoneIdentifierNotAdded = "FakeZone"
@@ -118,6 +118,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtili
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
-
+*/
 }
 
