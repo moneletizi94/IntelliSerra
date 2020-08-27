@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
+import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{ZoneAlreadyExists, ZoneCreated, ZoneNotFound, ZoneRemoved, ZonesResult}
 import it.unibo.intelliserra.common.communication.Protocol.{Conflict, CreateZone, Created, DeleteZone, Deleted, Error, GetZones, NotFound, Ok, ServiceResponse}
@@ -40,12 +41,11 @@ private[core] object GreenHouseActor {
   }
 }
 
-private[core] class GreenHouseActor extends Actor {
+private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
 
   type ResponseMap[T] = PartialFunction[Try[T], ServiceResponse]
 
   private implicit val actorSystem: ActorSystem = context.system
-  private implicit val executionContext: ExecutionContextExecutor = context.dispatcher
   private implicit val timeout: Timeout = Timeout(5 seconds)
 
   var zoneManagerActor: ActorRef = _
@@ -68,14 +68,12 @@ private[core] class GreenHouseActor extends Actor {
       sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender) {
         case Success(ZoneCreated) => ServiceResponse(Created)
         case Success(ZoneAlreadyExists) => ServiceResponse(Conflict)
-        case Failure(exception) => ServiceResponse(Error, exception.toString)
       }
 
     case DeleteZone(zoneName) =>
       sendResponseWithFallback(zoneManagerActor ? Messages.RemoveZone(zoneName), sender) {
         case Success(ZoneRemoved) => ServiceResponse(Deleted)
         case Success(ZoneNotFound) => ServiceResponse(NotFound)
-        case Failure(exception) => ServiceResponse(Error, exception.toString)
       }
 
     case GetZones() =>
