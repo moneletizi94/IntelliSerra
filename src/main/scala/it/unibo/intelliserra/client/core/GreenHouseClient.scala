@@ -35,11 +35,11 @@ object GreenHouseClient {
 
     private val client = Client(RemotePath.server(greenHouseName, serverAddress, serverPort))
 
-    override def createZone(zone: Zone): Future[Zone] = (client ? CreateZone(zone)).asInstanceOf[Future[Zone]]
+    override def createZone(zone: Zone): Future[Zone] = (client ? CreateZone(zone)).mapTo[Zone]
 
-    override def removeZone(zone: Zone): Future[Zone] = (client ? DeleteZone(zone)).asInstanceOf[Future[Zone]]
+    override def removeZone(zone: Zone): Future[Zone] = (client ? DeleteZone(zone)).mapTo[Zone]
 
-    override def zones(): Future[List[Zone]] = (client ? GetZones()).asInstanceOf[Future[List[String]]]
+    override def zones(): Future[List[Zone]] = (client ? GetZones()).mapTo[List[String]]
   }
 
 }
