@@ -2,7 +2,6 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Stash, Terminated}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.server.core.RegisteredEntity
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
@@ -54,5 +53,5 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging with Stash 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor], name)
+  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor](), name)
 }

@@ -1,6 +1,6 @@
-package it.unibo.intelliserra.server.core
+package it.unibo.intelliserra.core.entity
 
-import it.unibo.intelliserra.core.entity.{ActingCapability, Capability, SensingCapability}
+import akka.actor.ActorRef
 
 sealed trait RegisteredEntity {
   def identifier : String
@@ -8,3 +8,5 @@ sealed trait RegisteredEntity {
 }
 case class RegisteredActuator(override val identifier: String, override val capabilities : ActingCapability) extends RegisteredEntity
 case class RegisteredSensor(override val identifier: String, override val capabilities: SensingCapability) extends RegisteredEntity
+
+case class EntityChannel(entity: RegisteredEntity, channel: ActorRef)
