@@ -10,6 +10,8 @@ import scala.util.{Failure, Success, Try}
 
 private[core] object Client {
 
+  type ServiceResponseMap[T] = PartialFunction[ServiceResponse, Try[T]]
+
   /**
    * Create a client using akka actor
    * @param serverUri   the uri of server actor
@@ -22,8 +24,6 @@ private[core] object Client {
     with DefaultTimeout
     with DefaultExecutionContext
     with ActorLogging {
-
-    type ServiceResponseMap[T] = PartialFunction[ServiceResponse, Try[T]]
 
     private val serverActor = context actorSelection serverUri
 
