@@ -5,17 +5,19 @@ import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
+import monix.reactive.Observable
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
@@ -40,29 +42,29 @@ private class DeviceDeploySpec extends WordSpecLike
   }
 
   private val sensor:Sensor = new Sensor {
-   override def identifier: String = "sensorID"
-   override def capability: SensingCapability = SensingCapability(Temperature)
-   override def state: Measure = Measure(IntType(0), Temperature)
+    override def identifier: String = "sensorID"
+    override def capability: SensingCapability = SensingCapability(Temperature)
+    override def measures: Observable[Measure] = Observable()
   }
 
   private val sensor2:Sensor = new Sensor {
     override def identifier: String = "sensorID"
     override def capability: SensingCapability = SensingCapability(Humidity)
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def measures: Observable[Measure] = Observable()
   }
 
   private val actuator:Actuator = new Actuator {
     override def identifier: String = "actuatorID"
     override def capability: ActingCapability = ActingCapability(Set(Water))
-    override def state: OperationalState = Idle
-    override def doAction(action: Action): Unit = {}
+    override def state: Observable[OperationalState] = Observable()
+    override def actionHandler: ActionHandler = { case _ => Future.successful(Idle) }
   }
 
   private val actuator2:Actuator = new Actuator {
     override def identifier: String = "actuatorID"
     override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
-    override def state: OperationalState = Idle
-    override def doAction(action: Action): Unit = {}
+    override def state: Observable[OperationalState] = Observable()
+    override def actionHandler: ActionHandler = { case _ => Future.successful(Idle) }
   }
 
   case object Temperature extends Category
