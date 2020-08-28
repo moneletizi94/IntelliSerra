@@ -1,12 +1,5 @@
 package it.unibo.intelliserra.client.core
-
-import it.unibo.intelliserra.common.akka.RemotePath
-import it.unibo.intelliserra.server.core.GreenHouseServer
-import it.unibo.intelliserra.utils.TestUtility
-import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
-import org.scalatestplus.junit.JUnitRunner
-
+/*
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
   with Matchers
@@ -83,4 +76,4 @@ class ClientSpec extends WordSpecLike
     }
   }
 
-}
+}*/

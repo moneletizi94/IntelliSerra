@@ -1,12 +1,13 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity}
+import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
+import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.core.sensor.Measure
 
 private[zone] class ZoneActor extends Actor with ActorLogging {
-  override def receive: Receive = {
-    case _ => "So Fake"
-  }
-/*
+
   //var List[Aggregator] = Aggregators
   private[zone] var sensorsValue : Map[ActorRef, Measure] = Map()
   private[zone] var associatedEntities : Set[EntityChannel] = Set()
@@ -26,7 +27,7 @@ private[zone] class ZoneActor extends Actor with ActorLogging {
 
 
   private case object Tick
-  private case class DoActions(actions : Set[Action])*/
+  private case class DoActions(actions : Set[Action])
 }
 
 object ZoneActor {
