@@ -20,7 +20,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private val zoneIdentifier2 = "Zone2"
   private val zoneIdentifierNotAdded = "FakeZone"
   private val zoneManager: ActorRef = ZoneManagerActor()
-/*
+
   "A zoneManagerActor" must {
     "return an empty list when it hasn't zones" in {
       zoneManager ! GetZones
@@ -106,6 +106,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
-  }*/
+  }
 }
 */
