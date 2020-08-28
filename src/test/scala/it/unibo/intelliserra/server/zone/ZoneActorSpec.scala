@@ -1,8 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorSystem, Props}
-import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.DestroyYourself
+import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -30,7 +29,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
-  "A zoneActor" must {
+  /*"A zoneActor" must {
     "not be reachable after shutdown" in {
       val testProbe = TestProbe()
       testProbe watch zone
@@ -43,7 +42,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     "have no entity associated just created" in {
       zone.underlyingActor.associatedEntities.isEmpty
     }
-  }
+  }*/
 
   "A zoneActor" must {
     "allow you to associate entities that have not been associated with it" in {
