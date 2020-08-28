@@ -3,83 +3,87 @@ package it.unibo.intelliserra.server
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import it.unibo.intelliserra.common.communication.Messages
+import it.unibo.intelliserra.common.communication.{Messages, Protocol}
 import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
-private[server] class GreenHouseController extends Actor with ActorLogging {
+//noinspection ScalaStyle
+private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityManagerActor: ActorRef) extends Actor with ActorLogging {
+  type ResponseMap[T] = PartialFunction[Try[T], ServiceResponse]
 
   private implicit val system: ActorSystem = context.system
   private implicit val timeout: Timeout = Timeout(5 seconds)
-  private val zoneManagerActor: ActorRef = ZoneManagerActor()
-  private val entityManagerActor: ActorRef = EntityManagerActor()
   implicit val ec: ExecutionContext = context.dispatcher
 
-  override def receive: Receive = {
-
-    case CreateZone(zoneName) =>
-      zoneManagerActor ? Messages.CreateZone(zoneName) onComplete  {
-        case Messages.ZoneCreated => sender ! Created
-        case Messages.ZoneAlreadyExists => Future.successful(sender ! Conflict)
-      }
-      /*case CreateZone(zoneName) =>
-      createRequest(Messages.CreateZone(zoneName)){
-        case Messages.ZoneCreated => Success(sender ! Created )
-        case Messages.ZoneAlreadyExists => Success(sender ! Conflict)
-      }*/
-      zoneManagerActor ? Messages.CreateZone(zoneName) flatMap {
-        case Messages.ZoneCreated => Future.successful(sender ! Created)
-        case Messages.ZoneAlreadyExists => Future.successful(sender ! Conflict)
-      }
-
-    case DeleteZone(zoneName) =>
-      zoneManagerActor ? Messages.RemoveZone(zoneName) flatMap {
-        case Messages.ZoneRemoved => Future.successful(sender ! Deleted)
-        case Messages.ZoneNotFound => Future.successful(sender ! NotFound)
-      }
-
-    case GetZones() => zoneManagerActor ? Messages.GetZones flatMap {
-      case Messages.ZonesResult(zones) =>
-        if (zones.nonEmpty) Future.successful(sender ! ServiceResponse(Ok, zones)) else Future.successful(sender ! ServiceResponse(NotFound, "No zones!"))
-    }
-
-    case AssignEntity(zoneName, entityId) =>
-      (entityManagerActor ? Messages.GetEntity(entityId)) flatMap {
-        case Messages.EntityResult(entity) => zoneManagerActor ? Messages.AssignEntityToZone(zoneName, entity) flatMap {
-          case Messages.ZoneNotFound => Future.successful(sender ! NotFound)
-          case Messages.AlreadyAssigned(zone) => Future.successful(sender ! ServiceResponse(Conflict, zone))
-          case Messages.AssignOk => Future.successful(sender ! Ok)
-          case Messages.AssignError(error) => Future.successful(sender ! ServiceResponse(Error, error))
-        }
-        case Messages.EntityNotFound => Future.successful(sender ! NotFound)
-      }
-    /* for {
-        entity <- (entityManagerActor ? EntityExists(idEntity)).asInstanceOf[Future[Option[(ActorRef, RegisteredEntity)]]]
-        zoneOption <- (zoneManagerActor ? ZoneExists(zone)).asInstanceOf[Future[Option[ActorRef]]]
-        if zoneOption.isDefined && entity.isDefined
-        _ <- zoneOption.get ? AssignEntity(entity.get._1, entity.get._2)
-      } yield sender ! AssignOk*/
-
-    case DissociateEntity(entityId) =>
-      (entityManagerActor ? Messages.GetEntity(entityId)) flatMap {
-        case Messages.EntityResult(entity) => zoneManagerActor ? Messages.DissociateEntityFromZone(entity) flatMap {
-          case Messages.DissociateOk => Future.successful(sender ! Ok)
-          case Messages.AlreadyDissociated => Future.successful(sender ! Error)
-        }
-        case Messages.EntityNotFound => Future.successful(sender ! NotFound)
-      }
-
-    case RemoveEntity(entityId) => entityManagerActor ? Messages.RemoveEntity(entityId) flatMap {
-      case Messages.EntityNotFound => Future.successful(sender ! NotFound)
-      case Messages.EntityRemoved => Future.successful(sender ! Deleted)
+  private def sendResponseWithFallback[T](request: Future[T], replyTo: ActorRef)(mapSend: ResponseMap[T]): Unit = {
+    request onComplete {
+      sendResponseWithFallback(replyTo)(mapSend)
     }
   }
 
-  /*private def createRequest(msg: => Any)(responseTransform: Any => Try[Any]) : Unit = {
-    zoneManagerActor ? msg flatMap{ msg => Future.fromTry(responseTransform(msg)) } pipeTo sender()
-  }*/
+  private def sendResponse[T](replyTo: ActorRef)(mapSend: ResponseMap[T]): Try[T] => Unit = replyTo ! mapSend(_)
+
+  private def sendResponseWithFallback[T](replyTo: ActorRef)(mapSend: ResponseMap[T]): Try[T] => Unit = sendResponse(replyTo)(mapSend orElse fallback)
+
+  private def fallback[T]: ResponseMap[T] = {
+    case Failure(exception) => ServiceResponse(Error, exception.toString)
+    case _ => ServiceResponse(Error, "Internal Error")
+  }
+
+  override def receive: Receive = {
+
+    case Protocol.CreateZone(zoneName) =>
+      sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender()) {
+        case Success(Messages.ZoneCreated) => ServiceResponse(Created)
+        case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict)
+      }
+
+    case DeleteZone(zoneName) =>
+      sendResponseWithFallback(zoneManagerActor ? Messages.RemoveZone(zoneName), sender()) {
+        case Success(Messages.ZoneRemoved) => ServiceResponse(Deleted)
+        case Success(Messages.ZoneNotFound) => ServiceResponse(NotFound, "Zone not found")
+      }
+
+    case GetZones() =>
+      sendResponseWithFallback(zoneManagerActor ? Messages.GetZones, sender()) {
+        case Success(Messages.ZonesResult(zones)) =>
+          if (zones.nonEmpty) ServiceResponse(Ok, zones) else ServiceResponse(NotFound, "No zones!")
+      }
+
+    case AssignEntity(zoneName, entityId) =>
+      val association =
+        entityManagerActor ? Messages.GetEntity(entityId) flatMap {
+          case Messages.EntityResult(entity) =>
+            zoneManagerActor ? Messages.AssignEntityToZone(zoneName, entity)
+        }
+      sendResponseWithFallback(association, sender()) {
+        case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
+        case Success(Messages.ZoneNotFound) => ServiceResponse(NotFound, "Zone not found")
+        case Success(Messages.AlreadyAssigned(zone)) => ServiceResponse(Conflict, zone)
+        case Success(Messages.AssignOk) => ServiceResponse(Ok)
+        case Success(Messages.AssignError(error)) => ServiceResponse(Error, error)
+      }
+
+    case DissociateEntity(entityId) =>
+      val association =
+        entityManagerActor ? Messages.GetEntity(entityId) flatMap {
+          case Messages.EntityResult(entity) =>
+            zoneManagerActor ? Messages.DissociateEntityFromZone(entity)
+        }
+      sendResponseWithFallback(association, sender()) {
+        case Success(Messages.DissociateOk) => ServiceResponse(Ok)
+        case Success(Messages.AlreadyDissociated) => ServiceResponse(Error)
+        case Success(Messages.EntityNotFound) => ServiceResponse(NotFound)
+      }
+
+    case RemoveEntity(entityId) =>
+      sendResponseWithFallback(entityManagerActor ? Messages.RemoveEntity(entityId), sender()) {
+        case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
+        case Success(Messages.EntityRemoved) => ServiceResponse(Deleted)
+      }
+  }
 }
 
 object GreenHouseController {
