@@ -10,7 +10,7 @@ private[core] trait EntityActor extends Actor
 
   //noinspection ActorMutableStateInspection
   private var _zone: Option[ActorRef] = None
-  protected def zone: Option[ActorRef] = _zone
+  protected[core] def zone: Option[ActorRef] = _zone
 
   def zoneManagement: Receive = {
     case AssociateToMe(zoneRef) => _zone = Option(zoneRef); sendToZone(Ack)

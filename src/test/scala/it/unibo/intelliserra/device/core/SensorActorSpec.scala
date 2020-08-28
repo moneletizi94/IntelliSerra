@@ -1,8 +1,8 @@
-package it.unibo.intelliserra.device
+package it.unibo.intelliserra.device.core
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateToMe}
+import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateToMe, DissociateFromMe}
 import it.unibo.intelliserra.core.entity.SensingCapability
 import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
 import it.unibo.intelliserra.device.core.sensor.SensorActor
@@ -22,6 +22,7 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
   with TestUtility {
 
   private var sensorActor: TestActorRef[SensorActor] = _
+  private var zoneManagerProbe: TestProbe = _
 
   private val mockSensor = new Sensor {
     case object Temperature extends Category
@@ -32,6 +33,7 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
 
   before {
     sensorActor = TestActorRef.create(system, Props(new SensorActor(mockSensor)))
+    zoneManagerProbe = TestProbe()
   }
 
   after {
@@ -39,11 +41,15 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
   }
 
   "A sensor actor " must {
-    "send an ack when is associated" in {
-      val zoneManagerProbe = TestProbe()
+    "send an ack to confirm association" in {
       sensorActor ! AssociateToMe(zoneManagerProbe.ref)
       zoneManagerProbe.expectMsg(Ack)
+      sensorActor.underlyingActor.zone.contains(zoneManagerProbe.ref)
+    }
+
+    "dissociate from a zone" in {
+      sensorActor ! DissociateFromMe(zoneManagerProbe.ref)
+      sensorActor.underlyingActor.zone.isEmpty shouldBe true
     }
   }
-
 }
