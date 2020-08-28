@@ -1,14 +1,10 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import akka.util.Timeout
-import it.unibo.intelliserra.common.communication.Messages.{Ack, AddEntity, AssociateToMe, DeleteEntity, DestroyYourself, DissociateFromMe}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity}
 import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.Measure
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 private[zone] class ZoneActor extends Actor with ActorLogging {
 

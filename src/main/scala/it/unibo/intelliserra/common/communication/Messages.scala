@@ -57,21 +57,11 @@ object Messages {
   case object GetState extends ZoneRequest
   case class DoActions(actions: Set[Action]) extends ZoneRequest
 
-  sealed trait ZoneResponse
-  case object EntityAssigned extends ZoneResponse
-  case object EntityDissociated extends ZoneResponse
+  sealed trait EntityRequest
+  case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
+  case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
 
-  /* --- From Zone to Sensor/ Actuator --- */
-  case class DissociateFromMe(zoneRef: ActorRef)
-
-  /* --- From Zone to Sensor/ Actuator --- */
-  case class AssociateToMe(zoneRef: ActorRef)
-
-  /** --- From Sensor/Actuator to ZoneActor*/
+  /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
 
-  /* --- From ZoneManager to Zone --- */
-  // Used when a client wants to remove a zone,
-  // the zone will not be reachable anymore. It should inform its sensor/actuator
-  case object DestroyYourself
 }

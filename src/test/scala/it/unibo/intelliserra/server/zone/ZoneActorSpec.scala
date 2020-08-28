@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DestroyYourself, RemoveEntity}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
