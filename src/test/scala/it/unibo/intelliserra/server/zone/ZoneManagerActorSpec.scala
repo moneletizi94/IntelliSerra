@@ -97,11 +97,12 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
   "A zoneManagerActor" must {
     "kill a zoneActor when removing a zone" in {
+      val probe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
       val zoneRef: ActorRef = zoneManager.underlyingActor.zones(zoneIdentifier)
-      this watch zoneRef
+      probe watch zoneRef
       deleteZonesAndExpectMsg(zoneIdentifier)
-      expectMsgType[Terminated]
+      probe.expectMsgType[Terminated]
     }
   }
   "A zoneManagerActor" must {
