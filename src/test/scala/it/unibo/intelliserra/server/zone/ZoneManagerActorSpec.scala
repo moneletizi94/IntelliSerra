@@ -90,7 +90,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
   }
   "A zoneManagerActor" must {
-    "refuse to delete an unexisting zone when requested" in {
+    "refuse to delete a nonexistent zone when requested" in {
       zoneManager ! RemoveZone(zoneIdentifierNotAdded)
       expectMsg(ZoneNotFound)
     }
@@ -186,14 +186,17 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
   "A zoneManagerActor" must {
     "dissociate an associated entity which was in pending and inform it" in {
-      val entityProbe = TestProbe()
+      val entityProbeToDissociate = TestProbe()
+      val entityProbeNotToDissociate = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
-      val entityChannel = informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier)
+      val entityChannel = informAndExpectMsgOnAssign(zoneManager, entityProbeToDissociate, zoneIdentifier)
+      val entityChannelNotToDissociate = informAndExpectMsgOnAssign(zoneManager, entityProbeNotToDissociate, zoneIdentifier)
       zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe true
       zoneManager ! DissociateEntityFromZone(entityChannel)
       expectMsg(DissociateOk)
-      entityProbe.expectMsgType[DissociateFrom]
-      zoneManager.underlyingActor.pending.contains(zoneIdentifier) shouldBe false
+      entityProbeToDissociate.expectMsgType[DissociateFrom]
+      zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannelNotToDissociate) shouldBe true
+      zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe false
     }
   }
   "A zoneManagerActor" must {
