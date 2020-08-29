@@ -61,6 +61,8 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
       assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
         case Some((zone, _)) => AlreadyAssigned(zone)
         case None =>
+          pending.find({ case (_, set) => set.contains(entityChannel) })
+            .foreach({case (zone, set) => removeFromPending(entityChannel, zone, set)})
           pending += (zoneID -> (pending.getOrElse(zoneID, Set()) + entityChannel))
           entityChannel.channel ! AssociateTo(zones(zoneID), zoneID)
           AssignOk
