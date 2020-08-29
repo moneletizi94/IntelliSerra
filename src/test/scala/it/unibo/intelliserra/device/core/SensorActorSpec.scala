@@ -40,6 +40,8 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
     killActors(sensorActor)
   }
 
+  override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
+
   "A sensor actor " must {
     "send an ack to confirm association" in {
       sensorActor ! AssociateToMe(zoneManagerProbe.ref)
