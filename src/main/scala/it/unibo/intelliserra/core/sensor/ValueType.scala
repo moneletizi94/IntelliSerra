@@ -5,9 +5,8 @@ sealed trait ValueType
 sealed trait NumericType extends ValueType
 sealed trait TextualType extends ValueType
 
-/*implicit def fromIntToDouble
-trait X[Y<:{val value:Int}] extends Numeric[Y]{
-  override def plus(x: Y, y: Y): Y = x.x + y.x
+/*trait X[Y <: {val value : Int}] extends Numeric[Y]{
+  override def plus(x: Y, y: Y): Y = x.value + y.value
   override def minus(x: IntType, y: IntType): Y = x.value - y.value
   override def times(x: IntType, y: IntType): Y = x.value * y.value
   override def negate(x: IntType): IntType = - x.value
