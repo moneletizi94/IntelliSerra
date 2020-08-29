@@ -34,27 +34,27 @@ package object aggregation {
   }
 
   implicit val numericDouble: Fractional[DoubleType] = new Fractional[DoubleType] {
-    override def plus(x: DoubleType, y: DoubleType): DoubleType = ???
+    override def plus(x: DoubleType, y: DoubleType): DoubleType = x.value + y.value
 
-    override def minus(x: DoubleType, y: DoubleType): DoubleType = ???
+    override def minus(x: DoubleType, y: DoubleType): DoubleType = x.value - y.value
 
-    override def times(x: DoubleType, y: DoubleType): DoubleType = ???
+    override def times(x: DoubleType, y: DoubleType): DoubleType = x.value * y.value
 
-    override def negate(x: DoubleType): DoubleType = ???
+    override def negate(x: DoubleType): DoubleType = - x.value
 
-    override def fromInt(x: Int): DoubleType = ???
+    override def fromInt(x: Int): DoubleType = DoubleType(x)
 
-    override def toInt(x: DoubleType): Int = ???
+    override def toInt(x: DoubleType): Int = x.value.toInt
 
-    override def toLong(x: DoubleType): Long = ???
+    override def toLong(x: DoubleType): Long = x.value.toLong
 
-    override def toFloat(x: DoubleType): Float = ???
+    override def toFloat(x: DoubleType): Float = x.value.toFloat
 
-    override def toDouble(x: DoubleType): Double = ???
+    override def toDouble(x: DoubleType): Double = x.value
 
-    override def compare(x: DoubleType, y: DoubleType): Int = ???
+    override def compare(x: DoubleType, y: DoubleType): Int = x.value compare y.value
 
-    override def div(x: DoubleType, y: DoubleType): DoubleType = ???
+    override def div(x: DoubleType, y: DoubleType): DoubleType = x.value / y.value
   }
 
 }
