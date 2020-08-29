@@ -1,6 +1,5 @@
 package it.unibo.intelliserra.client.core
 
-import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -18,12 +17,14 @@ class ClientSpec extends WordSpecLike
 
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
+  private val sensorID = "sensor"
 
-  before {
+    before {
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
 
     awaitReady(server.start())
+      //TODO awaitReady(deviceDeploy.deploySensor....
   }
 
   after {
@@ -82,5 +83,10 @@ class ClientSpec extends WordSpecLike
       }
     }
   }
+  "be able to assign an entity to an existing zone" in {
+
+  }
+
+
 
 }
