@@ -34,25 +34,22 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     TestKit.shutdownActorSystem(system)
   }
 
-  /* --- START TEST ON CREATE --- */
-  "A zoneManagerActor" must {
+  "A zoneManagerActor" should {
+    /* --- START TEST ON CREATE --- */
     "allow to create a zone with a never-used identifier" in {
       createZonesAndExpectMsg(zoneIdentifier)
       zoneManager.underlyingActor.zones.contains(zoneIdentifier) shouldBe true
       zoneManager.underlyingActor.assignedEntities.contains(zoneIdentifier) shouldBe true
     }
-  }
-  "A zoneManagerActor" must {
+
     "refuse the creation of a zone with a yet-used identifier" in {
       createZonesAndExpectMsg(zoneIdentifier)
       zoneManager ! CreateZone(zoneIdentifier)
       expectMsg(ZoneAlreadyExists)
     }
-  }
-  /* --- END TEST ON CREATE --- */
+    /* --- END TEST ON CREATE --- */
 
-  /* --- START TEST ON GET --- */
-  "A zoneManagerActor" must {
+    /* --- START TEST ON GET --- */
     "return an empty list when it hasn't zones" in {
       zoneManager ! GetZones
       val zones = expectMsgPF() {
@@ -60,8 +57,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       }
       zones shouldBe List()
     }
-  }
-  "A zoneManagerActor" must {
+
     "return a list containing created zones" in {
       createZonesAndExpectMsg(zoneIdentifier, zoneIdentifier2)
       zoneManager ! GetZones
@@ -70,11 +66,9 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       }
       zones shouldBe List(zoneIdentifier, zoneIdentifier2)
     }
-  }
-  /* --- END TEST ON GET --- */
+    /* --- END TEST ON GET --- */
 
-  /* --- START TEST ON REMOVE --- */
-  "A zoneManagerActor" must {
+    /* --- START TEST ON REMOVE --- */
     "update info on its structures after removing created zones" in {
       createZonesAndExpectMsg(zoneIdentifier, zoneIdentifier2)
       deleteZonesAndExpectMsg(zoneIdentifier, zoneIdentifier2)
@@ -88,14 +82,12 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager.underlyingActor.assignedEntities.contains(zoneIdentifier2) shouldBe false
       zoneManager.underlyingActor.pending.contains(zoneIdentifier2) shouldBe false
     }
-  }
-  "A zoneManagerActor" must {
+
     "refuse to delete a nonexistent zone when requested" in {
       zoneManager ! RemoveZone(zoneIdentifierNotAdded)
       expectMsg(ZoneNotFound)
     }
-  }
-  "A zoneManagerActor" must {
+
     "kill a zoneActor when removing a zone" in {
       val probe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
@@ -104,8 +96,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       deleteZonesAndExpectMsg(zoneIdentifier)
       probe.expectMsgType[Terminated]
     }
-  }
-  "A zoneManagerActor" must {
+
     "inform associated and pending entities when removing their zone" in {
       val entityProbePending = TestProbe()
       val entityProbeAssigned = TestProbe()
@@ -113,8 +104,8 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       createZonesAndExpectMsg(zoneIdentifier)
       createZonesAndExpectMsg(zoneIdentifier2)
 
-      informAndExpectMsgOnAssign(zoneManager,entityProbePending, zoneIdentifier)
-      informAndExpectMsgOnAssign(zoneManager,entityProbeAssigned, zoneIdentifier)
+      informAndExpectMsgOnAssign(zoneManager, entityProbePending, zoneIdentifier)
+      informAndExpectMsgOnAssign(zoneManager, entityProbeAssigned, zoneIdentifier)
       informAndExpectMsgOnAssign(zoneManager, entityProbeOtherZone, zoneIdentifier2)
 
       deleteZonesAndExpectMsg(zoneIdentifier)
@@ -122,25 +113,21 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       entityProbePending.expectMsgType[DissociateFrom]
       entityProbeOtherZone.expectNoMessage
     }
-  }
-  /* --- END TEST ON REMOVE --- */
+    /* --- END TEST ON REMOVE --- */
 
-  /* --- START TEST ON ASSIGN --- */
-  "A zoneManagerActor" must {
+    /* --- START TEST ON ASSIGN --- */
     "refuse to assign an entity to a nonexistent zone" in {
       val entityProbe = TestProbe()
       zoneManager ! AssignEntityToZone(zoneIdentifierNotAdded, entityChannelWithRef(entityProbe.ref))
       expectMsg(ZoneNotFound)
     }
-  }
-  "A zoneManagerActor" must {
+
     "inform an unassigned entity to assign to a zone" in {
       val entityProbe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
       informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier)
     }
-  }
-  "A zoneManagerActor" must {
+
     "accept to assign an entity not assigned to an existing zone" in {
       val entityProbe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
@@ -150,8 +137,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe true
       zoneManager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe false
     }
-  }
-  "A zoneManagerActor" must {
+
     "accept to assign an entity in pending to an existing zone" in {
       val entityProbe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier)
@@ -161,9 +147,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe true
       zoneManager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe false
     }
-  }
 
-  "A zoneManagerActor" must {
     "refuse to assign an entity already assigned" in {
       val entityProbe = TestProbe()
       createZonesAndExpectMsg(zoneIdentifier, zoneIdentifier2)
@@ -174,18 +158,25 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager ! AssignEntityToZone(zoneIdentifier2, entityChannel)
       expectMsgType[AlreadyAssigned]
     }
-  }
-  /* --- END TEST ON ASSIGN --- */
+    "not have the same entity pending for two different zones" in {
+      val entityProbe = TestProbe()
+      createZonesAndExpectMsg(zoneIdentifier, zoneIdentifier2)
+      val entityChannel = informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier)
+      zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe true
+      zoneManager.underlyingActor.pending.contains(zoneIdentifier2) shouldBe false
+      val entityChannel2 = informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier2)
+      zoneManager.underlyingActor.pending(zoneIdentifier2).contains(entityChannel2) shouldBe true
+      zoneManager.underlyingActor.pending.contains(zoneIdentifier) shouldBe false
+    }
+    /* --- END TEST ON ASSIGN --- */
 
-  /* --- START TEST ON DISSOCIATE --- */
-  "A zoneManagerActor" must {
+    /* --- START TEST ON DISSOCIATE --- */
     "not dissociate an entity not associated" in {
       val entityProbe = TestProbe()
       zoneManager ! DissociateEntityFromZone(entityChannelWithRef(entityProbe.ref))
       expectMsg(AlreadyDissociated)
     }
-  }
-  "A zoneManagerActor" must {
+
     "dissociate an associated entity which was in pending and inform it" in {
       val entityProbeToDissociate = TestProbe()
       val entityProbeNotToDissociate = TestProbe()
@@ -199,12 +190,11 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannelNotToDissociate) shouldBe true
       zoneManager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe false
     }
-  }
-  "A zoneManagerActor" must {
+
     "dissociate an associated entity which was in associatedEntitities, inform it and its zone" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor{
+      val manager = TestActorRef(new ZoneManagerActor {
         override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
       })
       manager ! CreateZone(zoneIdentifier)
@@ -219,15 +209,13 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneProbe.expectMsgType[DeleteEntity]
       manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe false
     }
-  }
-  /* --- END TEST ON DISSOCIATE --- */
+    /* --- END TEST ON DISSOCIATE --- */
 
-  /* --- START TEST ON ACK --- */
-  "A zoneManagerActor" must {
+    /* --- START TEST ON ACK --- */
     "move a pending entity to associatedEntities when Ack is received" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor{
+      val manager = TestActorRef(new ZoneManagerActor {
         override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
       })
       manager ! CreateZone(zoneIdentifier)
@@ -241,8 +229,8 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       manager.underlyingActor.pending.contains(zoneIdentifier) shouldBe false
       manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe true
     }
+    /* --- END TEST ON ACK --- */
   }
-  /* --- END TEST ON ACK --- */
 
   /* --- UTILITY METHODS --- */
   private def createZonesAndExpectMsg(identifiers: String*): List[ActorRef] = {
