@@ -9,6 +9,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
+/**
+ * This is the Actor Controller who is in charge of receiving client messages and sending them to other entities based on the request.
+ * He also knows the references to the main entities such as zoneManagerActor and entityManagerActor.
+ *
+ * @param zoneManagerActor, actorRef
+ * @param entityManagerActor, actorRef
+ */
 //noinspection ScalaStyle
 private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityManagerActor: ActorRef) extends Actor with ActorLogging {
   type ResponseMap[T] = PartialFunction[Try[T], ServiceResponse]
@@ -32,9 +39,10 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
     case _ => ServiceResponse(Error, "Internal Error")
   }
 
+  /* --- ON RECEIVE ACTIONS --- */
   override def receive: Receive = {
 
-    case Protocol.CreateZone(zoneName) =>
+    case CreateZone(zoneName) =>
       sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender()) {
         case Success(Messages.ZoneCreated) => ServiceResponse(Created)
         case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict)
@@ -57,6 +65,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
         entityManagerActor ? Messages.GetEntity(entityId) flatMap {
           case Messages.EntityResult(entity) =>
             zoneManagerActor ? Messages.AssignEntityToZone(zoneName, entity)
+          case msg => Future.successful(msg)
         }
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
@@ -71,6 +80,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
         entityManagerActor ? Messages.GetEntity(entityId) flatMap {
           case Messages.EntityResult(entity) =>
             zoneManagerActor ? Messages.DissociateEntityFromZone(entity)
+          case msg => Future.successful(msg)
         }
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.DissociateOk) => ServiceResponse(Ok)

@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
-import scala.concurrent.Await
+import scala.concurrent.{Await}
 import scala.util.{Failure, Success, Try}
 
 
