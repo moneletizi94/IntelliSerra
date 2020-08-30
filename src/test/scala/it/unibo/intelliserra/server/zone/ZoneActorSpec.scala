@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.server.aggregation.Aggregator
 
 @RunWith(classOf[JUnitRunner])
 class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
@@ -16,8 +17,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
   with BeforeAndAfterAll {
 
   private val zoneIdentifier = "Zone1"
-  private val zone: ActorRef = ZoneActor(zoneIdentifier)
-
+  private val zone: ActorRef = ZoneActor(zoneIdentifier, List())
 
   "A zoneActor" must {
     "inform its associated entities when it is deleted" in {
@@ -34,6 +34,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest"))
       testProbe.expectTerminated(zone)
     }
   }
+
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }

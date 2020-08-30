@@ -1,39 +1,62 @@
 package it.unibo.intelliserra.server.aggregation
 
-import it.unibo.intelliserra.core.sensor.{Category, DoubleType, IntType, Measure}
+import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, StringType}
 import org.scalatest.{FlatSpec, Matchers}
-import it.unibo.intelliserra.server.aggregation.Aggregator._
-import it.unibo.intelliserra.server.aggregation._
-
+import it.unibo.intelliserra.server.aggregation.Aggregator.{createAggregator, _}
 import org.junit.runner.RunWith
 import org.scalatestplus.junit.JUnitRunner
+import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 
 import scala.util.Success
 
 @RunWith(classOf[JUnitRunner])
 class AggregatorSpec extends FlatSpec with Matchers{
 
-  private object Temperature extends Category{
-    override type Value = IntType
-  }
+  private object Temperature extends Category{ override type Value = IntType }
 
-  // TODO: create default category; in every test class we repeat the object creation
+  private object Weather extends Category{ override type Value = StringType }
 
-  "An aggregator " should "aggregate measures correctly " in {
-    val measures = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))
-    val aggregatedMeasure = createAggregator(Temperature)(_.avg).aggregate(measures)
+  private val doubleTempMeasures : List[Measure] = List(Measure(4.5, Temperature), Measure(5.5, Temperature), Measure(8.0, Temperature))
+  private val intTempMeasures : List[Measure] = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))
+  private val stringWeatherMeasures : List[Measure] = List(Measure("RAINY", Weather), Measure("SUNNY", Weather), Measure("SUNNY", Weather))
+
+  "An aggregator " should "aggregate measures correctly using avg function" in {
+    val aggregatedMeasure = createAggregator(Temperature)(avg).aggregate(intTempMeasures)
     aggregatedMeasure shouldBe Success(Measure(5,Temperature))
   }
 
-  "An aggregator " should "aggregate measures correctly 2" in {
-    val measures = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))
-    //val aggregatedMeasure = createAggregator(Temperature)(AggregateFunctions.sum).aggregate(measures)
-    //aggregatedMeasure shouldBe Success(Measure(17,Temperature))
+  "An aggregator " should "aggregate measures correctly using sum function" in {
+    val aggregatedMeasure = createAggregator(Temperature)(sum).aggregate(intTempMeasures)
+    aggregatedMeasure shouldBe Success(Measure(17,Temperature))
+  }
+
+  "An aggregator " should "aggregate measures correctly using min function" in {
+    val aggregatedMeasure = createAggregator(Temperature)(min).aggregate(intTempMeasures)
+    aggregatedMeasure shouldBe Success(Measure(4,Temperature))
+  }
+
+  "An aggregator " should "aggregate measures correctly using max function" in {
+    val aggregatedMeasure = createAggregator(Temperature)(max).aggregate(intTempMeasures)
+    aggregatedMeasure shouldBe Success(Measure(8,Temperature))
   }
 
   "An aggregator " should "not permit aggregate measures of different types " in {
-    val measures = List(Measure(4, Temperature), Measure('c', Temperature), Measure(8, Temperature))
-    //createAggregator(Temperature).aggregate(measures).isFailure
+    createAggregator(Temperature)(_.avg).aggregate(intTempMeasures.+:(Measure('c',Temperature))).isFailure
+  }
+
+  "An aggregator of textual type" should "aggregate measures correctly" in {
+    val aggregatedMeasure = createAggregator(Weather)(moreFrequent).aggregate(stringWeatherMeasures)
+    aggregatedMeasure shouldBe Success(Measure("SUNNY",Weather))
+  }
+
+  // TODO: review 
+  "A set aggregator " should " contains unique category values" in {
+    val set : List[Aggregator] = List(
+      createAggregator(Temperature)(sum),
+      createAggregator(Weather)(moreFrequent),
+      createAggregator(Temperature)(sum)
+    )
+    atMostOneCategory(set) shouldBe false
   }
 
 }
