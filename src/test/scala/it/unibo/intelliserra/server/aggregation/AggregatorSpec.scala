@@ -9,6 +9,7 @@ import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 
 import scala.util.Success
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class AggregatorSpec extends FlatSpec with Matchers{
 
@@ -16,7 +17,6 @@ class AggregatorSpec extends FlatSpec with Matchers{
 
   private object Weather extends Category{ override type Value = StringType }
 
-  private val doubleTempMeasures : List[Measure] = List(Measure(4.5, Temperature), Measure(5.5, Temperature), Measure(8.0, Temperature))
   private val intTempMeasures : List[Measure] = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))
   private val stringWeatherMeasures : List[Measure] = List(Measure("RAINY", Weather), Measure("SUNNY", Weather), Measure("SUNNY", Weather))
 
@@ -47,16 +47,6 @@ class AggregatorSpec extends FlatSpec with Matchers{
   "An aggregator of textual type" should "aggregate measures correctly" in {
     val aggregatedMeasure = createAggregator(Weather)(moreFrequent).aggregate(stringWeatherMeasures)
     aggregatedMeasure shouldBe Success(Measure("SUNNY",Weather))
-  }
-
-  // TODO: review 
-  "A set aggregator " should " contains unique category values" in {
-    val set : List[Aggregator] = List(
-      createAggregator(Temperature)(sum),
-      createAggregator(Weather)(moreFrequent),
-      createAggregator(Temperature)(sum)
-    )
-    atMostOneCategory(set) shouldBe false
   }
 
 }
