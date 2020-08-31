@@ -5,21 +5,16 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator._
-import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
-import monix.reactive.Observable
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-
-import scala.concurrent.Future
 
 
 @RunWith(classOf[JUnitRunner])
@@ -52,53 +47,10 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     TestKit.shutdownActorSystem(system)
   }
 
-  private val sensor: Sensor = new Sensor {
-    override def identifier: String = "sensorID"
-
-    override def capability: SensingCapability = SensingCapability(Temperature)
-
-    override def measures: Observable[Measure] = Observable()
-  }
-
-  private val sensor2: Sensor = new Sensor {
-    override def identifier: String = "sensor2ID"
-
-    override def capability: SensingCapability = SensingCapability(Humidity)
-
-    override def measures: Observable[Measure] = Observable()
-  }
-
-  private val actuator: Actuator = new Actuator {
-    override def identifier: String = "actuatorID"
-
-    override def capability: ActingCapability = ActingCapability(Set(Water))
-
-    override def state: Observable[OperationalState] = Observable()
-
-    override def actionHandler: ActionHandler = {
-      case _ => Future.successful(Idle)
-    }
-  }
-
-  private val actuator2: Actuator = new Actuator {
-    override def identifier: String = "actuator2ID"
-
-    override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
-
-    override def state: Observable[OperationalState] = Observable()
-
-    override def actionHandler: ActionHandler = {
-      case _ => Future.successful(Idle)
-    }
-  }
-
-  case object Temperature extends Category
-
-  case object Humidity extends Category
-
-  case object Water extends Action
-
-  case object OpenWindow extends Action
+  private val sensor: Sensor = mockSensor("sensorID")
+  private val sensor2: Sensor = mockSensor("sensor2ID")
+  private val actuator: Actuator = mockActuator("actuatorID")
+  private val actuator2: Actuator = mockActuator("actuator2ID")
 
   "A greenHouseController " must {
     "ask for create zone" in {

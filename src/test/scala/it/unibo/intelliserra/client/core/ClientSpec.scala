@@ -1,14 +1,10 @@
 package it.unibo.intelliserra.client.core
 
-import akka.actor.ActorSystem
-import akka.testkit.{TestKit, TestProbe}
-import it.unibo.intelliserra.core.entity.SensingCapability
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
+import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
-import monix.reactive.Observable
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -28,21 +24,8 @@ class ClientSpec extends WordSpecLike
   private var deviceDeploy: DeviceDeploy = _
   private val aggregators: List[Aggregator] = List()
   private val notAddedSensor: String = "notAddedSensor"
-
-  private val sensor1: Sensor = new Sensor {
-    override def identifier: String = "sensor1"
-    override def capability: SensingCapability = SensingCapability(Temperature)
-    override def measures: Observable[Measure] = Observable()
-  }
-
-  private val sensor2: Sensor = new Sensor {
-    override def identifier: String = "sensor2"
-    override def capability: SensingCapability = SensingCapability(Humidity)
-    override def measures: Observable[Measure] = Observable()
-  }
-
-  case object Temperature extends Category
-  case object Humidity extends Category
+  private val sensor1: Sensor = mockSensor("sensor1")
+  private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
     server = GreenHouseServer(GreenhouseName, Hostname, Port)

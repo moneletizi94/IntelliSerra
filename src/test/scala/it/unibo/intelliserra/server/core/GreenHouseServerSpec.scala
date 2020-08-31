@@ -6,9 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.Await
 
 @RunWith(classOf[JUnitRunner])
 class GreenHouseServerSpec extends WordSpecLike

@@ -1,11 +1,11 @@
 package it.unibo.intelliserra.server.aggregation
 
-import it.unibo.intelliserra.core.sensor.{Category, DoubleType, IntType, Measure, StringType}
-import org.scalatest.{FlatSpec, Matchers}
-import it.unibo.intelliserra.server.aggregation.Aggregator.{createAggregator, _}
-import org.junit.runner.RunWith
-import org.scalatestplus.junit.JUnitRunner
+import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, StringType}
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
+import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
+import org.junit.runner.RunWith
+import org.scalatest.{FlatSpec, Matchers}
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.Success
 
