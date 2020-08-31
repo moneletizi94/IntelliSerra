@@ -140,7 +140,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! DeleteZone(mockZoneID)
       expectMsg(ServiceResponse(Deleted))
       greenHouseController ! GetZones()
-      expectMsg(ServiceResponse(NotFound, "No zones!"))
+      expectMsg(ServiceResponse(Ok, List()))
     }
   }
 

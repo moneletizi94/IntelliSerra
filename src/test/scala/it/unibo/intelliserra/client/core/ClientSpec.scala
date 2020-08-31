@@ -3,11 +3,14 @@ package it.unibo.intelliserra.client.core
 import it.unibo.intelliserra.core.entity.SensingCapability
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+
+import scala.collection.immutable.Stream.Empty
 
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
@@ -21,6 +24,7 @@ class ClientSpec extends WordSpecLike
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private val aggregators: List[Aggregator] = List()
 
   private val sensor1: Sensor = new Sensor {
     override def identifier: String = "sensor1"
@@ -41,7 +45,7 @@ class ClientSpec extends WordSpecLike
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
     deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(server.start())
+    awaitReady(server.start(aggregators))
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
   }

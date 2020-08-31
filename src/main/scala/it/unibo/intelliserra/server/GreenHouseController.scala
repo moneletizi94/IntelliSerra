@@ -56,8 +56,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
 
     case GetZones() =>
       sendResponseWithFallback(zoneManagerActor ? Messages.GetZones, sender()) {
-        case Success(Messages.ZonesResult(zones)) =>
-          if (zones.nonEmpty) ServiceResponse(Ok, zones) else ServiceResponse(NotFound, "No zones!")
+        case Success(Messages.ZonesResult(zones)) => ServiceResponse(Ok, zones)
       }
 
     case AssignEntity(zoneName, entityId) =>
