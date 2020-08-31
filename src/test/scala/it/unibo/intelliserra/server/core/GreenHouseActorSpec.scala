@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -19,6 +20,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with TestUtility {
 
   private var serverActor: TestActorRef[GreenHouseActor] = TestActorRef.create(system, Props[GreenHouseActor]())
+  private val aggregators: List[Aggregator] = List()
 
   before {
     serverActor = TestActorRef.create(system, Props[GreenHouseActor]())
@@ -33,14 +35,14 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
 
   "A greenhouse actor" must {
     "send Started message when is successfully started" in {
-      serverActor ! Start
+      serverActor ! Start(aggregators)
       expectMsg(Started)
     }
 
     "send a ServerError if is already running" in {
-      serverActor ! Start
+      serverActor ! Start(aggregators)
       expectMsg(Started)
-      serverActor ! Start
+      serverActor ! Start(aggregators)
       expectMsgType[ServerError]
     }
   }

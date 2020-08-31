@@ -17,6 +17,9 @@ private[server] class EntityManagerActor extends Actor{
 
     case GetEntity(identifier) =>
       sender ! entities.find(e => e.entity.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)
+
+    case RemoveEntity(identifier) =>
+      sender ! entities.find(e => e.entity.identifier == identifier).map( e =>{entities = entities.filter( _!= e ) ; EntityRemoved}).getOrElse(EntityNotFound)
   }
 
   private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[List[EntityChannel]] = {
