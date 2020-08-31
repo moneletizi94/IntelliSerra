@@ -4,7 +4,6 @@ import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -259,7 +258,5 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     expectMsg(AssignOk)
     entityChannel
   }
-
-  case object Temperature extends Category
 }
 

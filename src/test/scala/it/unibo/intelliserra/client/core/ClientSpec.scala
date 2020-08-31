@@ -1,5 +1,14 @@
 package it.unibo.intelliserra.client.core
-/*
+
+import it.unibo.intelliserra.core.sensor.Sensor
+import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.core.GreenHouseServer
+import it.unibo.intelliserra.utils.TestUtility
+import org.junit.runner.RunWith
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatestplus.junit.JUnitRunner
+
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
   with Matchers
@@ -7,16 +16,24 @@ class ClientSpec extends WordSpecLike
   with BeforeAndAfterAll
   with TestUtility {
 
-  private val ZoneName = "zone1"
+  private val zoneName = "zone1"
+  private val zoneName2 = "zone2"
 
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
+  private var deviceDeploy: DeviceDeploy = _
+  private val aggregators: List[Aggregator] = List()
+  private val notAddedSensor: String = "notAddedSensor"
+  private val sensor1: Sensor = mockSensor("sensor1")
+  private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
-
-    awaitReady(server.start())
+    deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
+    awaitReady(server.start(aggregators))
+    awaitReady(deviceDeploy.deploySensor(sensor1))
+    awaitReady(deviceDeploy.deploySensor(sensor2))
   }
 
   after {
@@ -26,13 +43,13 @@ class ClientSpec extends WordSpecLike
   "A client " should {
 
     "create a new zone" in {
-      awaitResult(client.createZone(ZoneName)) shouldBe ZoneName
-      awaitResult(client.zones()) shouldBe List(ZoneName)
+      awaitResult(client.createZone(zoneName)) shouldBe zoneName
+      awaitResult(client.zones()) shouldBe List(zoneName)
     }
 
     "remove an existing zone" in {
-      awaitReady(client.createZone(ZoneName))
-      awaitResult(client.removeZone(ZoneName)) shouldBe ZoneName
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.removeZone(zoneName)) shouldBe zoneName
       awaitResult(client.zones()) shouldBe List()
     }
 
@@ -41,30 +58,30 @@ class ClientSpec extends WordSpecLike
     }
 
     "fail to create zone if already exist" in {
-      awaitResult(client.createZone(ZoneName)) shouldBe ZoneName
+      awaitResult(client.createZone(zoneName)) shouldBe zoneName
       assertThrows[IllegalArgumentException] {
-        awaitResult(client.createZone(ZoneName))
+        awaitResult(client.createZone(zoneName))
       }
     }
 
     "fail to create zone if server is down" in {
       awaitReady(server.terminate())
       assertThrows[Exception] {
-        awaitResult(client.createZone(ZoneName))
+        awaitResult(client.createZone(zoneName))
       }
     }
 
     "fail to remove a non existing zone" in {
       assertThrows[IllegalArgumentException] {
-        awaitResult(client.removeZone(ZoneName))
+        awaitResult(client.removeZone(zoneName))
       }
     }
 
     "fail to remove zone if server is down" in {
-      awaitReady(client.createZone(ZoneName))
+      awaitReady(client.createZone(zoneName))
       awaitReady(server.terminate())
       assertThrows[Exception] {
-        awaitResult(client.removeZone(ZoneName))
+        awaitResult(client.removeZone(zoneName))
       }
     }
 
@@ -74,6 +91,34 @@ class ClientSpec extends WordSpecLike
         awaitResult(client.zones())
       }
     }
-  }
 
-}*/
+    /* --- START TESTING ASSIGN ---*/
+    "be able to assign an entity to an existing zone" in {
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
+    }
+
+    "fail to assign an entity to a nonexistent zone" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName))
+      }
+    }
+
+    "fail to assign a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(notAddedSensor, zoneName))
+      }
+    }
+
+    "fail to assign an entity already assigned" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.createZone(zoneName2))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+      }
+    }
+    /* --- END TESTING ASSIGN ---*/
+  }
+}

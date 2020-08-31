@@ -4,6 +4,7 @@ import scala.concurrent.Future
 
 trait ZoneClient {
   type Zone = String
+  type Entity = String
 
   /**
    * Create a new zone with specified name
@@ -25,4 +26,12 @@ trait ZoneClient {
    * @return if success, a list of alla existing zones, otherwise a failure
    */
   def zones(): Future[List[Zone]]
+
+  /**
+  * Associate the specified entity (both actuators and sensors) to the specified zone, if possible
+  * @param entity, name of the entity
+    * @param zone, name of the zone
+    * @return if success, the name of the entity, a failure otherwise
+  */
+  def associateEntity(entity: Entity, zone: Zone): Future[Zone]
 }

@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.client.core.sensor
 
 import it.unibo.intelliserra.core.sensor.{BooleanType, CharType, DoubleType, IntType, StringType}
-import it.unibo.intelliserra.utils.{TestImplicitConversionUtility, TestUtility}
+import it.unibo.intelliserra.utils.TestImplicitConversionUtility
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatestplus.junit.JUnitRunner
