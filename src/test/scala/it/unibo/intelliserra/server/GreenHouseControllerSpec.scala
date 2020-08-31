@@ -193,4 +193,60 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       expectMsg(ServiceResponse(NotFound, "Entity not found"))
     }
   }
+
+  "A greenHouseController " must {
+    "ask to dissociate an entity" in {
+      mockZoneID = "zone10"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      entityManagerActor ! JoinActuator(actuator.identifier, actuator.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! AssignEntity(mockZoneID, actuator.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator.identifier)
+      expectMsg(ServiceResponse(Ok))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to dissociate an already dissociated entity" in {
+      mockZoneID = "zone11"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      entityManagerActor ! JoinActuator(actuator2.identifier, actuator2.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! AssignEntity(mockZoneID, actuator2.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(Error))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to dissociate an entity that does not exist" in {
+      mockZoneID = "zone12"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(NotFound, "Entity not found"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to remove entity" in {
+      entityManagerActor ! JoinSensor(sensor.identifier, sensor.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! RemoveEntity(sensor.identifier)
+      expectMsg(ServiceResponse(Deleted))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to remove entity that does not exist" in {
+      greenHouseController ! RemoveEntity(sensor2.identifier)
+      expectMsg(ServiceResponse(NotFound, "Entity not found"))
+    }
+  }
 }
