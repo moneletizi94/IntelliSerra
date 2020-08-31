@@ -2,7 +2,7 @@ package it.unibo.intelliserra.device.core
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
-import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateToMe, DissociateFromMe}
+import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom}
 
 private[core] trait EntityActor extends Actor
   with ActorLogging
@@ -13,8 +13,8 @@ private[core] trait EntityActor extends Actor
   protected[core] def zone: Option[ActorRef] = _zone
 
   def zoneManagement: Receive = {
-    case AssociateToMe(zoneRef) => _zone = Option(zoneRef); sendToZone(Ack)
-    case DissociateFromMe(zoneRef) => _zone = zone.filterNot(_ == zoneRef)
+    case AssociateTo(zoneRef,_) => _zone = Option(zoneRef); sender() ! Ack
+    case DissociateFrom(zoneRef, _) => _zone = zone.filterNot(_ == zoneRef)
   }
 
   def sendToZone(msg: Any): Unit = {

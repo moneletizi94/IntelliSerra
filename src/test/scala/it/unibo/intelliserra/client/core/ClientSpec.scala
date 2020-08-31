@@ -1,16 +1,17 @@
 package it.unibo.intelliserra.client.core
 
+import akka.actor.ActorSystem
+import akka.testkit.{TestKit, TestProbe}
 import it.unibo.intelliserra.core.entity.SensingCapability
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
+import monix.reactive.Observable
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-
-import scala.collection.immutable.Stream.Empty
 
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
@@ -20,22 +21,24 @@ class ClientSpec extends WordSpecLike
   with TestUtility {
 
   private val zoneName = "zone1"
+  private val zoneName2 = "zone2"
 
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
   private val aggregators: List[Aggregator] = List()
+  private val notAddedSensor: String = "notAddedSensor"
 
   private val sensor1: Sensor = new Sensor {
     override def identifier: String = "sensor1"
     override def capability: SensingCapability = SensingCapability(Temperature)
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def measures: Observable[Measure] = Observable()
   }
 
   private val sensor2: Sensor = new Sensor {
     override def identifier: String = "sensor2"
     override def capability: SensingCapability = SensingCapability(Humidity)
-    override def state: Measure = Measure(IntType(0), Humidity)
+    override def measures: Observable[Measure] = Observable()
   }
 
   case object Temperature extends Category
@@ -110,5 +113,27 @@ class ClientSpec extends WordSpecLike
       awaitReady(client.createZone(zoneName))
       awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
     }
+
+    "fail to assign an entity to a nonexistent zone" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName))
+      }
+    }
+
+    "fail to assign a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(notAddedSensor, zoneName))
+      }
+    }
+
+/*    "fail to assign an entity already assigned" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.createZone(zoneName2))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      //TODO iter completo di associazione
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+      }
+    }*/
   }
 }

@@ -5,15 +5,21 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator._
 import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor._
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor
+import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
+import monix.reactive.Observable
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+
+import scala.concurrent.Future
 
 
 @RunWith(classOf[JUnitRunner])
@@ -51,7 +57,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: SensingCapability = SensingCapability(Temperature)
 
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def measures: Observable[Measure] = Observable()
   }
 
   private val sensor2: Sensor = new Sensor {
@@ -59,7 +65,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: SensingCapability = SensingCapability(Humidity)
 
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def measures: Observable[Measure] = Observable()
   }
 
   private val actuator: Actuator = new Actuator {
@@ -67,9 +73,11 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: ActingCapability = ActingCapability(Set(Water))
 
-    override def state: OperationalState = Idle
+    override def state: Observable[OperationalState] = Observable()
 
-    override def doAction(action: Action): Unit = {}
+    override def actionHandler: ActionHandler = {
+      case _ => Future.successful(Idle)
+    }
   }
 
   private val actuator2: Actuator = new Actuator {
@@ -77,9 +85,11 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
 
-    override def state: OperationalState = Idle
+    override def state: Observable[OperationalState] = Observable()
 
-    override def doAction(action: Action): Unit = {}
+    override def actionHandler: ActionHandler = {
+      case _ => Future.successful(Idle)
+    }
   }
 
   case object Temperature extends Category
