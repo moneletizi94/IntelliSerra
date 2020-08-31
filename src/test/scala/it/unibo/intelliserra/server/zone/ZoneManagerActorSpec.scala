@@ -25,7 +25,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private var zoneManager: TestActorRef[ZoneManagerActor] = _
 
   before  {
-    zoneManager = TestActorRef.create(system, Props[ZoneManagerActor])
+    zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(List())))
   }
   after {
     killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
@@ -194,7 +194,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "dissociate an associated entity which was in associatedEntitities, inform it and its zone" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor {
+      val manager = TestActorRef(new ZoneManagerActor(List()) {
         override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
       })
       manager ! CreateZone(zoneIdentifier)
@@ -215,7 +215,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "move a pending entity to associatedEntities when Ack is received" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor {
+      val manager = TestActorRef(new ZoneManagerActor(List()) {
         override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
       })
       manager ! CreateZone(zoneIdentifier)

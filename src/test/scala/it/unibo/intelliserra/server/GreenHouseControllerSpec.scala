@@ -8,6 +8,7 @@ import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
 import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor._
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -29,10 +30,11 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
   private var entityRef : ActorRef = _
+  private val aggregators: List[Aggregator] = List()
 
   before {
     this.entityManagerActor = EntityManagerActor()
-    this.zoneManagerActor = ZoneManagerActor()
+    this.zoneManagerActor = ZoneManagerActor(aggregators)
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor)))
   }
 
@@ -40,7 +42,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     killActors(entityManagerActor, zoneManagerActor, greenHouseController)
   }
 
-  override def afterAll{
+  override def afterAll: Unit = {
     TestKit.shutdownActorSystem(system)
   }
 

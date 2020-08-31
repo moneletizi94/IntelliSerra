@@ -4,13 +4,14 @@ import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalS
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
-import scala.concurrent.{Await}
+import scala.concurrent.Await
 import scala.util.{Failure, Success, Try}
 
 
@@ -21,11 +22,12 @@ private class DeviceDeploySpec extends WordSpecLike
 
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private val aggregators: List[Aggregator] = List()
 
   before {
     this.server = GreenHouseServer(GreenhouseName, Hostname, Port)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(this.server.start())
+    awaitReady(this.server.start(aggregators))
   }
 
   after {
