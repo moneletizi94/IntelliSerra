@@ -52,8 +52,6 @@ private[core] object Client {
           case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
-      case msg => log.debug(s"ignored unknown request $msg")
     }
 
     private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {

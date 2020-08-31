@@ -109,6 +109,7 @@ class ClientSpec extends WordSpecLike
       }
     }
 
+    /* --- START TESTING ASSIGN ---*/
     "be able to assign an entity to an existing zone" in {
       awaitReady(client.createZone(zoneName))
       awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
@@ -126,14 +127,15 @@ class ClientSpec extends WordSpecLike
       }
     }
 
-/*    "fail to assign an entity already assigned" in {
+    "fail to assign an entity already assigned" in {
       awaitReady(client.createZone(zoneName))
       awaitReady(client.createZone(zoneName2))
       awaitReady(client.associateEntity(sensor1.identifier, zoneName))
-      //TODO iter completo di associazione
       assertThrows[IllegalArgumentException] {
         awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
       }
-    }*/
+    }
+    /* --- END TESTING ASSIGN ---*/
   }
 }
