@@ -38,4 +38,6 @@ object Sensor {
 object Example extends App {
 
   case object Temperature extends Category
+
+
 }
