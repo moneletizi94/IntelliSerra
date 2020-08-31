@@ -76,12 +76,13 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
       }
 
     case DissociateEntity(entityId) =>
-      val association =
+      val association = {
         entityManagerActor ? Messages.GetEntity(entityId) flatMap {
           case Messages.EntityResult(entity) =>
             zoneManagerActor ? Messages.DissociateEntityFromZone(entity)
           case msg => Future.successful(msg)
         }
+      }
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.DissociateOk) => ServiceResponse(Ok)
         case Success(Messages.AlreadyDissociated) => ServiceResponse(Error)
@@ -99,7 +100,8 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
 object GreenHouseController {
   val name = "GreenHouseController"
 
-  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf(Props[GreenHouseController], name)
+  def apply(zoneManagerActor: ActorRef, entityManagerActor: ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
+    actorSystem actorOf(Props(new GreenHouseController(zoneManagerActor, entityManagerActor)), name)
 }
 
 

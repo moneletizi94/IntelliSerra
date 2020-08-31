@@ -23,7 +23,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   private case object Temperature extends Category
 
   before{
-    zone = TestActorRef.create(system, Props[ZoneActor])
+    zone = TestActorRef.create(system, Props(new ZoneActor(List())))
   }
 
   "A zoneActor" must {

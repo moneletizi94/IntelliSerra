@@ -6,8 +6,8 @@ import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{ZoneAlreadyExists, ZoneCreated, ZoneNotFound, ZoneRemoved, ZonesResult}
-import it.unibo.intelliserra.common.communication.Protocol.{Conflict, CreateZone, Created, DeleteZone, Deleted, Error, GetZones, NotFound, Ok, ServiceResponse}
-import it.unibo.intelliserra.server.EntityManagerActor
+import it.unibo.intelliserra.common.communication.Protocol.{ClientRequest, Conflict, CreateZone, Created, DeleteZone, Deleted, Error, GetZones, NotFound, Ok, ServiceResponse}
+import it.unibo.intelliserra.server.{EntityManagerActor, GreenHouseController}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
@@ -48,6 +48,7 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   private implicit val actorSystem: ActorSystem = context.system
   private implicit val timeout: Timeout = Timeout(5 seconds)
 
+  var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
 
@@ -55,7 +56,8 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
     case Start =>
       zoneManagerActor = ZoneManagerActor()
       entityManagerActor = EntityManagerActor()
-      context.become(running orElse routeZoneHandling)
+      greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
+      context.become(running orElse routeToController)
       sender ! Started
   }
 
@@ -63,23 +65,8 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
     case Start => sender ! ServerError(new IllegalStateException("Server is already running"))
   }
 
-  def routeZoneHandling: Receive = {
-    case CreateZone(zoneName) =>
-      sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender) {
-        case Success(ZoneCreated) => ServiceResponse(Created)
-        case Success(ZoneAlreadyExists) => ServiceResponse(Conflict)
-      }
-
-    case DeleteZone(zoneName) =>
-      sendResponseWithFallback(zoneManagerActor ? Messages.RemoveZone(zoneName), sender) {
-        case Success(ZoneRemoved) => ServiceResponse(Deleted)
-        case Success(ZoneNotFound) => ServiceResponse(NotFound)
-      }
-
-    case GetZones() =>
-      sendResponseWithFallback(zoneManagerActor ? Messages.GetZones, sender) {
-        case Success(ZonesResult(zones)) => ServiceResponse(Ok, zones)
-      }
+  def routeToController: Receive = {
+    case request : ClientRequest  => greenHouseController.tell(request, sender())
   }
 
   private def sendResponseWithFallback[T](request: Future[T], replyTo: ActorRef)(mapSend: ResponseMap[T]): Unit = {

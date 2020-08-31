@@ -98,7 +98,7 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID)
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, List())
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
