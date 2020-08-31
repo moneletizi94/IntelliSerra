@@ -16,7 +16,7 @@ private[server] class EntityManagerActor extends Actor{
       addEntityAndSendResponse(RegisteredActuator(identifier, capabilities), actuatorRef, sender)
 
     case GetEntity(identifier) =>
-      sender ! entities.find(e => e.entity.identifier == identifier).map(e => EntityResult(e))
+      sender ! entities.find(e => e.entity.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)
   }
 
   private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[List[EntityChannel]] = {

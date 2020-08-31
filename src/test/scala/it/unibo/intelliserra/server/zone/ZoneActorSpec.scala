@@ -2,7 +2,8 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.DestroyYourself
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity}
+import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -18,25 +19,11 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with BeforeAndAfterAll {
 
   private var zone: TestActorRef[ZoneActor] = _
+  private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
+  private case object Temperature extends Category
 
   before{
-    zone = TestActorRef.create(system, Props[ZoneActor])
-  }
-
-  "A zoneActor" must {
-    "inform its associated entities when it is deleted" in {
-      //TODO when associate is ready
-      //non riesco a testarlo senza entità a cui mandare il dissociateFromMe
-    }
-  }
-
-  "A zoneActor" must {
-    "not be reachable after shutdown" in {
-      val testProbe = TestProbe()
-      testProbe watch zone
-      zone ! DestroyYourself
-      testProbe.expectTerminated(zone)
-    }
+    zone = TestActorRef.create(system, Props(new ZoneActor(List())))
   }
 
   "A zoneActor" must {
@@ -47,17 +34,22 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zoneActor" must {
     "allow you to associate entities that have not been associated with it" in {
-      /*val entityActor = TestProbe()
-      val registeredSensor = RegisteredSensor("id",SensingCapability(Temperature))
-      zone ! AssignEntity(entityActor.ref, registeredSensor)
-      entityActor.expectMsg(AssociateToMe(zone))
-      zone.tell(Ack, entityActor.ref)
-      zone.underlyingActor.associatedEntities.contains(entityActor.ref)
-      expectMsg(AssignOk)*/
+      val sensorProbe = TestProbe()
+      val entityChannel = EntityChannel(registeredSensor, sensorProbe.ref)
+      zone ! AddEntity(entityChannel)
+      zone.underlyingActor.associatedEntities.contains(entityChannel) shouldBe true
     }
   }
 
-  case object Temperature extends Category
+  "A zoneActor" must {
+    "allow you to remove entities that have been associated with it" in {
+      val sensorProbe = TestProbe()
+      val entityChannel = EntityChannel(registeredSensor, sensorProbe.ref)
+      zone ! DeleteEntity(entityChannel)
+      zone.underlyingActor.associatedEntities.contains(entityChannel) shouldBe false
+    }
+  }
+
 
 
   override def afterAll(): Unit = {

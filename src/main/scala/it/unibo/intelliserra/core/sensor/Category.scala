@@ -1,4 +1,6 @@
 package it.unibo.intelliserra.core.sensor
 
 //TODO scaladoc
-trait Category
+trait Category{
+  type Value <: ValueType
+}

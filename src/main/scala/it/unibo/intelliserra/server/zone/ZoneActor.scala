@@ -1,47 +1,37 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import akka.util.Timeout
-import it.unibo.intelliserra.common.communication.Messages.{Ack, AddEntity, AssociateToMe, DeleteEntity, DestroyYourself, DissociateFromMe}
-import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions}
+import it.unibo.intelliserra.core.actuator.OperationalState
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.server.aggregation.Aggregator
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+private[zone] class ZoneActor(private val aggregators: List[Aggregator]) extends Actor with ActorLogging {
 
-private[zone] class ZoneActor extends Actor with ActorLogging {
-
-  //var List[Aggregator] = Aggregators
-  private[zone] var sensorsValue : Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities : Map[ActorRef, EntityChannel] = Map()
-  private[zone] var actuatorsState : Map[ActorRef, OperationalState] = Map()
-
-  implicit val timeout : Timeout = Timeout(5 seconds)
-  implicit val ec: ExecutionContext = context.dispatcher
-  // TODO: do BaseActor 
+  private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
+  private[zone] var associatedEntities: Set[EntityChannel] = Set()
+  private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
 
   override def receive: Receive = {
-    case DestroyYourself =>
-      associatedEntities.keySet.foreach(entity => entity ! DissociateFromMe(self))
-      context stop self
-    case AddEntity(entityChannel) =>
-      //entityRef ? AssociateToMe(self) map { case Ack => GetEntityInfo(sender() , entityRef, entity) } pipeTo self
-    case DeleteEntity(entityChannel) => entityChannel.channel ! DissociateFromMe(self)
+    case AddEntity(entityChannel) => associatedEntities += entityChannel
+    case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case Tick =>
-      /*sensorsValue.values.groupBy(measure => (measure.category, measure))
-                          .map({case (category, measures) => state = (category, /*aggregators.aggregate(measures)*/measures)})*/
+    /*sensorsValue.values.groupBy(measure => (measure.category, measure))
+                        .map({case (category, measures) => state = (category, /*aggregators.aggregate(measures)*/measures)})*/
     case DoActions(actions) =>
-      /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
-                          .filter(_._2.nonEmpty)
-                          //.flatMap()*/
+    /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
+                        .filter(_._2.nonEmpty)
+                        //.flatMap()*/
   }
 
-
   private case object Tick
-  private case class DoActions(actions : Set[Action])
+
 }
 
 object ZoneActor {
-  def apply(name: String)(implicit system: ActorSystem): ActorRef = system actorOf (Props[ZoneActor], name)
+  def apply(name: String, aggregators: List[Aggregator])(implicit system: ActorSystem): ActorRef = {
+    require(Aggregator.atMostOneCategory(aggregators), "only one aggregator must be assigned for each category")
+    system actorOf(Props(new ZoneActor(aggregators)), name)
+  }
 }
