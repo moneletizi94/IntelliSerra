@@ -1,41 +1,36 @@
 package it.unibo.intelliserra.server
 
-import akka.actor.{ActorSystem, Props}
-import akka.testkit.{TestActorRef, TestKit}
-import akka.util.Timeout
-import it.unibo.intelliserra.common.akka.RemotePath
-import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.{BeforeAndAfter, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 
 @RunWith(classOf[JUnitRunner])
 private class DeviceDeploySpec extends WordSpecLike
   with BeforeAndAfter
-  with BeforeAndAfterAll
   with TestUtility {
 
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private val aggregators: List[Aggregator] = List()
 
-  override def beforeAll(): Unit = {
+  before {
     this.server = GreenHouseServer(GreenhouseName, Hostname, Port)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(this.server.start())
+    awaitReady(this.server.start(aggregators))
   }
 
-  override def afterAll(): Unit = {
+  after {
     awaitReady(this.server.terminate())
   }
 
@@ -46,7 +41,7 @@ private class DeviceDeploySpec extends WordSpecLike
   }
 
   private val sensor2:Sensor = new Sensor {
-    override def identifier: String = "sensorID"
+    override def identifier: String = "sensor2ID"
     override def capability: SensingCapability = SensingCapability(Humidity)
     override def state: Measure = Measure(IntType(0), Temperature)
   }
@@ -59,7 +54,7 @@ private class DeviceDeploySpec extends WordSpecLike
   }
 
   private val actuator2:Actuator = new Actuator {
-    override def identifier: String = "actuatorID"
+    override def identifier: String = "actuator2ID"
     override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
     override def state: OperationalState = Idle
     override def doAction(action: Action): Unit = {}
@@ -72,58 +67,43 @@ private class DeviceDeploySpec extends WordSpecLike
 
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {
-      deploySensor(sensor)
+      Try(awaitReady(deviceDeploy.deploySensor(sensor))) match {
+        case Success(_) => succeed
+        case Failure(exception)=> fail(exception)
+      }
     }
   }
 
-  "A deviceDeploy " must {
-    "ask for a sensor assignment with an identify that already exists" in {
-      deployExistingSensor(sensor2)
-    }
+  "A deviceDeploy ask for a sensor assignment with an identify that already exists" in {
+      Try(awaitReady(deviceDeploy.deploySensor(sensor2))) match {
+        case Success(_) =>
+          Try(awaitReady(deviceDeploy.deploySensor(sensor2))) match {
+            case Success(_) => fail()
+            case Failure(_) => succeed
+          }
+        case Failure(exception) => fail(exception)
+      }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment" in {
-      deployActuator(actuator)
+      Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
+        case Success(_) => succeed
+        case Failure(exception)=> fail(exception)
+      }
     }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment with an identify that already exists" in {
-      deployExistingActuator(actuator2)
+      Try(awaitReady(deviceDeploy.deployActuator(actuator2))) match {
+        case Success(_) =>
+          Try(awaitReady(deviceDeploy.deployActuator(actuator2))) match {
+            case Success(_) => fail()
+            case Failure(_) => succeed
+          }
+        case Failure(exception) => fail(exception)
+      }
     }
   }
-
-  //noinspection NameBooleanParameters
-  def deploySensor(sensor: Sensor) : Unit = {
-    Try(Await.ready(deviceDeploy.deploySensor(sensor), timeout.duration)) match {
-      case Success(_) => assert(true)
-      case Failure(exception)=> fail(exception)
-    }
-  }
-
-  //noinspection NameBooleanParameters
-  def deployExistingSensor(sensor: Sensor) : Unit = {
-    Try(Await.ready(deviceDeploy.deploySensor(sensor), timeout.duration)) match {
-      case Success(_) => fail()
-      case Failure(_)=> assert(true)
-    }
-  }
-
-  //noinspection NameBooleanParameters
-  def deployActuator(actuator: Actuator) : Unit = {
-    Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
-      case Success(_) => assert(true)
-      case Failure(exception)=> fail(exception)
-    }
-  }
-
-  //noinspection NameBooleanParameters
-  def deployExistingActuator(actuator: Actuator) : Unit = {
-    Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
-      case Success(_) => fail()
-      case Failure(_)=> assert(true)
-    }
-  }
-
 }

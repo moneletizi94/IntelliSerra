@@ -1,11 +1,16 @@
 package it.unibo.intelliserra.client.core
 
-import akka.actor.{Actor, ActorPath, ActorRef, ActorSystem, Address, Props, Stash}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.pattern.{ask, pipe}
+import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
 import it.unibo.intelliserra.common.communication.Protocol._
 
-import scala.util.{Failure, Success}
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 private[core] object Client {
+
+  type ServiceResponseMap[T] = PartialFunction[ServiceResponse, Try[T]]
 
   /**
    * Create a client using akka actor
@@ -15,36 +20,45 @@ private[core] object Client {
    */
   def apply(serverUri: String)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf Props(new ClientImpl(serverUri))
 
-  private[core] class ClientImpl(serverUri: String) extends Actor with Stash {
+  private[core] class ClientImpl(serverUri: String) extends Actor
+    with DefaultTimeout
+    with DefaultExecutionContext
+    with ActorLogging {
 
     private val serverActor = context actorSelection serverUri
 
     private def handleRequest: Receive = {
       case CreateZone(zone) =>
-        context.become(waitResponse(sender))
-        serverActor ! CreateZone(zone)
+        makeRequestWithFallback(CreateZone(zone)) {
+          case ServiceResponse(Created, _) => Success(zone)
+          case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
 
-      case RemoveZone(zone) =>
-        context.become(waitResponse(sender))
-        serverActor ! RemoveZone(zone)
+      case DeleteZone(zone) =>
+        makeRequestWithFallback(DeleteZone(zone)) {
+          case ServiceResponse(Deleted, _) => Success(zone)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+
+      case GetZones() =>
+        makeRequestWithFallback(GetZones()) {
+          case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
+        }
+
+      case msg => log.debug(s"ignored unknown request $msg")
     }
 
-    private def waitResponse(replyTo: ActorRef): Receive = {
-      case ZoneCreationError =>
-        context.become(handleRequest)
-        replyTo ! Failure(new IllegalStateException("fail during zone creation"))
+    private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
+      makeRequest(request)(function orElse fallback)
+    }
 
-      case NoZone =>
-        context.become(handleRequest)
-        replyTo ! Failure(new IllegalArgumentException("zone not found"))
+    private def makeRequest[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
+      (serverActor ? request).mapTo[ServiceResponse] flatMap { response => Future.fromTry(function(response)) } pipeTo sender()
+    }
 
-      case ZoneCreated =>
-        context.become(handleRequest)
-        replyTo ! Success(ZoneCreated)
-
-      case ZoneRemoved =>
-        context.become(handleRequest)
-        replyTo ! Success(ZoneRemoved)
+    private def fallback[T]: ServiceResponseMap[T] = {
+      case ServiceResponse(Error, errMsg) => Failure(new Exception(errMsg.toString))
+      case _ => Failure(new Exception())
     }
 
     override def receive: Receive = handleRequest

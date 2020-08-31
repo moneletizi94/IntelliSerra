@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started}
 
 import scala.concurrent.duration._
@@ -19,8 +20,9 @@ sealed trait GreenHouseServer {
   /**
    * Start the server
    * @return A future that complete when the server is started
+   * @param aggregators list of aggregators for zoneManager
    */
-  def start(): Future[Unit]
+  def start(aggregators: List[Aggregator]): Future[Unit]
 
   /**
    * Terminate the server permanently
@@ -62,9 +64,9 @@ object GreenHouseServer {
 
     private val serverActor = GreenHouseActor()
 
-    override def start(): Future[Unit] =
-      (serverActor ? Start)
-        .asInstanceOf[Future[ServerResponse]]
+    override def start(aggregators: List[Aggregator]): Future[Unit] =
+      (serverActor ? Start(aggregators))
+        .mapTo[ServerResponse]
         .flatMap {
           case Started => Future.unit
           case ServerError(error) => Future.failed(error)

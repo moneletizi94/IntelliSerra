@@ -1,12 +1,5 @@
 package it.unibo.intelliserra.client.core
-
-import it.unibo.intelliserra.common.akka.RemotePath
-import it.unibo.intelliserra.server.core.GreenHouseServer
-import it.unibo.intelliserra.utils.TestUtility
-import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
-import org.scalatestplus.junit.JUnitRunner
-
+/*
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
   with Matchers
@@ -34,17 +27,22 @@ class ClientSpec extends WordSpecLike
 
     "create a new zone" in {
       awaitResult(client.createZone(ZoneName)) shouldBe ZoneName
-      // TODO: verify with get zones
+      awaitResult(client.zones()) shouldBe List(ZoneName)
     }
 
     "remove an existing zone" in {
       awaitReady(client.createZone(ZoneName))
       awaitResult(client.removeZone(ZoneName)) shouldBe ZoneName
+      awaitResult(client.zones()) shouldBe List()
+    }
+
+    "get all available zones" in {
+      awaitResult(client.zones()) shouldBe List()
     }
 
     "fail to create zone if already exist" in {
       awaitResult(client.createZone(ZoneName)) shouldBe ZoneName
-      assertThrows[IllegalStateException] {
+      assertThrows[IllegalArgumentException] {
         awaitResult(client.createZone(ZoneName))
       }
     }
@@ -69,6 +67,13 @@ class ClientSpec extends WordSpecLike
         awaitResult(client.removeZone(ZoneName))
       }
     }
+
+    "fail to get zone if server is down" in {
+      awaitReady(server.terminate())
+      assertThrows[Exception] {
+        awaitResult(client.zones())
+      }
+    }
   }
 
-}
+}*/

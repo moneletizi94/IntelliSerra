@@ -1,25 +1,27 @@
 package it.unibo.intelliserra.server
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.server.core.{RegisteredActuator, RegisteredEntity, RegisteredSensor}
+import it.unibo.intelliserra.common.communication.Messages._
+import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor}
 
 private[server] class EntityManagerActor extends Actor{
 
-  private[server] var entities : Map[RegisteredEntity, ActorRef] = Map()
+  private[server] var entities : List[EntityChannel] = List()
 
   override def receive: Receive = {
     case JoinSensor(identifier, capabilities, sensorRef) =>
       addEntityAndSendResponse(RegisteredSensor(identifier, capabilities), sensorRef, sender)
 
     case JoinActuator(identifier, capabilities, actuatorRef) =>
-      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities),actuatorRef, sender)
+      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities), actuatorRef, sender)
 
+    case GetEntity(identifier) =>
+      sender ! entities.find(e => e.entity.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)
   }
 
-  private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[Map[RegisteredEntity, ActorRef]] = {
-    entities.find(pair => pair._1.identifier == registeredEntity.identifier)
-            .fold(Option(entities + (registeredEntity -> actorRef)))(_ => None)
+  private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[List[EntityChannel]] = {
+    entities.find(elem => elem.entity.identifier == registeredEntity.identifier)
+            .fold(Option(EntityChannel(registeredEntity, actorRef) :: entities))(_ => None)
   }
 
   private def addEntityAndSendResponse(registeredEntity: RegisteredEntity, entityRef : ActorRef, replyTo: ActorRef): Unit = {

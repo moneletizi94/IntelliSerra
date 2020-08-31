@@ -5,11 +5,11 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.common.communication.Protocol.{CreateZone, DeleteZone, GetZones}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.Try
 
 trait GreenHouseClient extends ZoneClient
 
@@ -35,17 +35,11 @@ object GreenHouseClient {
 
     private val client = Client(RemotePath.server(greenHouseName, serverAddress, serverPort))
 
-    override def createZone(zone: Zone): Future[Zone] =
-      client ? CreateZone(zone) flatMap {
-        case Success(_) => Future.successful(zone)
-        case Failure(ex) => Future.failed(ex)
-      }
+    override def createZone(zone: Zone): Future[Zone] = (client ? CreateZone(zone)).mapTo[Zone]
 
-    override def removeZone(zone: Zone): Future[Zone] =
-      client ? RemoveZone(zone) flatMap {
-        case Success(_) => Future.successful(zone)
-        case Failure(ex) => Future.failed(ex)
-      }
+    override def removeZone(zone: Zone): Future[Zone] = (client ? DeleteZone(zone)).mapTo[Zone]
+
+    override def zones(): Future[List[Zone]] = (client ? GetZones()).mapTo[List[String]]
   }
 
 }

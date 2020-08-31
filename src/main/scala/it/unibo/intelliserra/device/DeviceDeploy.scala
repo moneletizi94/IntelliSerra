@@ -3,16 +3,15 @@ package it.unibo.intelliserra.device
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
-import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinError, JoinOK, JoinSensor}
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
-import it.unibo.intelliserra.server.{ActuatorActor, EntityManagerActor, SensorActor}
+import it.unibo.intelliserra.server.{ActuatorActor, SensorActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import it.unibo.intelliserra.common.communication.Protocol._
 
 /**
  *
@@ -49,7 +48,7 @@ trait DeviceDeploy {
     override def deploySensor(sensor: Sensor): Future[Unit] = {
       val sensorActor = SensorActor(sensor)(actorSystem)
       entityManagerActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap {
-        case JoinOK => Future.unit
+        case JoinOK => Future.successful(():Unit)
         case JoinError(error) => terminate(error, sensorActor)
       }
     }
@@ -63,7 +62,7 @@ trait DeviceDeploy {
     override def deployActuator(actuator: Actuator): Future[Unit] = {
       val actuatorActor = ActuatorActor(actuator)(actorSystem)
       entityManagerActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap {
-        case JoinOK => Future.unit
+        case JoinOK => Future.successful(():Unit)
         case JoinError(error) => terminate(error, actuatorActor)
       }
     }

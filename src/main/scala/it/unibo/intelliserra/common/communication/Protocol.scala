@@ -1,43 +1,35 @@
 package it.unibo.intelliserra.common.communication
 
-import akka.actor.ActorRef
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-
+/**
+ *  Decision
+ *
+ *  A ? GetState(zone) => Future[ZoneManagerResponse] flatMap {
+ *      case s: Success => Future.success(s)
+ *      case f: Fail => Future.fail(new Exception(f))
+ *  }
+ *
+ *  A:
+ *    case CreateZone(zone) => .... sender ! AlreadyExist
+ *
+ */
 object Protocol {
 
-  sealed trait JoinRequest
-  case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
-  case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
+  // Client Protocol
+  sealed trait ClientRequest
+  final case class CreateZone(zoneName: String) extends ClientRequest
+  final case class DeleteZone(zoneName: String) extends ClientRequest
+  final case class GetZones() extends ClientRequest
+  final case class AssignEntity(zoneName: String, entityId: String) extends ClientRequest
+  final case class DissociateEntity(entityId: String) extends ClientRequest
+  final case class RemoveEntity(entityId: String) extends ClientRequest
 
-  sealed trait JoinResponse
-  case object JoinOK extends JoinResponse
-  case class JoinError(error:String) extends JoinResponse
+  sealed trait ResponseType
+  case object Ok extends ResponseType
+  case object Created extends ResponseType
+  case object Deleted extends ResponseType
+  case object NotFound extends ResponseType
+  case object Conflict extends ResponseType
+  case object Error extends ResponseType
 
-  /* --- From GH to ZoneManager --- */
-  //A client ask for a new Zone
-  final case class CreateZone(identifier: String)
-  //An entity could ask whether a zone exists (used also for testing createZone and removeZone)
-  final case class ZoneExists(identifier: String)
-  //A client ask to remove a zone, the corresponding actor will be stopped
-  case class RemoveZone(identifier: String)
-
-  /* --- From ZoneManager to GH --- */
-  case object ZoneCreated
-  case object ZoneCreationError
-
-  //Used to answer to ZoneExists
-  case class Zone(zoneRef: ActorRef)
-  //Used to answer to both ZoneExists and RemoveZone (when the specified zone doesn't exists)
-  case object NoZone
-
-  //Used to answer to RemoveZone
-  case object ZoneRemoved
-
-  /* --- From ZoneManager to Zone --- */
-  //Used when a client wants to remove a zone,
-  // the zone will not be reachable anymore. It should inform its sensor/actuator
-  case object DestroyYourself
-
-  /* --- From Zone to Sensor/ Actuator --- */
-  case class DissociateFromMe(zoneRef: ActorRef)
+  final case class ServiceResponse(responseType: ResponseType, payload: java.io.Serializable = "")
 }

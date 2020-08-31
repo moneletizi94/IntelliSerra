@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.server.core
 
+import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
@@ -16,6 +17,7 @@ class GreenHouseServerSpec extends WordSpecLike
   with TestUtility {
 
   private var server: GreenHouseServer = _
+  private val aggregators: List[Aggregator] = List()
 
   before {
     this.server = GreenHouseServer(GreenhouseName)
@@ -28,16 +30,13 @@ class GreenHouseServerSpec extends WordSpecLike
   "Green house server facade " should {
 
     "allow to start server with success" in {
-      Try(awaitReady(server.start())) match {
-        case Failure(exception) => fail(exception)
-        case Success(_) => succeed
-      }
+      awaitReady(server.start(aggregators))
     }
 
     "raise IllegalStateException when start is called on already running instance" in {
-      awaitResult(server.start())
+      awaitResult(server.start(aggregators))
       assertThrows[IllegalStateException] {
-        awaitResult(server.start())
+        awaitResult(server.start(aggregators))
       }
     }
   }
