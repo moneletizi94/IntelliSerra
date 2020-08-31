@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.server.aggregation
 
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, StringType}
+import it.unibo.intelliserra.core.sensor.{Category, DoubleType, IntType, Measure, StringType}
 import org.scalatest.{FlatSpec, Matchers}
 import it.unibo.intelliserra.server.aggregation.Aggregator.{createAggregator, _}
 import org.junit.runner.RunWith
@@ -14,7 +14,6 @@ import scala.util.Success
 class AggregatorSpec extends FlatSpec with Matchers{
 
   private object Temperature extends Category{ override type Value = IntType }
-
   private object Weather extends Category{ override type Value = StringType }
 
   private val intTempMeasures : List[Measure] = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))

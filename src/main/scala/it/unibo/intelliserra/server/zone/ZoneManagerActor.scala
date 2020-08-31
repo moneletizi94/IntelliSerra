@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.server.aggregation.Aggregator
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
@@ -11,7 +12,7 @@ import it.unibo.intelliserra.core.entity.EntityChannel
  * It manages link between entities (sensors and actuators) and zones
  */
 
-private[zone] class ZoneManagerActor extends Actor with ActorLogging {
+private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) extends Actor with ActorLogging {
 
   implicit val system: ActorSystem = context.system
   /* It keeps links between zones names and zones ActorRefs */
@@ -98,7 +99,7 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, List())
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -128,5 +129,5 @@ private[zone] class ZoneManagerActor extends Actor with ActorLogging {
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply()(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props[ZoneManagerActor](), name)
+  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
 }
