@@ -81,20 +81,19 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
       }
 
     case DissociateEntity(entityId) =>
-      val association = {
+      val association =
         entityManagerActor ? Messages.GetEntity(entityId) flatMap {
           case Messages.EntityResult(entity) =>
             zoneManagerActor ? Messages.DissociateEntityFromZone(entity)
           case msg => Future.successful(msg)
         }
-      }
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.DissociateOk) => ServiceResponse(Ok)
         case Success(Messages.AlreadyDissociated) => ServiceResponse(Error)
-        case Success(Messages.EntityNotFound) => ServiceResponse(NotFound)
+        case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
       }
 
-    case RemoveEntity(entityId) =>
+    case Protocol.RemoveEntity(entityId) =>
       sendResponseWithFallback(entityManagerActor ? Messages.RemoveEntity(entityId), sender()) {
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
         case Success(Messages.EntityRemoved) => ServiceResponse(Deleted)

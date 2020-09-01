@@ -6,8 +6,9 @@ import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
-import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor._
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor
+import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
@@ -46,49 +47,10 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     TestKit.shutdownActorSystem(system)
   }
 
-  private val sensor: Sensor = new Sensor {
-    override def identifier: String = "sensorID"
-
-    override def capability: SensingCapability = SensingCapability(Temperature)
-
-    override def state: Measure = Measure(IntType(0), Temperature)
-  }
-
-  private val sensor2: Sensor = new Sensor {
-    override def identifier: String = "sensor2ID"
-
-    override def capability: SensingCapability = SensingCapability(Humidity)
-
-    override def state: Measure = Measure(IntType(0), Temperature)
-  }
-
-  private val actuator: Actuator = new Actuator {
-    override def identifier: String = "actuatorID"
-
-    override def capability: ActingCapability = ActingCapability(Set(Water))
-
-    override def state: OperationalState = Idle
-
-    override def doAction(action: Action): Unit = {}
-  }
-
-  private val actuator2: Actuator = new Actuator {
-    override def identifier: String = "actuator2ID"
-
-    override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
-
-    override def state: OperationalState = Idle
-
-    override def doAction(action: Action): Unit = {}
-  }
-
-  case object Temperature extends Category
-
-  case object Humidity extends Category
-
-  case object Water extends Action
-
-  case object OpenWindow extends Action
+  private val sensor: Sensor = mockSensor("sensorID")
+  private val sensor2: Sensor = mockSensor("sensor2ID")
+  private val actuator: Actuator = mockActuator("actuatorID")
+  private val actuator2: Actuator = mockActuator("actuator2ID")
 
   "A greenHouseController " must {
     "ask for create zone" in {
@@ -190,6 +152,62 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
       greenHouseController ! AssignEntity(mockZoneID, actuator2.identifier)
+      expectMsg(ServiceResponse(NotFound, "Entity not found"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to dissociate an entity" in {
+      mockZoneID = "zone10"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      entityManagerActor ! JoinActuator(actuator.identifier, actuator.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! AssignEntity(mockZoneID, actuator.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator.identifier)
+      expectMsg(ServiceResponse(Ok))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to dissociate an already dissociated entity" in {
+      mockZoneID = "zone11"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      entityManagerActor ! JoinActuator(actuator2.identifier, actuator2.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! AssignEntity(mockZoneID, actuator2.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(Ok))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(Error))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to dissociate an entity that does not exist" in {
+      mockZoneID = "zone12"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      greenHouseController ! DissociateEntity(actuator2.identifier)
+      expectMsg(ServiceResponse(NotFound, "Entity not found"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to remove entity" in {
+      entityManagerActor ! JoinSensor(sensor.identifier, sensor.capability, entityRef)
+      expectMsg(JoinOK)
+      greenHouseController ! RemoveEntity(sensor.identifier)
+      expectMsg(ServiceResponse(Deleted))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to remove entity that does not exist" in {
+      greenHouseController ! RemoveEntity(sensor2.identifier)
       expectMsg(ServiceResponse(NotFound, "Entity not found"))
     }
   }

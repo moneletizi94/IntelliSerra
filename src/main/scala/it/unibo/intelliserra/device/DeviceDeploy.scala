@@ -8,7 +8,8 @@ import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinError, JoinOK, JoinSensor}
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
-import it.unibo.intelliserra.server.{ActuatorActor, SensorActor}
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor
+import it.unibo.intelliserra.device.core.sensor.SensorActor
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}

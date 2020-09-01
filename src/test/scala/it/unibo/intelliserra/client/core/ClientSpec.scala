@@ -1,7 +1,6 @@
 package it.unibo.intelliserra.client.core
 
-import it.unibo.intelliserra.core.entity.SensingCapability
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
+import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
@@ -20,26 +19,15 @@ class ClientSpec extends WordSpecLike
   with TestUtility {
 
   private val zoneName = "zone1"
+  private val zoneName2 = "zone2"
 
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
   private val aggregators: List[Aggregator] = List()
-
-  private val sensor1: Sensor = new Sensor {
-    override def identifier: String = "sensor1"
-    override def capability: SensingCapability = SensingCapability(Temperature)
-    override def state: Measure = Measure(IntType(0), Temperature)
-  }
-
-  private val sensor2: Sensor = new Sensor {
-    override def identifier: String = "sensor2"
-    override def capability: SensingCapability = SensingCapability(Humidity)
-    override def state: Measure = Measure(IntType(0), Humidity)
-  }
-
-  case object Temperature extends Category
-  case object Humidity extends Category
+  private val notAddedSensor: String = "notAddedSensor"
+  private val sensor1: Sensor = mockSensor("sensor1")
+  private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
@@ -106,10 +94,34 @@ class ClientSpec extends WordSpecLike
       }
     }
 
+    /* --- START TESTING ASSIGN ---*/
     "be able to assign an entity to an existing zone" in {
       awaitReady(client.createZone(zoneName))
       awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
     }
+
+    "fail to assign an entity to a nonexistent zone" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName))
+      }
+    }
+
+    "fail to assign a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(notAddedSensor, zoneName))
+      }
+    }
+
+    "fail to assign an entity already assigned" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.createZone(zoneName2))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+        awaitResult(client.associateEntity(sensor1.identifier, zoneName2))
+      }
+    }
+    /* --- END TESTING ASSIGN ---*/
 
     "get state from nonexistent zone" in {
       assertThrows[Exception] {

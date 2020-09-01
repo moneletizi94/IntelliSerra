@@ -4,7 +4,6 @@ import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -24,11 +23,11 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private val zoneIdentifierNotAdded = "FakeZone"
   private var zoneManager: TestActorRef[ZoneManagerActor] = _
 
-  before {
+  before  {
     zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(List())))
   }
   after {
-    killActors(zoneManager.underlyingActor.zones.values.toSeq: _*)
+    killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
   }
 
   override def afterAll(): Unit = {
@@ -276,14 +275,11 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
 
   private def informAndExpectMsgOnAssign(zoneManager: TestActorRef[ZoneManagerActor], entityProbe: TestProbe, zone: String): EntityChannel = {
-    val entityChannel = entityChannelWithRef(entityProbe.ref)
+    val entityChannel =  entityChannelWithRef(entityProbe.ref)
     zoneManager ! AssignEntityToZone(zone, entityChannel)
     entityProbe.expectMsgType[AssociateTo]
     expectMsg(AssignOk)
     entityChannel
   }
-
-  case object Temperature extends Category
-
 }
 

@@ -1,9 +1,9 @@
 package it.unibo.intelliserra.server
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinRequest, JoinSensor}
-import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator, RegisteredSensor, SensingCapability}
+import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor.Category
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -68,12 +68,10 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
     entityManager ! joinRequestMessage
     expectMsg(JoinOK)
     joinRequestMessage match {
-      case JoinSensor(identifier, sensingCapability, sensorRef) => {
+      case JoinSensor(identifier, sensingCapability, sensorRef) =>
         entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef))
-      }
-      case JoinActuator(identifier, actingCapability, actuatorRef) => {
+      case JoinActuator(identifier, actingCapability, actuatorRef) =>
         entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef))
-      }
     }
   }
 
