@@ -22,7 +22,10 @@ dependencies {
     implementation "com.typesafe.akka:akka-actor_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-remote_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-cluster_${scalaBinary}:${akkaVersion}"
+    implementation "com.typesafe.akka:akka-stream_${scalaBinary}:${akkaVersion}"
     implementation "io.netty:netty:3.10.6.Final"
+
+    implementation "io.monix:monix_${scalaBinary}:3.2.2"
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.scalatest:scalatest_2.12:3.0.8'
