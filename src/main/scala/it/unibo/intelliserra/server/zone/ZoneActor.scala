@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState, State}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState}
 import it.unibo.intelliserra.core.actuator.{DoingAction, OperationalState}
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
