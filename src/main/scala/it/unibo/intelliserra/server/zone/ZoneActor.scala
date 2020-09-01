@@ -25,7 +25,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   override def receive: Receive = {
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
-    case GetState => state.foreach(sender ! MyState(_))
+    case GetState => sender ! MyState(state)
     case DoActions(actions) =>
     /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
                         .filter(_._2.nonEmpty)
@@ -45,7 +45,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(println(_))(_.get).toList
   }
 
-  private[zone] def computeActuatorState() : List[DoingAction] = List()
+  private[zone] def computeActuatorState() : List[DoingAction] = actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
 
   private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
 

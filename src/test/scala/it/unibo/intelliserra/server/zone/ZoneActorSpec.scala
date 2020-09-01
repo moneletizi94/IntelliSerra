@@ -2,8 +2,10 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, GetState, MyState}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
+import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -19,6 +21,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   private var zone: TestActorRef[ZoneActor] = _
   private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
+  private case object Temperature extends Category
 
   before{
     zone = TestActorRef.create(system, Props(new ZoneActor(List())))
@@ -48,6 +51,13 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
+  "A zoneActor" should {
+    "sends its state after a request of it" in {
+      val testProbe = TestProbe()
+      zone.tell(GetState,testProbe.ref)
+      testProbe.expectMsgType[MyState]
+    }
+  }
 
 
   override def afterAll(): Unit = {
