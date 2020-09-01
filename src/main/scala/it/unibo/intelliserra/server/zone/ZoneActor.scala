@@ -45,14 +45,16 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(println(_))(_.get).toList
   }
 
-  private[zone] def computeActuatorState() : List[DoingAction] = ???
+  private[zone] def computeActuatorState() : List[DoingAction] = List()
 
-  override def onTick: Unit = {
-    computeAggregatedPerceptions
+  private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
+
+  override def onTick(): Unit = {
+    state = computeState()
   }
 
   // TODO: specific type TRY in signature?
-  private[zone] def flattenIterableTry[B](iterable: Iterable[Try[B]])(ifFailure : Try[B] => Unit)(ifSuccess : Try[B] => B) : Iterable[B]  = {
+  private[zone] def flattenIterableTry[A,B,C](iterable: Iterable[Try[B]])(ifFailure : Try[B] => A)(ifSuccess : Try[B] => C) : Iterable[C]  = {
     val (successes, failures) = iterable.partition(_.isSuccess)
     failures.foreach(ifFailure)
     successes.map(ifSuccess)
