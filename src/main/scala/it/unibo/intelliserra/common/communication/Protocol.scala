@@ -1,5 +1,7 @@
 package it.unibo.intelliserra.common.communication
 
+import it.unibo.intelliserra.core.state.State
+
 /**
  *  Decision
  *
@@ -31,7 +33,6 @@ object Protocol {
   case object NotFound extends ResponseType
   case object Conflict extends ResponseType
   case object Error extends ResponseType
-  case object State extends ResponseType
 
   final case class ServiceResponse(responseType: ResponseType, payload: java.io.Serializable = "")
 }

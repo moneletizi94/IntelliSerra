@@ -43,7 +43,7 @@ object GreenHouseClient {
 
     override def associateEntity(entity: Entity, zone: Zone): Future[Zone] = (client ? AssignEntity(zone, entity)).mapTo[Zone]
 
-    override def getState(zone: Zone): Future[State] = (client ? GetState(zone)).mapTo[State]
+    override def getState(zone: Zone): Future[Option[State]] = (client ? GetState(zone)).mapTo[Option[State]]
   }
 
 }

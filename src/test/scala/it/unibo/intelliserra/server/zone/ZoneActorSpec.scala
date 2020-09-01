@@ -21,7 +21,6 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   private var zone: TestActorRef[ZoneActor] = _
   private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
-  private case object Temperature extends Category
 
   before{
     zone = TestActorRef.create(system, Props(new ZoneActor(List())))

@@ -13,7 +13,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 
@@ -23,14 +23,15 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   with BeforeAndAfter
   with TestUtility
   with ImplicitSender
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll
+  with Matchers {
 
   private var mockZoneID: String = _
 
   private var greenHouseController: TestActorRef[GreenHouseController] = _
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
-  private var entityRef : ActorRef = _
+  private var entityRef: ActorRef = _
   private val aggregators: List[Aggregator] = List()
 
   before {
@@ -217,6 +218,16 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       mockZoneID = "zone13"
       greenHouseController ! GetState(mockZoneID)
       expectMsg(ServiceResponse(NotFound, "Zone not found"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask state from existing zone" in {
+      mockZoneID = "zone14"
+      greenHouseController ! CreateZone(mockZoneID)
+      expectMsg(ServiceResponse(Created))
+      greenHouseController ! GetState(mockZoneID)
+      expectMsgPF(){case ServiceResponse(Ok, _) => true} shouldBe true
     }
   }
 }

@@ -56,7 +56,7 @@ private[core] object Client {
 
       case GetState(zone) =>
         makeRequest(GetState(zone)) {
-          case ServiceResponse(State, state) => Success(state)
+          case ServiceResponse(Ok, state) => Success(state)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
 

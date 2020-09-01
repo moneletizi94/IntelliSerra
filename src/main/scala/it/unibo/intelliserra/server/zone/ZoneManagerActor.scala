@@ -101,7 +101,6 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
   private def getState(zoneID: String): Unit = {
     zones.find(zone => zone._1 == zoneID).fold(sender ! ZoneNotFound)(zone => {
-      sender ! Ok;
       zone._2.tell(GetState, sender())
     })
   }

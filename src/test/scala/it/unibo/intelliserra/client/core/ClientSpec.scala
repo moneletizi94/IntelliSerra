@@ -9,8 +9,6 @@ import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
-import scala.collection.immutable.Stream.Empty
-
 @RunWith(classOf[JUnitRunner])
 class ClientSpec extends WordSpecLike
   with Matchers
@@ -129,9 +127,9 @@ class ClientSpec extends WordSpecLike
       }
     }
 
-    /*"get state from existing zone" in {
+    "get state from existing zone" in {
       awaitReady(client.createZone(zoneName))
-      awaitResult(client.getState(zoneName)) shouldBe
-    }*/
+      awaitResult(client.getState(zoneName)) shouldBe None
+    }
   }
 }

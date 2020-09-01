@@ -236,18 +236,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       zoneManager ! GetStateOfZone(zoneIdentifier)
       expectMsg(ZoneNotFound)
     }
-
-    "get state for a existing zone " in {
-      val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor(List()) {
-        override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
-      })
-      manager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreated)
-      createZonesAndExpectMsg(zoneIdentifier)
-      zoneManager ! GetStateOfZone(zoneIdentifier)
-      expectMsg(Ok)
-    }
     /* --- END TEST GET STATE --- */
 
   }
