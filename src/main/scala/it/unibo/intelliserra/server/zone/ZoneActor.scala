@@ -63,7 +63,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 object ZoneActor {
   private val defaultTickRate = 10 seconds
 
-  def apply(name: String, aggregators: List[Aggregator])(rate : FiniteDuration = defaultTickRate)(implicit system: ActorSystem): ActorRef = {
+  def apply(name: String, aggregators: List[Aggregator],rate : FiniteDuration = defaultTickRate)(implicit system: ActorSystem): ActorRef = {
     require(Aggregator.atMostOneCategory(aggregators), "only one aggregator must be assigned for each category")
     system actorOf (Props(new ZoneActor(aggregators, rate)), name)
   }

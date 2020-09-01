@@ -5,15 +5,15 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, GetState, MyState, SensorMeasure}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
+import it.unibo.intelliserra.server.aggregation.AggregateFunctions
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
-
-
-
+import it.unibo.intelliserra.server.aggregation._
+import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
 class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
@@ -89,7 +89,11 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zone " must {
     " have at most one aggregator for each category when created" in {
-
+      assertThrows[IllegalArgumentException] { // Result type: Assertion
+        ZoneActor("zoneName", List(createAggregator(Temperature)(avg),
+          createAggregator(Weather)(moreFrequent),
+          createAggregator(Temperature)(min)))
+      }
     }
   }
 

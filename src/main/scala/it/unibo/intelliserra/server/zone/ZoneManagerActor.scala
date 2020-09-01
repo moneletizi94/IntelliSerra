@@ -100,7 +100,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)(5 seconds)
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators,5 seconds)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities

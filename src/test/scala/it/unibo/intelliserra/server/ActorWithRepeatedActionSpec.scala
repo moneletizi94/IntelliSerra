@@ -23,4 +23,8 @@ class ActorWithRepeatedActionSpec extends TestKit(ActorSystem("MyTest")) with Te
     override def rate: FiniteDuration = 10 seconds
   }
 
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system)
+  }
+
 }
