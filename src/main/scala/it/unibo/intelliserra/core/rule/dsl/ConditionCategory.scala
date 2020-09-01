@@ -1,7 +1,8 @@
 package it.unibo.intelliserra.core.rule.dsl
 
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.{ConditionValue, SimpleConditionStatement}
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.rule.dsl.ConditionCategory.ConditionValue
+import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.SimpleConditionStatement
+import it.unibo.intelliserra.core.sensor.{Category, ValueType}
 
 sealed trait ConditionCategory {
   def >(that: ConditionValue): ConditionStatement
@@ -13,6 +14,9 @@ sealed trait ConditionCategory {
 }
 
 object ConditionCategory {
+
+  type ConditionValue = ValueType
+
   final case class BasicConditionCategory(category: Category) extends ConditionCategory {
     def >(that: ConditionValue): ConditionStatement = mkStatement(MajorOperator, that)
     def >=(that: ConditionValue): ConditionStatement = mkStatement(MajorEqualsOperator, that)

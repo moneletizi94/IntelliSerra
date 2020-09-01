@@ -1,13 +1,13 @@
 package it.unibo.intelliserra.core.rule.dsl
 
-import it.unibo.intelliserra.core.sensor.{Category, ValueType}
+import it.unibo.intelliserra.core.rule.dsl.ConditionCategory.ConditionValue
+import it.unibo.intelliserra.core.sensor.Category
 
 sealed trait ConditionStatement {
   def &&(statement: ConditionStatement): ConditionStatement
 }
 
 object ConditionStatement {
-  type ConditionValue = ValueType
 
   final case class SimpleConditionStatement(left: Category, operator: ConditionOperator, right: ConditionValue) extends ConditionStatement {
     override def &&(statement: ConditionStatement): ConditionStatement = AndConditionStatement(Set(this, statement))
