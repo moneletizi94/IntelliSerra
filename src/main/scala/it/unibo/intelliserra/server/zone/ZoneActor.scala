@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState, State}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState}
 import it.unibo.intelliserra.core.actuator.{DoingAction, OperationalState}
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
@@ -25,7 +25,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   override def receive: Receive = {
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
-    case GetState => state.foreach(sender ! MyState(_))
+    case GetState => sender ! MyState(state)
     case DoActions(actions) =>
     /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
                         .filter(_._2.nonEmpty)
