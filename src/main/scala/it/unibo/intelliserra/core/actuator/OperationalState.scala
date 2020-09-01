@@ -1,6 +1,12 @@
 package it.unibo.intelliserra.core.actuator
 
-sealed trait OperationalState
+sealed trait OperationalState{
+  def isDoing() : Boolean
+}
 
-final case class DoingAction(action : Action) extends OperationalState
-case object Idle extends OperationalState
+final case class DoingAction(action : Action) extends OperationalState {
+  override def isDoing(): Boolean = true
+}
+case object Idle extends OperationalState {
+  override def isDoing(): Boolean = false
+}
