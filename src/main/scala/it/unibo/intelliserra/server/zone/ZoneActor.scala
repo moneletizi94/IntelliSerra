@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState}
+import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasure}
 import it.unibo.intelliserra.core.actuator.{DoingAction, OperationalState}
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
@@ -30,19 +30,15 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
                         .filter(_._2.nonEmpty)
                         //.flatMap()*/
-
+    case SensorMeasure(measure) => sensorsValue += sender -> measure
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
-    /*val measureByCat = sensorsValue.values.groupBy(_.category)
-    measureByCat.flatMap({ case (category, measures) => {
-                          aggregators.find(_.category == category).map(_.aggregate(measures.toList)).flatten
-              }})*/
     val measuresTry = for {
       (category, measures) <- sensorsValue.values.groupBy(_.category)
       aggregator <- aggregators.find(_.category == category)
     } yield aggregator.aggregate(measures.toList)
-    flattenIterableTry(measuresTry)(println(_))(_.get).toList
+    flattenIterableTry(measuresTry)(e => log.error(e,""))(identity).toList
   }
 
   private[zone] def computeActuatorState() : List[DoingAction] = actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
@@ -51,13 +47,13 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 
   override def onTick(): Unit = {
     state = computeState()
+    sensorsValue = Map()
   }
 
-  // TODO: specific type TRY in signature?
-  private[zone] def flattenIterableTry[A,B,C](iterable: Iterable[Try[B]])(ifFailure : Try[B] => A)(ifSuccess : Try[B] => C) : Iterable[C]  = {
+  private[zone] def flattenIterableTry[A,B,C](iterable: Iterable[Try[B]])(ifFailure : Throwable => A)(ifSuccess : B => C): Iterable[C]  = {
     val (successes, failures) = iterable.partition(_.isSuccess)
-    failures.foreach(ifFailure)
-    successes.map(ifSuccess)
+    failures.map(_ => ifFailure)
+    successes.flatMap(_.toOption).map(ifSuccess(_))
   }
 
 }

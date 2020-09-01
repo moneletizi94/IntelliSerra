@@ -3,6 +3,7 @@ package it.unibo.intelliserra.common.communication
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 
 //noinspection ScalaStyle
@@ -64,5 +65,7 @@ object Messages {
 
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
+  /* --- From SensorActor to ZoneActor --- */
+  case class SensorMeasure(measure: Measure)
 
 }

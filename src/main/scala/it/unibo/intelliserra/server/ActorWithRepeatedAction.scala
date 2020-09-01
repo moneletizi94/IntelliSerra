@@ -6,7 +6,7 @@ import scala.concurrent.duration._
 
 trait ActorWithRepeatedAction extends Actor{
 
-  def onTick(): Unit
+  def onTick(): Unit // TODO: generic?
   def rate : FiniteDuration
 
   private case object Tick
