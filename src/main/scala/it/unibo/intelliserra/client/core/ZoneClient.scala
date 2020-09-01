@@ -1,5 +1,7 @@
 package it.unibo.intelliserra.client.core
 
+import it.unibo.intelliserra.core.state.State
+
 import scala.concurrent.Future
 
 trait ZoneClient {
@@ -34,4 +36,11 @@ trait ZoneClient {
     * @return if success, the name of the entity, a failure otherwise
   */
   def associateEntity(entity: Entity, zone: Zone): Future[Zone]
+
+  /**
+   * Get state of a specified zone, if possible
+   * @param zone, name of zone
+   * @return if success, the state of zone, a failure otherwise
+   */
+  def getState(zone: Zone): Future[State]
 }

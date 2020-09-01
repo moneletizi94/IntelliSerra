@@ -193,4 +193,12 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       expectMsg(ServiceResponse(NotFound, "Entity not found"))
     }
   }
+
+  "A greenHouseController " must {
+    "ask state from nonexistent zone" in {
+      mockZoneID = "zone13"
+      greenHouseController ! GetState(mockZoneID)
+      expectMsg(ServiceResponse(NotFound, "Zone not found"))
+    }
+  }
 }

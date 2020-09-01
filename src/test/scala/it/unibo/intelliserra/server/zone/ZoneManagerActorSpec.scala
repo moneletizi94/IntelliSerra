@@ -24,12 +24,13 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private val zoneIdentifierNotAdded = "FakeZone"
   private var zoneManager: TestActorRef[ZoneManagerActor] = _
 
-  before  {
+  before {
     zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(List())))
   }
   after {
-    killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
+    killActors(zoneManager.underlyingActor.zones.values.toSeq: _*)
   }
+
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
@@ -230,6 +231,26 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe true
     }
     /* --- END TEST ON ACK --- */
+
+    /* --- START TEST GET STATE --- */
+    "get state for a nonexistent zone " in {
+      zoneManager ! GetStateOfZone(zoneIdentifier)
+      expectMsg(ZoneNotFound)
+    }
+
+    "get state for a existing zone " in {
+      val zoneProbe = TestProbe()
+      val manager = TestActorRef(new ZoneManagerActor(List()) {
+        override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
+      })
+      manager ! CreateZone(zoneIdentifier)
+      expectMsg(ZoneCreated)
+      createZonesAndExpectMsg(zoneIdentifier)
+      zoneManager ! GetStateOfZone(zoneIdentifier)
+      expectMsg(Ok)
+    }
+    /* --- END TEST GET STATE --- */
+
   }
 
   /* --- UTILITY METHODS --- */
@@ -241,6 +262,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
     zoneManager.underlyingActor.zones.values.toList
   }
+
   private def deleteZonesAndExpectMsg(identifiers: String*): Unit = {
     identifiers.foreach {
       zoneID =>
@@ -248,12 +270,13 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
         expectMsg(ZoneRemoved)
     }
   }
+
   private def entityChannelWithRef(entityRef: ActorRef): EntityChannel = {
     EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
   }
 
   private def informAndExpectMsgOnAssign(zoneManager: TestActorRef[ZoneManagerActor], entityProbe: TestProbe, zone: String): EntityChannel = {
-    val entityChannel =  entityChannelWithRef(entityProbe.ref)
+    val entityChannel = entityChannelWithRef(entityProbe.ref)
     zoneManager ! AssignEntityToZone(zone, entityChannel)
     entityProbe.expectMsgType[AssociateTo]
     expectMsg(AssignOk)
@@ -261,5 +284,6 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
 
   case object Temperature extends Category
+
 }
 

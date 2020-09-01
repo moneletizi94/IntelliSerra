@@ -110,5 +110,16 @@ class ClientSpec extends WordSpecLike
       awaitReady(client.createZone(zoneName))
       awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
     }
+
+    "get state from nonexistent zone" in {
+      assertThrows[Exception] {
+        awaitResult(client.getState(zoneName))
+      }
+    }
+
+    /*"get state from existing zone" in {
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.getState(zoneName)) shouldBe
+    }*/
   }
 }

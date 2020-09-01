@@ -24,7 +24,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   * */
   var pending: Map[String, Set[EntityChannel]] = Map()
 
-  override def receive : Receive = {
+  override def receive: Receive = {
     case CreateZone(zoneID) => sender() ! onCreateZone(zoneID)
 
     case RemoveZone(zoneID) => sender() ! onRemoveZone(zoneID)
@@ -36,6 +36,8 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
     case DissociateEntityFromZone(entityChannel) => sender() ! onDissociateEntity(entityChannel)
 
     case Ack => onAck()
+
+    case GetStateOfZone(zoneID) => getState(zoneID)
   }
 
   /* --- ON RECEIVE ACTIONS --- */
@@ -59,11 +61,11 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
   private def onAssignEntity(zoneID: String, entityChannel: EntityChannel): ZoneManagerResponse = {
     zones.get(zoneID).fold[ZoneManagerResponse](ZoneNotFound)(_ => {
-      assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
+      assignedEntities.find({ case (_, set) => set.contains(entityChannel) }) match {
         case Some((zone, _)) => AlreadyAssigned(zone)
         case None =>
           pending.find({ case (_, set) => set.contains(entityChannel) })
-            .foreach({case (zone, set) => removeFromPending(entityChannel, zone, set)})
+            .foreach({ case (zone, set) => removeFromPending(entityChannel, zone, set) })
           pending += (zoneID -> (pending.getOrElse(zoneID, Set()) + entityChannel))
           entityChannel.channel ! AssociateTo(zones(zoneID), zoneID)
           AssignOk
@@ -72,34 +74,41 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   }
 
   private def onDissociateEntity(entityChannel: EntityChannel): ZoneManagerResponse = {
-    assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
+    assignedEntities.find({ case (_, set) => set.contains(entityChannel) }) match {
       case Some((zoneID, entities)) =>
         zones(zoneID) ! DeleteEntity(entityChannel) //if the zone exists in zones, it will exists also in assignedEntities
-        assignedEntities += (zoneID -> entities.filter(_!= entityChannel))
+        assignedEntities += (zoneID -> entities.filter(_ != entityChannel))
         informEntityToDissociate(entityChannel, zoneID)
       case None =>
-        pending.find({case (_, set) => set.contains(entityChannel)})
+        pending.find({ case (_, set) => set.contains(entityChannel) })
           .fold[ZoneManagerResponse](AlreadyDissociated)({
-          case (zoneID, entities) =>
-            removeFromPending(entityChannel, zoneID, entities)
-            informEntityToDissociate(entityChannel, zoneID)
-        })
+            case (zoneID, entities) =>
+              removeFromPending(entityChannel, zoneID, entities)
+              informEntityToDissociate(entityChannel, zoneID)
+          })
     }
   }
 
   private def onAck(): Unit = {
-    pending.find({case (_, set) => set.exists(_.channel == sender())}).foreach({case (zoneID, entities) =>
+    pending.find({ case (_, set) => set.exists(_.channel == sender()) }).foreach({ case (zoneID, entities) =>
       val entityToMove = entities.head
       zones(zoneID) ! AddEntity(entityToMove)
       assignedEntities = assignedEntities + (zoneID -> (assignedEntities(zoneID) + entityToMove))
-      removeFromPending(entityToMove ,zoneID, entities)
+      removeFromPending(entityToMove, zoneID, entities)
+    })
+  }
+
+  private def getState(zoneID: String): Unit = {
+    zones.find(zone => zone._1 == zoneID).fold(sender ! ZoneNotFound)(zone => {
+      sender ! Ok;
+      zone._2.tell(GetState, sender())
     })
   }
 
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)
+  private[zone] def createZoneActor(zoneID: String): ActorRef = ZoneActor(zoneID, aggregators)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -114,6 +123,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   private def informEntitiesToDissociate(entities: Set[EntityChannel], zoneID: String): Unit = {
     entities.foreach(entityChannel => informEntityToDissociate(entityChannel, zoneID))
   }
+
   private def informEntityToDissociate(entityChannel: EntityChannel, zoneID: String): ZoneManagerResponse = {
     entityChannel.channel ! DissociateFrom(zones(zoneID), zoneID)
     DissociateOk
@@ -129,5 +139,6 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
+
+  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf(Props(new ZoneManagerActor(aggregators)), name)
 }

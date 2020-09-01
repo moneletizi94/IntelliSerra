@@ -22,6 +22,7 @@ object Protocol {
   final case class AssignEntity(zoneName: String, entityId: String) extends ClientRequest
   final case class DissociateEntity(entityId: String) extends ClientRequest
   final case class RemoveEntity(entityId: String) extends ClientRequest
+  final case class GetState(zoneName: String) extends ClientRequest
 
   sealed trait ResponseType
   case object Ok extends ResponseType
@@ -30,6 +31,7 @@ object Protocol {
   case object NotFound extends ResponseType
   case object Conflict extends ResponseType
   case object Error extends ResponseType
+  case object State extends ResponseType
 
   final case class ServiceResponse(responseType: ResponseType, payload: java.io.Serializable = "")
 }

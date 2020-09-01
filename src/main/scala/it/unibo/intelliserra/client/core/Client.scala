@@ -3,6 +3,7 @@ package it.unibo.intelliserra.client.core
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
+import it.unibo.intelliserra.common.communication.Messages.ZoneNotFound
 import it.unibo.intelliserra.common.communication.Protocol._
 
 import scala.concurrent.Future
@@ -14,6 +15,7 @@ private[core] object Client {
 
   /**
    * Create a client using akka actor
+   *
    * @param serverUri   the uri of server actor
    * @param actorSystem the actorSystem to be used for create the client actor
    * @return a new instance of client
@@ -47,10 +49,16 @@ private[core] object Client {
 
       case AssignEntity(zoneID, entityID) =>
         makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
-          case ServiceResponse(Ok,_) => Success(zoneID)
+          case ServiceResponse(Ok, _) => Success(zoneID)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
-          case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
+          case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+
+      case GetState(zone) =>
+        makeRequest(GetState(zone)) {
+          case ServiceResponse(State, state) => Success(state)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
 
       case msg => log.debug(s"ignored unknown request $msg")
@@ -71,4 +79,5 @@ private[core] object Client {
 
     override def receive: Receive = handleRequest
   }
+
 }
