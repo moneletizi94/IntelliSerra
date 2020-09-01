@@ -6,18 +6,20 @@ import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatestplus.junit.JUnitRunner
 
+import scala.util.Success
+
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class ImplicitConversionTypeSpec extends FlatSpec with Matchers with TestImplicitConversionUtility {
 
   "An implicit conversion" should "exists for each type" in {
-    canConvert[Int,IntType] shouldBe true
-    canConvert[Double,DoubleType] shouldBe true
-    canConvert[Long,DoubleType] shouldBe true
-    canConvert[Float,DoubleType] shouldBe true
-    canConvert[String,StringType] shouldBe true
-    canConvert[Boolean, BooleanType] shouldBe true
-    canConvert[Char, CharType] shouldBe true
+    tryConvert[Int,IntType] _ shouldBe Success
+    tryConvert[Double,DoubleType] _ shouldBe Success
+    tryConvert[Long,DoubleType] _ shouldBe Success
+    tryConvert[Float,DoubleType] _ shouldBe Success
+    tryConvert[String,StringType] _ shouldBe Success
+    tryConvert[Boolean, BooleanType] _ shouldBe Success
+    tryConvert[Char, CharType] _ shouldBe Success
   }
 
 }

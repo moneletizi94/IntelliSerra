@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import scala.concurrent.duration._
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
@@ -24,7 +25,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   * */
   var pending: Map[String, Set[EntityChannel]] = Map()
 
-  override def receive: Receive = {
+  override def receive : Receive = {
     case CreateZone(zoneID) => sender() ! onCreateZone(zoneID)
 
     case RemoveZone(zoneID) => sender() ! onRemoveZone(zoneID)
@@ -61,11 +62,11 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
   private def onAssignEntity(zoneID: String, entityChannel: EntityChannel): ZoneManagerResponse = {
     zones.get(zoneID).fold[ZoneManagerResponse](ZoneNotFound)(_ => {
-      assignedEntities.find({ case (_, set) => set.contains(entityChannel) }) match {
+      assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
         case Some((zone, _)) => AlreadyAssigned(zone)
         case None =>
           pending.find({ case (_, set) => set.contains(entityChannel) })
-            .foreach({ case (zone, set) => removeFromPending(entityChannel, zone, set) })
+            .foreach({case (zone, set) => removeFromPending(entityChannel, zone, set)})
           pending += (zoneID -> (pending.getOrElse(zoneID, Set()) + entityChannel))
           entityChannel.channel ! AssociateTo(zones(zoneID), zoneID)
           AssignOk
@@ -74,27 +75,27 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   }
 
   private def onDissociateEntity(entityChannel: EntityChannel): ZoneManagerResponse = {
-    assignedEntities.find({ case (_, set) => set.contains(entityChannel) }) match {
+    assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
       case Some((zoneID, entities)) =>
         zones(zoneID) ! DeleteEntity(entityChannel) //if the zone exists in zones, it will exists also in assignedEntities
-        assignedEntities += (zoneID -> entities.filter(_ != entityChannel))
+        assignedEntities += (zoneID -> entities.filter(_!= entityChannel))
         informEntityToDissociate(entityChannel, zoneID)
       case None =>
-        pending.find({ case (_, set) => set.contains(entityChannel) })
+        pending.find({case (_, set) => set.contains(entityChannel)})
           .fold[ZoneManagerResponse](AlreadyDissociated)({
-            case (zoneID, entities) =>
-              removeFromPending(entityChannel, zoneID, entities)
-              informEntityToDissociate(entityChannel, zoneID)
-          })
+          case (zoneID, entities) =>
+            removeFromPending(entityChannel, zoneID, entities)
+            informEntityToDissociate(entityChannel, zoneID)
+        })
     }
   }
 
   private def onAck(): Unit = {
-    pending.find({ case (_, set) => set.exists(_.channel == sender()) }).foreach({ case (zoneID, entities) =>
+    pending.find({case (_, set) => set.exists(_.channel == sender())}).foreach({case (zoneID, entities) =>
       val entityToMove = entities.head
       zones(zoneID) ! AddEntity(entityToMove)
       assignedEntities = assignedEntities + (zoneID -> (assignedEntities(zoneID) + entityToMove))
-      removeFromPending(entityToMove, zoneID, entities)
+      removeFromPending(entityToMove ,zoneID, entities)
     })
   }
 
@@ -108,7 +109,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String): ActorRef = ZoneActor(zoneID, aggregators)
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)(5 seconds)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
