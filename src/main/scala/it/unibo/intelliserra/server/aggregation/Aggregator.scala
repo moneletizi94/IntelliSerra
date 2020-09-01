@@ -16,6 +16,7 @@ object Aggregator{
     override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(f(measures.map(_.value.asInstanceOf[T])), category)}
   }
 
+  // TODO: here? 
   def atMostOneCategory(aggregators: List[Aggregator]) : Boolean = aggregators.groupBy(a => a.category).forall(_._2.lengthCompare(1) == 0)
 
 }

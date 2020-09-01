@@ -75,18 +75,6 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   }
 
   "A zoneActor" should {
-    "preserve only last measure sent by the same sensor" in {
-      val sensor = TestProbe()
-      val measure1 = Measure(27, Temperature)
-      zone tell(SensorMeasure(measure1), sensor.ref)
-      val measure2 = Measure(20, Temperature)
-      zone tell(SensorMeasure(measure2), sensor.ref)
-      zone.underlyingActor.sensorsValue(sensor.ref) shouldBe measure2
-      zone.underlyingActor.sensorsValue(sensor.ref) should not be measure1
-    }
-  }
-
-  "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
       zone = TestActorRef.create(system, Props(new ZoneActor(List())))
       val sensor = TestProbe()

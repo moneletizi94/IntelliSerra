@@ -41,6 +41,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(e => log.error(e,""))(identity).toList
   }
 
+  // TODO: DoingAction??? functor? 
   private[zone] def computeActuatorState() : List[DoingAction] = actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
 
   private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
@@ -50,6 +51,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     sensorsValue = Map()
   }
 
+  // TODO: in utility class?
   private[zone] def flattenIterableTry[A,B,C](iterable: Iterable[Try[B]])(ifFailure : Throwable => A)(ifSuccess : B => C): Iterable[C]  = {
     val (successes, failures) = iterable.partition(_.isSuccess)
     failures.map(_ => ifFailure)
