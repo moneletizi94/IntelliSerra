@@ -8,9 +8,10 @@ import it.unibo.intelliserra.core.sensor.Category
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+import it.unibo.intelliserra.utils.TestUtility
 
 @RunWith(classOf[JUnitRunner])
-private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
+private class EntityManagerSpec extends TestKit(ActorSystem("MySpec")) with TestUtility
   with ImplicitSender
   with Matchers
   with WordSpecLike
@@ -23,8 +24,6 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   private val mockActuatorID = "actuatorID"
   private val mockActuatorCapability = ActingCapability(Set())
 
-  case object Temperature extends Category
-  case object Humidity extends Category
 
   before{
     entityManager = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])

@@ -5,7 +5,7 @@ import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
+import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
@@ -58,6 +58,9 @@ trait TestUtility {
       }
     }
   }
-  case object Temperature extends Category
+
+  case object Temperature extends Category{ override type Value = IntType }
+  case object Weather extends Category{ override type Value = StringType }
+
   case object Water extends Action
 }

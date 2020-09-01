@@ -5,16 +5,14 @@ import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
+import it.unibo.intelliserra.utils.TestUtility
 import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.Success
 
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
-class AggregatorSpec extends FlatSpec with Matchers{
-
-  private object Temperature extends Category{ override type Value = IntType }
-  private object Weather extends Category{ override type Value = StringType }
+class AggregatorSpec extends FlatSpec with Matchers with TestUtility {
 
   private val intTempMeasures : List[Measure] = List(Measure(4, Temperature), Measure(5, Temperature), Measure(8, Temperature))
   private val stringWeatherMeasures : List[Measure] = List(Measure("RAINY", Weather), Measure("SUNNY", Weather), Measure("SUNNY", Weather))
