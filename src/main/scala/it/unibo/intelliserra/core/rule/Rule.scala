@@ -3,6 +3,9 @@ package it.unibo.intelliserra.core.rule
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement
 
+/**
+ * It describe an activation rule used by [[RuleEngine]]
+ */
 trait Rule {
   /**
    * The condition statement of rule to be evaluated
