@@ -37,13 +37,13 @@ private class DeviceDeploySpec extends WordSpecLike
   private val sensor:Sensor = new Sensor {
    override def identifier: String = "sensorID"
    override def capability: SensingCapability = SensingCapability(Temperature)
-   override def state: Measure = Measure(IntType(0), Temperature)
+   override def state: Measure = Measure(Temperature)(IntType(0))
   }
 
   private val sensor2:Sensor = new Sensor {
     override def identifier: String = "sensor2ID"
     override def capability: SensingCapability = SensingCapability(Humidity)
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def state: Measure = Measure(Temperature)(IntType(0))
   }
 
   private val actuator:Actuator = new Actuator {
@@ -60,8 +60,8 @@ private class DeviceDeploySpec extends WordSpecLike
     override def doAction(action: Action): Unit = {}
   }
 
-  case object Temperature extends Category
-  case object Humidity extends Category
+  case object Temperature extends Category[IntType]
+  case object Humidity extends Category[IntType]
   case object Water extends Action
   case object OpenWindow extends Action
 

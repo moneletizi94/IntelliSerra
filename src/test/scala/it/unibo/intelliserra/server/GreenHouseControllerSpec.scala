@@ -51,7 +51,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: SensingCapability = SensingCapability(Temperature)
 
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def state: Measure = Measure(Temperature)(0)
   }
 
   private val sensor2: Sensor = new Sensor {
@@ -59,7 +59,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
     override def capability: SensingCapability = SensingCapability(Humidity)
 
-    override def state: Measure = Measure(IntType(0), Temperature)
+    override def state: Measure = Measure(Temperature)(0)
   }
 
   private val actuator: Actuator = new Actuator {
@@ -82,9 +82,9 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     override def doAction(action: Action): Unit = {}
   }
 
-  case object Temperature extends Category
+  case object Temperature extends Category[IntType]
 
-  case object Humidity extends Category
+  case object Humidity extends Category[IntType]
 
   case object Water extends Action
 

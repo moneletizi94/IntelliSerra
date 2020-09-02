@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinRequest, JoinSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.sensor.{Category, IntType}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -23,8 +23,8 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   private val mockActuatorID = "actuatorID"
   private val mockActuatorCapability = ActingCapability(Set())
 
-  case object Temperature extends Category
-  case object Humidity extends Category
+  case object Temperature extends Category[IntType]
+  case object Humidity extends Category[IntType]
 
   before{
     entityManager = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])
