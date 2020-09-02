@@ -1,8 +1,7 @@
 package it.unibo.intelliserra.server
 
-import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor}
+import it.unibo.intelliserra.core.actuator.Actuator
+import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
@@ -10,7 +9,6 @@ import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-
 import scala.concurrent.Await
 import scala.util.{Failure, Success, Try}
 
@@ -34,36 +32,10 @@ private class DeviceDeploySpec extends WordSpecLike
     awaitReady(this.server.terminate())
   }
 
-  private val sensor:Sensor = new Sensor {
-   override def identifier: String = "sensorID"
-   override def capability: SensingCapability = SensingCapability(Temperature)
-   override def state: Measure = Measure(Temperature)(IntType(0))
-  }
-
-  private val sensor2:Sensor = new Sensor {
-    override def identifier: String = "sensor2ID"
-    override def capability: SensingCapability = SensingCapability(Humidity)
-    override def state: Measure = Measure(Temperature)(IntType(0))
-  }
-
-  private val actuator:Actuator = new Actuator {
-    override def identifier: String = "actuatorID"
-    override def capability: ActingCapability = ActingCapability(Set(Water))
-    override def state: OperationalState = Idle
-    override def doAction(action: Action): Unit = {}
-  }
-
-  private val actuator2:Actuator = new Actuator {
-    override def identifier: String = "actuator2ID"
-    override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
-    override def state: OperationalState = Idle
-    override def doAction(action: Action): Unit = {}
-  }
-
-  case object Temperature extends Category[IntType]
-  case object Humidity extends Category[IntType]
-  case object Water extends Action
-  case object OpenWindow extends Action
+  private val sensor:Sensor = mockSensor("sensor")
+  private val sensor2:Sensor = mockSensor("sensor2")
+  private val actuator:Actuator = mockActuator("actuator")
+  private val actuator2:Actuator = mockActuator("actuator2")
 
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {

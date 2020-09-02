@@ -6,7 +6,6 @@ import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
-import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
@@ -46,49 +45,10 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     TestKit.shutdownActorSystem(system)
   }
 
-  private val sensor: Sensor = new Sensor {
-    override def identifier: String = "sensorID"
-
-    override def capability: SensingCapability = SensingCapability(Temperature)
-
-    override def state: Measure = Measure(Temperature)(0)
-  }
-
-  private val sensor2: Sensor = new Sensor {
-    override def identifier: String = "sensor2ID"
-
-    override def capability: SensingCapability = SensingCapability(Humidity)
-
-    override def state: Measure = Measure(Temperature)(0)
-  }
-
-  private val actuator: Actuator = new Actuator {
-    override def identifier: String = "actuatorID"
-
-    override def capability: ActingCapability = ActingCapability(Set(Water))
-
-    override def state: OperationalState = Idle
-
-    override def doAction(action: Action): Unit = {}
-  }
-
-  private val actuator2: Actuator = new Actuator {
-    override def identifier: String = "actuator2ID"
-
-    override def capability: ActingCapability = ActingCapability(Set(OpenWindow))
-
-    override def state: OperationalState = Idle
-
-    override def doAction(action: Action): Unit = {}
-  }
-
-  case object Temperature extends Category[IntType]
-
-  case object Humidity extends Category[IntType]
-
-  case object Water extends Action
-
-  case object OpenWindow extends Action
+  private val sensor: Sensor = mockSensor("sensorID")
+  private val sensor2: Sensor = mockSensor("sensor2ID")
+  private val actuator: Actuator = mockActuator("actuatorID")
+  private val actuator2: Actuator = mockActuator("actuator2ID")
 
   "A greenHouseController " must {
     "ask for create zone" in {
@@ -140,7 +100,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! DeleteZone(mockZoneID)
       expectMsg(ServiceResponse(Deleted))
       greenHouseController ! GetZones()
-      expectMsg(ServiceResponse(NotFound, "No zones!"))
+      expectMsg(ServiceResponse(Ok, List()))
     }
   }
 

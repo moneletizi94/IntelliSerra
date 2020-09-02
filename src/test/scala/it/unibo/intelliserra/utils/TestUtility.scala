@@ -1,15 +1,20 @@
 package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.testkit.{TestProbe}
+import akka.testkit.TestProbe
+import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
+import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import monix.reactive.Observable
 
-import scala.concurrent.{Await, Awaitable}
+import scala.concurrent.{Await, Awaitable, Future}
 
 trait TestUtility {
 
   import akka.util.Timeout
+
   import scala.concurrent.duration.{Duration, _}
-  import it.unibo.intelliserra.common.communication._
 
   val Hostname = "localhost"
   val Port = 8080
@@ -30,4 +35,32 @@ trait TestUtility {
         testProbe.expectTerminated(actor, duration)
     }
   }
+
+  def mockSensor(sensorID: String): Sensor = {
+    new Sensor {
+      override def identifier: String = sensorID
+
+      override def capability: SensingCapability = SensingCapability(Temperature)
+
+      override def measures: Observable[Measure] = Observable()
+    }
+  }
+  def mockActuator(actuatorID: String): Actuator = {
+    new Actuator {
+      override def identifier: String = actuatorID
+
+      override def capability: ActingCapability = ActingCapability(Set(Water))
+
+      override def state: Observable[OperationalState] = Observable()
+
+      override def actionHandler: ActionHandler = {
+        case _ => Future.successful(Idle)
+      }
+    }
+  }
+
+  case object Temperature extends Category{ override type Value = IntType }
+  case object Weather extends Category{ override type Value = StringType }
+
+  case object Water extends Action
 }
