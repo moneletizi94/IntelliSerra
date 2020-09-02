@@ -2,14 +2,14 @@ package it.unibo.intelliserra.examples
 
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.sensor.{Category, DoubleType, IntType}
 
 object RuleDslExample extends App {
 
   import it.unibo.intelliserra.core.rule.dsl._
 
-  case object Temperature extends Category
-  case object Humidity extends Category
+  case object Temperature extends Category[IntType]
+  case object Humidity extends Category[DoubleType]
 
   case object Water extends Action
 
