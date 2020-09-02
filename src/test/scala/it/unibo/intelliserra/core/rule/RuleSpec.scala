@@ -28,10 +28,10 @@ class RuleSpec extends WordSpecLike with Matchers {
 
   "A rule" should {
 
-    "contain statement and action" in {
-      val rule = Temperature > temperatureValue execute Water
-      checkConditionComposition(rule)(temperatureStatement)
-      rule.actions should contain only Water
+      "contain statement and action" in {
+        val rule = Temperature > temperatureValue execute Water
+        checkConditionComposition(rule)(temperatureStatement)
+        rule.actions should contain only Water
     }
 
     "contain logical AND statement" in {
