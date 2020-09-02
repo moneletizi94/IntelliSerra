@@ -2,6 +2,7 @@ package it.unibo.intelliserra.core.actuator
 
 sealed trait OperationalState{
   def isDoing() : Boolean
+
 }
 
 final case class DoingAction(action : Action) extends OperationalState {

@@ -4,20 +4,21 @@ import it.unibo.intelliserra.core.sensor.{Category, Measure, NumericType, ValueT
 import scala.util.Try
 
 trait Aggregator {
-  def category : Category
+  def category : Category[ValueType]
   def aggregate(measures : List[Measure]) : Try[Measure]
 }
 
 object Aggregator{
-  def createAggregator(category: Category)(implicit aggregateFunction : List[category.Value] => category.Value) : Aggregator =
-    new BaseAggregator(category)(aggregateFunction)
 
-  class BaseAggregator[T <: ValueType](override val category: Category)(val f : List[T] => T) extends Aggregator {
-    override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(f(measures.map(_.value.asInstanceOf[T])), category)}
+  def createAggregator[V <: ValueType](category: Category[V])(implicit aggregateFunction : List[V] => V) : Aggregator = {
+    new BaseAggregator(category)(aggregateFunction)
   }
 
-  // TODO: here? 
-  def atMostOneCategory(aggregators: List[Aggregator]) : Boolean = aggregators.groupBy(a => a.category).forall(_._2.lengthCompare(1) == 0)
+  class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
+    override def aggregate(measures: List[Measure]): Try[Measure] = Try{
+      Measure(category)(f(measures.map(_.value.asInstanceOf[V])))
+    }
+  }
 
 }
 

@@ -6,10 +6,9 @@ import scala.concurrent.duration._
 
 trait ActorWithRepeatedAction extends Actor{
 
-  def onTick(): Unit // TODO: generic?
-  def rate : FiniteDuration
+  val rate : FiniteDuration
 
-  private case object Tick
+  protected case object Tick
 
   private val scheduler = context.system.scheduler
 
@@ -17,7 +16,4 @@ trait ActorWithRepeatedAction extends Actor{
     scheduler.scheduleAtFixedRate(100 milliseconds, rate, self, Tick)(context.dispatcher)
   }
 
-  override def receive: Receive = {
-    case Tick => onTick()
-  }
 }

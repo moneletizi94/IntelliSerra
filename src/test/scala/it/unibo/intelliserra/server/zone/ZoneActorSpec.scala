@@ -13,6 +13,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation._
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with ImplicitSender
@@ -23,9 +24,11 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   private var zone: TestActorRef[ZoneActor] = _
   private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
+  private val aggregators = List(createAggregator(Temperature)(sum),
+                                  createAggregator(Weather)(moreFrequent))
 
   before{
-    zone = TestActorRef.create(system, Props(new ZoneActor(List())))
+    zone = TestActorRef.create(system, Props(new ZoneActor(aggregators)))
   }
 
   "A zoneActor" must {
@@ -63,9 +66,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" should {
     "preserve only last measure sent by the same sensor" in {
       val sensor = TestProbe()
-      val measure1 = Measure(27, Temperature)
+      val measure1 = Measure(Temperature)(27)
       zone tell(SensorMeasure(measure1), sensor.ref)
-      val measure2 = Measure(20, Temperature)
+      val measure2 = Measure(Temperature)(20)
       zone tell(SensorMeasure(measure2), sensor.ref)
       zone.underlyingActor.sensorsValue(sensor.ref) shouldBe measure2
       zone.underlyingActor.sensorsValue(sensor.ref) should not be measure1
@@ -74,16 +77,15 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
-      assert(true)
+      sendNMessageFromNProbe(10, zone, SensorMeasure(Measure(Temperature)(1)))
+      zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(Measure(Temperature)(10))
     }
   }
 
   "A zone " must {
     " have at most one aggregator for each category when created" in {
-      assertThrows[IllegalArgumentException] { // Result type: Assertion
-        ZoneActor("zoneName", List(createAggregator(Temperature)(avg),
-                                  createAggregator(Weather)(moreFrequent),
-                                  createAggregator(Temperature)(min)))
+      assertThrows[IllegalArgumentException] {
+        ZoneActor("zoneName", aggregators.+:(createAggregator(Temperature)(min)))
       }
     }
   }

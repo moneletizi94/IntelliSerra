@@ -2,6 +2,7 @@ package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
+import it.unibo.intelliserra.common.communication.Messages.SensorMeasure
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
@@ -13,7 +14,6 @@ import scala.concurrent.{Await, Awaitable, Future}
 trait TestUtility {
 
   import akka.util.Timeout
-
   import scala.concurrent.duration.{Duration, _}
 
   val Hostname = "localhost"
@@ -45,6 +45,7 @@ trait TestUtility {
       override def measures: Observable[Measure] = Observable()
     }
   }
+
   def mockActuator(actuatorID: String): Actuator = {
     new Actuator {
       override def identifier: String = actuatorID
@@ -59,8 +60,15 @@ trait TestUtility {
     }
   }
 
-  case object Temperature extends Category{ override type Value = IntType }
-  case object Weather extends Category{ override type Value = StringType }
+  def sendNMessageFromNProbe[T](messagesNumber: Int, sendTo : ActorRef, message : T)(implicit system: ActorSystem): Unit = {
+    for {
+      _ <- 1 to messagesNumber
+      sensor = TestProbe()
+    } sendTo.tell(message, sensor.ref)
+  }
+
+  case object Temperature extends Category[IntType]
+  case object Weather extends Category[StringType]
 
   case object Water extends Action
 }

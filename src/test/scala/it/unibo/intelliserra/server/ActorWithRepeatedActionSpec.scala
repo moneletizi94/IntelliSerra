@@ -17,12 +17,7 @@ class ActorWithRepeatedActionSpec extends TestKit(ActorSystem("MyTest")) with Te
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll {
-
-  class MockActor extends ActorWithRepeatedAction{
-    override def onTick(): Unit = print("test")
-    override def rate: FiniteDuration = 10 seconds
-  }
-
+remo
   "An empty test" must {
     "empty" in {
       print("A")
