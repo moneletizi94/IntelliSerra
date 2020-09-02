@@ -13,8 +13,8 @@ import scala.util.{Failure, Success, Try}
  * This is the Actor Controller who is in charge of receiving client messages and sending them to other entities based on the request.
  * He also knows the references to the main entities such as zoneManagerActor and entityManagerActor.
  *
- * @param zoneManagerActor, actorRef
- * @param entityManagerActor, actorRef
+ * @param zoneManagerActor   , actorRef
+ * @param entityManagerActor , actorRef
  */
 //noinspection ScalaStyle
 private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityManagerActor: ActorRef) extends Actor with ActorLogging {
@@ -57,6 +57,12 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
     case GetZones() =>
       sendResponseWithFallback(zoneManagerActor ? Messages.GetZones, sender()) {
         case Success(Messages.ZonesResult(zones)) => ServiceResponse(Ok, zones)
+      }
+
+    case GetState(zoneName) =>
+      sendResponseWithFallback(zoneManagerActor ? Messages.GetStateOfZone(zoneName), sender()) {
+        case Success(Messages.MyState(state)) => ServiceResponse(Ok, state)
+        case Success(Messages.ZoneNotFound) => ServiceResponse(NotFound, "Zone not found")
       }
 
     case AssignEntity(zoneName, entityId) =>

@@ -5,6 +5,7 @@ import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
+import scala.concurrent.duration._
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
@@ -39,6 +40,8 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
     case Ack => onAck()
 
     case PublishedOnRemoveEntity(entityChannel) => onDissociateEntity(entityChannel)
+
+    case GetStateOfZone(zoneID) => getState(zoneID)
   }
 
   /* --- ON RECEIVE ACTIONS --- */
@@ -98,10 +101,16 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
     })
   }
 
+  private def getState(zoneID: String): Unit = {
+    zones.find(zone => zone._1 == zoneID).fold(sender ! ZoneNotFound)(zone => {
+      zone._2.tell(GetState, sender())
+    })
+  }
+
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)(5 seconds)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -133,6 +142,5 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef =
-    actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
+  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
 }

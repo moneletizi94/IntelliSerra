@@ -14,6 +14,7 @@ private[core] object Client {
 
   /**
    * Create a client using akka actor
+   *
    * @param serverUri   the uri of server actor
    * @param actorSystem the actorSystem to be used for create the client actor
    * @return a new instance of client
@@ -52,6 +53,14 @@ private[core] object Client {
           case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
+
+      case GetState(zone) =>
+        makeRequest(GetState(zone)) {
+          case ServiceResponse(Ok, state) => Success(state)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+
+      case msg => log.debug(s"ignored unknown request $msg")
     }
 
     private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
