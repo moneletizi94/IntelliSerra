@@ -1,16 +1,14 @@
 package it.unibo.intelliserra.core.rule
 
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.SimpleConditionStatement
-import it.unibo.intelliserra.core.rule.dsl.{EqualsOperator, MajorOperator}
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.rule.dsl.MajorOperator
 import it.unibo.intelliserra.utils.{TestActions, TestCategory}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class RuleEngineSpec extends WordSpecLike with Matchers with BeforeAndAfter with TestActions with TestCategory{
+class RuleEngineSpec extends WordSpecLike with Matchers with BeforeAndAfter with StatementTestUtils {
 
   private var ruleEngine: RuleEngine = _
   private var ruleEngineEmpty: RuleEngine = _
@@ -18,9 +16,6 @@ class RuleEngineSpec extends WordSpecLike with Matchers with BeforeAndAfter with
   private val actionSet: Set[Action] = Set(Water, OpenWindow)
 
   private val rule1ID = "rule1"
-  private val temperatureValue = 20
-  private val temperatureStatement = SimpleConditionStatement(Temperature, MajorOperator, temperatureValue)
-
 
   before{
     rule = Rule(temperatureStatement, actionSet)
