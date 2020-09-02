@@ -7,6 +7,6 @@ sealed trait Measure {
 }
 
 object Measure {
-  def apply[V <: ValueType](category: Category[V])(value : V): Measure = MeasureImpl(value, category)
+  def apply[V <: ValueType](category: Category[V])(value: V): Measure = MeasureImpl(value, category)
   private case class MeasureImpl(override val value: ValueType, override val category: Category[ValueType]) extends Measure
 }

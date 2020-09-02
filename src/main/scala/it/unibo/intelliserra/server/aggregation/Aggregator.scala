@@ -9,21 +9,15 @@ trait Aggregator {
 }
 
 object Aggregator{
-
-  def createAggregator[V <: ValueType](category: Category[V])(implicit aggregateFunction : List[V] => V) : Aggregator = {
+  def createAggregator[V <: ValueType](category: Category[V])(implicit aggregateFunction : List[V] => V) : Aggregator =
     new BaseAggregator(category)(aggregateFunction)
-  }
 
   class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
-    override def aggregate(measures: List[Measure]): Try[Measure] = Try{
-      Measure(category)(f(measures.map(_.value.asInstanceOf[V])))
-    }
+    override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(category)(f(measures.map(_.value.asInstanceOf[V]))) }
   }
-
 }
 
 object AggregateFunctions{
-  import numericInt._
   def avg[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.avg(fractional)
   def sum[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.sum(fractional)
   def min[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.min(ordering)

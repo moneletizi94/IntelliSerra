@@ -2,7 +2,6 @@ package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import it.unibo.intelliserra.common.communication.Messages.SensorMeasure
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
@@ -14,6 +13,7 @@ import scala.concurrent.{Await, Awaitable, Future}
 trait TestUtility {
 
   import akka.util.Timeout
+
   import scala.concurrent.duration.{Duration, _}
 
   val Hostname = "localhost"
@@ -68,6 +68,7 @@ trait TestUtility {
   }
 
   case object Temperature extends Category[IntType]
+  case object Humidity extends Category[IntType]
   case object Weather extends Category[StringType]
 
   case object Water extends Action

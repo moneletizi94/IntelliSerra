@@ -17,7 +17,7 @@ class ActorWithRepeatedActionSpec extends TestKit(ActorSystem("MyTest")) with Te
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll {
-remo
+
   "An empty test" must {
     "empty" in {
       print("A")
