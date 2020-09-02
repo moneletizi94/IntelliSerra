@@ -1,17 +1,13 @@
 package it.unibo.intelliserra.server.aggregation
 
-import it.unibo.intelliserra.core.sensor.{IntType, ValueType}
+import it.unibo.intelliserra.core.sensor.{IntType, _}
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatestplus.junit.JUnitRunner
-import it.unibo.intelliserra.core.sensor._
 
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class NumericImplementationsSpec extends FlatSpec with Matchers{
-
-  import numericInt._
-  import numericDouble._
 
   "A numeric integer " should " do operations correctly" in {
     numericInt.plus(3,3) shouldBe IntType(6)
