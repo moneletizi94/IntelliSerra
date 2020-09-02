@@ -4,16 +4,16 @@ import it.unibo.intelliserra.core.sensor.{Category, Measure, NumericType, ValueT
 import scala.util.Try
 
 trait Aggregator {
-  def category : Category
+  def category : Category[ValueType]
   def aggregate(measures : List[Measure]) : Try[Measure]
 }
 
 object Aggregator{
-  def createAggregator(category: Category)(implicit aggregateFunction : List[category.Value] => category.Value) : Aggregator =
+  def createAggregator[V <: ValueType](category: Category[V])(implicit aggregateFunction : List[V] => V) : Aggregator =
     new BaseAggregator(category)(aggregateFunction)
 
-  class BaseAggregator[T <: ValueType](override val category: Category)(val f : List[T] => T) extends Aggregator {
-    override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(f(measures.map(_.value.asInstanceOf[T])), category)}
+  class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
+    override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(category)(f(measures.map(_.value.asInstanceOf[V]))) }
   }
 
   def atMostOneCategory(aggregators: List[Aggregator]) : Boolean = aggregators.groupBy(a => a.category).forall(_._2.lengthCompare(1) == 0)
@@ -21,7 +21,6 @@ object Aggregator{
 }
 
 object AggregateFunctions{
-  import numericInt._
   def avg[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.avg(fractional)
   def sum[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.sum(fractional)
   def min[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.min(ordering)

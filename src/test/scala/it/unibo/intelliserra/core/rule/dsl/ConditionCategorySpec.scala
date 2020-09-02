@@ -1,16 +1,14 @@
 package it.unibo.intelliserra.core.rule.dsl
 
+import it.unibo.intelliserra.core.rule.StatementTestUtils
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.SimpleConditionStatement
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.core.sensor.{Category, IntType}
 import org.junit.runner.RunWith
 import org.scalatest.{Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ConditionCategorySpec extends WordSpecLike with Matchers {
-
-  case object Temperature extends Category
-  private val temperatureValue = 20
+class ConditionCategorySpec extends WordSpecLike with Matchers with StatementTestUtils {
 
   "A condition category" must {
     "create a statement with major operator" in {
