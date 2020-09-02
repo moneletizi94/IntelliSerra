@@ -13,10 +13,6 @@ import scala.util.Success
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class AggregatorSpec extends FlatSpec with Matchers with TestUtility {
-class AggregatorSpec extends FlatSpec with Matchers{
-
-  private object Temperature extends Category[IntType]
-  private object Weather extends Category[StringType]
 
   private val intTempMeasures : List[Measure] = List(Measure(Temperature)(4), Measure(Temperature)(5), Measure(Temperature)(8))
   private val stringWeatherMeasures : List[Measure] = List(Measure(Weather)("RAINY"), Measure(Weather)("SUNNY"), Measure(Weather)("SUNNY"))

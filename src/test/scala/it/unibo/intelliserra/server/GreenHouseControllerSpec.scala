@@ -7,6 +7,8 @@ import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
 import it.unibo.intelliserra.core.sensor._
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor
+import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility

@@ -59,8 +59,9 @@ trait TestUtility {
     }
   }
 
-  case object Temperature extends Category{ override type Value = IntType }
-  case object Weather extends Category{ override type Value = StringType }
+  case object Temperature extends Category[IntType]
+  case object Humidity extends Category[IntType]
+  case object Weather extends Category[StringType]
 
   case object Water extends Action
 }
