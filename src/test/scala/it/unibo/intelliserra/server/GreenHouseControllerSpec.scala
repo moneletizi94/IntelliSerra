@@ -10,10 +10,11 @@ import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.entityManager.EntityManagerActor
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 
@@ -23,20 +24,19 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   with BeforeAndAfter
   with TestUtility
   with ImplicitSender
-  with BeforeAndAfterAll
-  with Matchers {
+  with BeforeAndAfterAll {
 
   private var mockZoneID: String = _
 
   private var greenHouseController: TestActorRef[GreenHouseController] = _
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
-  private var entityRef: ActorRef = _
+  private var entityRef : ActorRef = _
   private val aggregators: List[Aggregator] = List()
 
   before {
-    this.entityManagerActor = EntityManagerActor()
     this.zoneManagerActor = ZoneManagerActor(aggregators)
+    this.entityManagerActor = EntityManagerActor()
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor)))
   }
 
@@ -210,24 +210,6 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     "ask to remove entity that does not exist" in {
       greenHouseController ! RemoveEntity(sensor2.identifier)
       expectMsg(ServiceResponse(NotFound, "Entity not found"))
-    }
-  }
-
-  "A greenHouseController " must {
-    "ask state from nonexistent zone" in {
-      mockZoneID = "zone13"
-      greenHouseController ! GetState(mockZoneID)
-      expectMsg(ServiceResponse(NotFound, "Zone not found"))
-    }
-  }
-
-  "A greenHouseController " must {
-    "ask state from existing zone" in {
-      mockZoneID = "zone14"
-      greenHouseController ! CreateZone(mockZoneID)
-      expectMsg(ServiceResponse(Created))
-      greenHouseController ! GetState(mockZoneID)
-      expectMsgPF(){case ServiceResponse(Ok, _) => true} shouldBe true
     }
   }
 }

@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
 import monix.reactive.Observable
 
@@ -58,6 +58,11 @@ trait TestUtility {
       }
     }
   }
+  //TODO vedere se si deve mettere override type, in caso cambiarlo anche da Mone nell'AggregatorSpec
   case object Temperature extends Category
   case object Water extends Action
+
+  def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
+    EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
+  }
 }
