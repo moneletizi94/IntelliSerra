@@ -120,5 +120,16 @@ class ClientSpec extends WordSpecLike
       }
     }
     /* --- END TESTING ASSIGN ---*/
+
+    "get state from nonexistent zone" in {
+      assertThrows[Exception] {
+        awaitResult(client.getState(zoneName))
+      }
+    }
+
+    "get state from existing zone" in {
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.getState(zoneName)) shouldBe None
+    }
   }
 }

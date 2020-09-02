@@ -3,6 +3,7 @@ package it.unibo.intelliserra.common.communication
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.state.State
 
 //noinspection ScalaStyle
 object Messages {
@@ -34,6 +35,7 @@ object Messages {
   case object GetZones extends ZoneManagerRequest
   case class AssignEntityToZone(zoneName: String, entityChannel: EntityChannel) extends ZoneManagerRequest
   case class DissociateEntityFromZone(entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class GetStateOfZone(zoneName: String) extends ZoneManagerRequest
 
   sealed trait ZoneManagerResponse
   case object ZoneCreated extends ZoneManagerResponse
@@ -49,6 +51,7 @@ object Messages {
   case object DissociateOk extends ZoneManagerResponse // From ZoneManager to GH
   case class AssignError(error: String) extends ZoneManagerResponse
   case object AlreadyDissociated extends ZoneManagerResponse
+  case object Ok extends ZoneManagerResponse
 
   // Zone Protocol (From ZoneManager to Zone)
   sealed trait ZoneRequest
@@ -56,6 +59,7 @@ object Messages {
   case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
   case object GetState extends ZoneRequest
   case class DoActions(actions: Set[Action]) extends ZoneRequest
+  case class MyState(state : Option[State])
 
   sealed trait EntityRequest
   case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator

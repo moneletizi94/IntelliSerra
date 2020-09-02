@@ -29,6 +29,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   after {
     killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
   }
+
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
@@ -229,6 +230,14 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
       manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe true
     }
     /* --- END TEST ON ACK --- */
+
+    /* --- START TEST GET STATE --- */
+    "get state for a nonexistent zone " in {
+      zoneManager ! GetStateOfZone(zoneIdentifier)
+      expectMsg(ZoneNotFound)
+    }
+    /* --- END TEST GET STATE --- */
+
   }
 
   /* --- UTILITY METHODS --- */
@@ -240,6 +249,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
     zoneManager.underlyingActor.zones.values.toList
   }
+
   private def deleteZonesAndExpectMsg(identifiers: String*): Unit = {
     identifiers.foreach {
       zoneID =>
@@ -247,6 +257,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
         expectMsg(ZoneRemoved)
     }
   }
+
   private def entityChannelWithRef(entityRef: ActorRef): EntityChannel = {
     EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
   }

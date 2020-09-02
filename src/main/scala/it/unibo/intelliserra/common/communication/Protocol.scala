@@ -1,5 +1,7 @@
 package it.unibo.intelliserra.common.communication
 
+import it.unibo.intelliserra.core.state.State
+
 /**
  *  Decision
  *
@@ -22,6 +24,7 @@ object Protocol {
   final case class AssignEntity(zoneName: String, entityId: String) extends ClientRequest
   final case class DissociateEntity(entityId: String) extends ClientRequest
   final case class RemoveEntity(entityId: String) extends ClientRequest
+  final case class GetState(zoneName: String) extends ClientRequest
 
   sealed trait ResponseType
   case object Ok extends ResponseType
