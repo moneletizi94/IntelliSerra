@@ -1,5 +1,8 @@
 package it.unibo.intelliserra.core.rule.dsl
 
+/**
+ * It defines an operator used for describe a condition statement [[ConditionStatement]]
+ */
 sealed trait ConditionOperator
 case object MajorOperator extends ConditionOperator
 case object MajorEqualsOperator extends ConditionOperator

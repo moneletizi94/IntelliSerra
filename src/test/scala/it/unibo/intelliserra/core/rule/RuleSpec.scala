@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.core.rule
 
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.SimpleConditionStatement
+import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.sensor.{Category, IntType, StringType}
 import org.junit.runner.RunWith
@@ -25,7 +25,7 @@ class RuleSpec extends WordSpecLike with Matchers with StatementTestUtils {
 
     "have unique statement per category" in {
       val rule = Temperature > temperatureValue && Temperature > temperatureValue execute Water
-      ConditionStatement.toSimpleStatement(rule.condition) should have size 1
+      ConditionStatement.toAtomicStatements(rule.condition) should have size 1
     }
 
     "have unique actions" in {
@@ -35,7 +35,7 @@ class RuleSpec extends WordSpecLike with Matchers with StatementTestUtils {
 
   }
 
-  private def checkConditionComposition(rule: Rule)(statements: SimpleConditionStatement*): Unit = {
-    ConditionStatement.toSimpleStatement(rule.condition) should contain only (statements:_*)
+  private def checkConditionComposition(rule: Rule)(statements: AtomicConditionStatement*): Unit = {
+    ConditionStatement.toAtomicStatements(rule.condition) should contain only (statements:_*)
   }
 }
