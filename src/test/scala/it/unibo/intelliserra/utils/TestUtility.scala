@@ -6,6 +6,8 @@ import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
+import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
@@ -58,8 +60,11 @@ trait TestUtility {
       }
     }
   }
-  //TODO vedere se si deve mettere override type, in caso cambiarlo anche da Mone nell'AggregatorSpec
-  case object Temperature extends Category
+
+  case object Temperature extends Category[IntType]
+  case object Humidity extends Category[IntType]
+  case object Weather extends Category[StringType]
+
   case object Water extends Action
 
   def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {

@@ -41,7 +41,7 @@ object GreenHouseServer {
    * @param port  the port of the server
    * @return an instance of a [[it.unibo.intelliserra.server.core.GreenHouseServer]]
    */
-  //noinspection ScalaStyle
+  // scalastyle:off magic.number
   def apply(name: String,
             host: String = "localhost",
             port: Int = 8080): GreenHouseServer = new GreenHouseServerImpl(name, host, port)
