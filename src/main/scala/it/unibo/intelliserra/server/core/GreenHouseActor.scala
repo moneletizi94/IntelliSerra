@@ -1,23 +1,18 @@
 package it.unibo.intelliserra.server.core
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
-import it.unibo.intelliserra.common.communication.Messages
-import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.common.communication.Protocol.{Conflict, CreateZone, Created, DeleteZone, Deleted, Error, GetZones, NotFound, Ok, ServiceResponse}
-import it.unibo.intelliserra.server.EntityManagerActor
-import it.unibo.intelliserra.common.communication.Messages.{ZoneAlreadyExists, ZoneCreated, ZoneNotFound, ZoneRemoved, ZonesResult}
+import it.unibo.intelliserra.common.communication.Protocol.ServiceResponse
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.aggregation.Aggregator
-import it.unibo.intelliserra.server.{EntityManagerActor, GreenHouseController}
+import it.unibo.intelliserra.server.GreenHouseController
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
+import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 private[core] object GreenHouseActor {
 
@@ -60,6 +55,7 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
     case Start(aggregators) =>
       zoneManagerActor = ZoneManagerActor(aggregators)
       entityManagerActor = EntityManagerActor()
+      EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
       context.become(running orElse routeToController)
       sender ! Started

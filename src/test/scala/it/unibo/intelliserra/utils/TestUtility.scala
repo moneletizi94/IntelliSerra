@@ -4,6 +4,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredSensor, SensingCapability}
+import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import monix.reactive.Observable
@@ -64,4 +66,8 @@ trait TestUtility {
   case object Weather extends Category[StringType]
 
   case object Water extends Action
+
+  def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
+    EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
+  }
 }

@@ -120,5 +120,47 @@ class ClientSpec extends WordSpecLike
       }
     }
     /* --- END TESTING ASSIGN ---*/
+
+    /* --- START TEST ON REMOVE ENTITY --- */
+    "be able to remove an existing entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.removeEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to remove a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.removeEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON REMOVE ENTITY --- */
+
+    /* --- START TEST ON DISSOCIATE ENTITY --- */
+    "be able to dissociate an associated entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.dissociateEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to dissociate a non-associated entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(sensor1.identifier))
+      }
+    }
+    "fail to dissociate a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON DISSOCIATE ENTITY --- */
+
+    "get state from nonexistent zone" in {
+      assertThrows[Exception] {
+        awaitResult(client.getState(zoneName))
+      }
+    }
+
+    "get state from existing zone" in {
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.getState(zoneName)) shouldBe None
+    }
   }
 }

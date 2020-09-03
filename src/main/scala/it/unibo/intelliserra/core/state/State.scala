@@ -8,3 +8,11 @@ trait State {
   def perceptions : List[Measure]
   def activeActions : List[DoingAction]
 }
+
+object State{
+  def apply(perceptions: List[Measure], activeActions : List[DoingAction]): State = new StateImpl(perceptions, activeActions)
+}
+
+case class StateImpl(override val perceptions: List[Measure], override val activeActions : List[DoingAction]) extends State{
+  override val timestamp : Long = System.currentTimeMillis / 1000
+}

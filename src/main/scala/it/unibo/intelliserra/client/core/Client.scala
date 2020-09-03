@@ -14,6 +14,7 @@ private[core] object Client {
 
   /**
    * Create a client using akka actor
+   *
    * @param serverUri   the uri of server actor
    * @param actorSystem the actorSystem to be used for create the client actor
    * @return a new instance of client
@@ -28,29 +29,35 @@ private[core] object Client {
     private val serverActor = context actorSelection serverUri
 
     private def handleRequest: Receive = {
-      case CreateZone(zone) =>
-        makeRequestWithFallback(CreateZone(zone)) {
+      case CreateZone(zone) => makeRequestWithFallback(CreateZone(zone)) {
           case ServiceResponse(Created, _) => Success(zone)
           case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
-      case DeleteZone(zone) =>
-        makeRequestWithFallback(DeleteZone(zone)) {
+      case DeleteZone(zone) => makeRequestWithFallback(DeleteZone(zone)) {
           case ServiceResponse(Deleted, _) => Success(zone)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
-      case GetZones() =>
-        makeRequestWithFallback(GetZones()) {
+      case GetZones() => makeRequestWithFallback(GetZones()) {
           case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
         }
-
-      case AssignEntity(zoneID, entityID) =>
-        makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
+      case AssignEntity(zoneID, entityID) => makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
           case ServiceResponse(Ok,_) => Success(zoneID)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+      case DissociateEntity(entityID) => makeRequestWithFallback(DissociateEntity(entityID)) {
+          case ServiceResponse(Ok, _) => Success(entityID)
+          case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+      case GetState(zone) => makeRequest(GetState(zone)) {
+          case ServiceResponse(Ok, state) => Success(state)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        }
+      case RemoveEntity(entityID) => makeRequest(RemoveEntity(entityID)) {
+          case ServiceResponse(Deleted, _) => Success(entityID)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
     }
 
