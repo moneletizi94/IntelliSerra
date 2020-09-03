@@ -34,18 +34,15 @@ private[core] object Client {
           case ServiceResponse(Created, _) => Success(zone)
           case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
       case DeleteZone(zone) =>
         makeRequestWithFallback(DeleteZone(zone)) {
           case ServiceResponse(Deleted, _) => Success(zone)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
       case GetZones() =>
         makeRequestWithFallback(GetZones()) {
           case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
         }
-
       case AssignEntity(zoneID, entityID) =>
         makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
           case ServiceResponse(Ok,_) => Success(zoneID)
@@ -53,14 +50,16 @@ private[core] object Client {
           case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
           case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
       case GetState(zone) =>
         makeRequest(GetState(zone)) {
           case ServiceResponse(Ok, state) => Success(state)
           case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         }
-
-      case msg => log.debug(s"ignored unknown request $msg")
+      case RemoveEntity(entity) =>
+        makeRequest(RemoveEntity(entity)) {
+          case ServiceResponse(Deleted, _) => Success(entity)
+          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
     }
 
     private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {

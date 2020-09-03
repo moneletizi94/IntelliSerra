@@ -43,4 +43,5 @@ trait ZoneClient {
    * @return if success, the state of zone, a failure otherwise
    */
   def getState(zone: Zone): Future[Option[State]]
+
 }

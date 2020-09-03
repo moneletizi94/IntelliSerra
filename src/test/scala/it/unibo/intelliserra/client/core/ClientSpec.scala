@@ -121,6 +121,19 @@ class ClientSpec extends WordSpecLike
     }
     /* --- END TESTING ASSIGN ---*/
 
+    /* --- START TEST ON REMOVE ENTITY --- */
+    "be able to remove an existing entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.removeEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to remove a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.removeEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON REMOVE ENTITY --- */
+
     "get state from nonexistent zone" in {
       assertThrows[Exception] {
         awaitResult(client.getState(zoneName))

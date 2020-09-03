@@ -5,13 +5,20 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication.Protocol.{AssignEntity, CreateZone, DeleteZone, GetState, GetZones}
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.state.State
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-trait GreenHouseClient extends ZoneClient
+trait GreenHouseClient extends ZoneClient {
+  /**
+  * Remove an entity, either or not associated to a zone
+  * @param entity the entity to remove
+    * @return
+  */
+  def removeEntity(entity: Entity): Future[Entity]
+}
 
 object GreenHouseClient {
 
@@ -44,6 +51,8 @@ object GreenHouseClient {
     override def associateEntity(entity: Entity, zone: Zone): Future[Zone] = (client ? AssignEntity(zone, entity)).mapTo[Zone]
 
     override def getState(zone: Zone): Future[Option[State]] = (client ? GetState(zone)).mapTo[Option[State]]
+
+    override def removeEntity(entity: Entity): Future[Entity] = (client ? RemoveEntity(entity)).mapTo[Entity]
   }
 
 }
