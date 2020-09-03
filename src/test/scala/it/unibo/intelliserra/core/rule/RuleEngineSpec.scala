@@ -41,11 +41,11 @@ class RuleEngineSpec extends WordSpecLike with Matchers with BeforeAndAfter with
     }
 
     "enable a rule that is not enabled" in {
-      ruleEngine.enabledRule(rule1ID) shouldBe true
+      ruleEngine.enableRule(rule1ID) shouldBe true
     }
 
     "disabled a rule that is not disabled" in {
-      ruleEngine.enabledRule(rule1ID) shouldBe true
+      ruleEngine.enableRule(rule1ID) shouldBe true
       ruleEngine.disableRule(rule1ID) shouldBe true
     }
   }

@@ -1,3 +1,10 @@
 package it.unibo.intelliserra.core.rule
 
-case class RuleInfo(identifier: String, rule:Rule)
+/**
+ * RuleInfo represents the information of a rule.
+ * Contains a defined rule and its identifier
+ *
+ * @param identifier rule identifier
+ * @param rule represents a specific rule
+ */
+case class RuleInfo(identifier: String, rule: Rule)
