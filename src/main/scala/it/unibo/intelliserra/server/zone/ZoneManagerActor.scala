@@ -5,13 +5,12 @@ import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
-import scala.concurrent.duration._
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
  * a client needs them, it keeps link between zone identifier (given by the client)
- * and the actor ref. It also be able to delete zones and check for zone existence
- * It manages link between entities (sensors and actuators) and zones
+ * and the actor ref. It also be able to delete zones and check for zone existence.
+ * It manages link between entities (sensors and actuators) and zones.
  */
 
 private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) extends Actor with ActorLogging {
@@ -110,7 +109,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)(5 seconds)
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)()
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
