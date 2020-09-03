@@ -183,7 +183,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! DissociateEntity(actuator2.identifier)
       expectMsg(ServiceResponse(Ok))
       greenHouseController ! DissociateEntity(actuator2.identifier)
-      expectMsg(ServiceResponse(Error))
+      expectMsg(ServiceResponse(Error, "Entity already dissociated"))
     }
   }
 

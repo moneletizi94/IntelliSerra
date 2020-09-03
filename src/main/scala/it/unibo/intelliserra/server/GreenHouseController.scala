@@ -89,7 +89,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
         }
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.DissociateOk) => ServiceResponse(Ok)
-        case Success(Messages.AlreadyDissociated) => ServiceResponse(Error)
+        case Success(Messages.AlreadyDissociated) => ServiceResponse(Error, "Entity already dissociated")
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
       }
 

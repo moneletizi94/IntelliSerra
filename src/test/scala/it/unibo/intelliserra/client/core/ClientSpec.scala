@@ -134,6 +134,24 @@ class ClientSpec extends WordSpecLike
     }
     /* --- END TEST ON REMOVE ENTITY --- */
 
+    /* --- START TEST ON DISSOCIATE ENTITY --- */
+    "be able to dissociate an associated entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.dissociateEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to dissociate a non-associated entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(sensor1.identifier))
+      }
+    }
+    "fail to dissociate a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON DISSOCIATE ENTITY --- */
+
     "get state from nonexistent zone" in {
       assertThrows[Exception] {
         awaitResult(client.getState(zoneName))
