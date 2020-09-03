@@ -87,7 +87,7 @@ private[core] object Client {
     override def receive: Receive =
       handleZoneRequests orElse
       handleEntitiesRequests orElse {
-        case msg: _ => log.warning(s"Unknown message: $msg")
+        case msg@_ => log.warning(s"Unknown message: $msg")
       }
   }
 }
