@@ -8,7 +8,7 @@ trait ActorWithRepeatedAction extends Actor{
 
   val rate : FiniteDuration
 
-  protected case object Tick
+  case object Tick
 
   private val scheduler = context.system.scheduler
 

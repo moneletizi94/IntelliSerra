@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Timers}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasure}
+import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.actuator.{Action, DoingAction, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
@@ -12,7 +12,6 @@ import it.unibo.intelliserra.common.utils.Utils._
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
 
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               override val rate : FiniteDuration = ZoneActor.defaultTickRate)
@@ -27,12 +26,13 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
-    case DoActions(actions) =>
-    /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
-                        .filter(_._2.nonEmpty)
-                        //.flatMap()*/
-    case SensorMeasure(measure) => sensorsValue += sender -> measure
-    case Tick =>
+    case DoActions(actions) => /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
+                                                    .filter(_._2.nonEmpty)
+                                                    .flatMap()*/
+
+    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
+    case Tick => computeState() ; sensorsValue = Map()
+    case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
@@ -40,7 +40,6 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
       (category, measures) <- sensorsValue.values.groupBy(_.category)
       aggregator <- aggregators.find(_.category == category)
     } yield aggregator.aggregate(measures.toList)
-    println(measuresTry)
     flattenIterableTry(measuresTry)(e => log.error(e,""))(identity).toList
   }
 

@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.aggregation
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, StringType}
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
+import it.unibo.intelliserra.utils.Categories.{Temperature, Weather}
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import it.unibo.intelliserra.utils.TestUtility
