@@ -5,7 +5,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started}
 
 import scala.concurrent.duration._

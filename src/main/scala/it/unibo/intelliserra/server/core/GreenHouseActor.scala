@@ -6,10 +6,12 @@ import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
 import it.unibo.intelliserra.common.communication.Protocol.ServiceResponse
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.ServerConfig.{RuleConfig, ZoneConfig}
+import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.{GreenHouseController, ServerConfig}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
+import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
 import scala.concurrent.duration._
@@ -53,11 +55,13 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
   var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
+  var ruleEngineService: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
       zoneManagerActor = ZoneManagerActor(zoneConfig)
       entityManagerActor = EntityManagerActor()
+      ruleEngineService = RuleEngineService(ruleConfig.rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
       context.become(running orElse routeToController)
