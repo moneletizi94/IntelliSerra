@@ -31,7 +31,7 @@ class ClientSpec extends WordSpecLike
     server = GreenHouseServer(GreenhouseName, Hostname, Port)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
     deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(server.start(aggregators))
+    awaitReady(server.start(aggregators, List()))
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
   }

@@ -68,4 +68,10 @@ object Messages {
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
 
+  //RuleEngineService Protocol (From ?? to RuleEngineService)
+  sealed trait RuleEntityManagerRequest
+  case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
+  case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
+  case class DoingActions(state: State) extends RuleEntityManagerRequest
+
 }

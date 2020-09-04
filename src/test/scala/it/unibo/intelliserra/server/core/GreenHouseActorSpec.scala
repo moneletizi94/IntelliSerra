@@ -30,6 +30,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
     killActors(serverActor,
       serverActor.underlyingActor.entityManagerActor,
       serverActor.underlyingActor.zoneManagerActor,
+      serverActor.underlyingActor.ruleEngineService,
       serverActor.underlyingActor.greenHouseController)
   }
 
@@ -38,14 +39,14 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
 
   "A greenhouse actor" must {
     "send Started message when is successfully started" in {
-      serverActor ! Start(aggregators)
+      serverActor ! Start(aggregators, List())
       expectMsg(Started)
     }
 
     "send a ServerError if is already running" in {
-      serverActor ! Start(aggregators)
+      serverActor ! Start(aggregators, List())
       expectMsg(Started)
-      serverActor ! Start(aggregators)
+      serverActor ! Start(aggregators, List())
       expectMsgType[ServerError]
     }
   }

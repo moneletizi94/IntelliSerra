@@ -28,13 +28,13 @@ class GreenHouseServerSpec extends WordSpecLike
   "Green house server facade " should {
 
     "allow to start server with success" in {
-      awaitReady(server.start(aggregators))
+      awaitReady(server.start(aggregators, List()))
     }
 
     "raise IllegalStateException when start is called on already running instance" in {
-      awaitResult(server.start(aggregators))
+      awaitResult(server.start(aggregators, List()))
       assertThrows[IllegalStateException] {
-        awaitResult(server.start(aggregators))
+        awaitResult(server.start(aggregators, List()))
       }
     }
   }

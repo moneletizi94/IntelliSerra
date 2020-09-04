@@ -25,7 +25,7 @@ private class DeviceDeploySpec extends WordSpecLike
   before {
     this.server = GreenHouseServer(GreenhouseName, Hostname, Port)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(this.server.start(aggregators))
+    awaitReady(this.server.start(aggregators, List()))
   }
 
   after {
