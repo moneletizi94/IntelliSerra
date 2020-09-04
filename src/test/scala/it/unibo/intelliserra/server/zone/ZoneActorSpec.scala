@@ -1,21 +1,28 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, GetState, MyState, SensorMeasure}
+import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, GetState, MyState, SensorMeasureUpdated}
+import it.unibo.intelliserra.core.actuator.{DoingAction, Idle}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
-import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation._
+import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Water}
+import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
+import org.scalatest.concurrent.{AsyncAssertions, Timeouts, Waiters}
+
+import scala.concurrent.duration._
 
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
-class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
+class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility with Waiters
   with ImplicitSender
   with Matchers
   with WordSpecLike
@@ -67,18 +74,50 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     "preserve only last measure sent by the same sensor" in {
       val sensor = TestProbe()
       val measure1 = Measure(Temperature)(27)
-      zone tell(SensorMeasure(measure1), sensor.ref)
+      zone tell(SensorMeasureUpdated(measure1), sensor.ref)
       val measure2 = Measure(Temperature)(20)
-      zone tell(SensorMeasure(measure2), sensor.ref)
+      zone tell(SensorMeasureUpdated(measure2), sensor.ref)
       zone.underlyingActor.sensorsValue(sensor.ref) shouldBe measure2
       zone.underlyingActor.sensorsValue(sensor.ref) should not be measure1
     }
   }
 
   "A zoneActor" should {
+    "update the state of the actuator correctly" in {
+      val actuator = TestProbe()
+      val operationalState = Idle
+      zone tell(ActuatorStateChanged(operationalState), actuator.ref)
+      val operationalState2 = DoingAction(Water)
+      zone tell(ActuatorStateChanged(operationalState2), actuator.ref)
+      zone.underlyingActor.actuatorsState(actuator.ref) shouldBe operationalState2
+      zone.underlyingActor.actuatorsState(actuator.ref) should not be operationalState
+      //checkReplace(zone.underlyingActor.actuatorsState)
+    }
+  }
+
+  private def sendMessageAndCheckReplace[T](map : Map[ActorRef,T])(implicit sample : Sample[T], system: ActorSystem) = {
+    val sender = TestProbe()
+    val sendingValue1 = Generator.generate(sample)
+    zone tell(sendingValue1, sender.ref)
+    val sensingValue2 = Generator.generate
+    zone tell(sensingValue2, sender.ref)
+    map(sender.ref) shouldBe sensingValue2
+    map(sender.ref) should not be sendingValue1
+  }
+
+  "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
-      sendNMessageFromNProbe(10, zone, SensorMeasure(Measure(Temperature)(1)))
+      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(Measure(Temperature)(1)))
       zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(Measure(Temperature)(10))
+    }
+  }
+
+  "A zoneActor" should {
+    "compute actuators state correctly" in {
+      sendNMessageFromNProbe(5, zone, ActuatorStateChanged(Idle))
+      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(DoingAction(Water)))
+      sendNMessageFromNProbe(2, zone, ActuatorStateChanged(DoingAction(Fan)))
+      zone.underlyingActor.computeActuatorState() shouldBe List(Fan, Water)
     }
   }
 
@@ -87,6 +126,22 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
       assertThrows[IllegalArgumentException] {
         ZoneActor("zoneName", aggregators.+:(createAggregator(Temperature)(min)))
       }
+    }
+  }
+
+  "A zone with period of 10 seconds" should  {
+    "have no state in 10 seconds after creation" in {
+      zone ! GetState
+      expectMsg(MyState(None))
+    }
+  }
+
+  "A zone with period of 10 seconds" should  {
+    "have empty state after 10 seconds of its creation" in {
+      awaitAssert({
+        zone ! GetState
+        expectMsg(MyState(Option(State(List(), List()))))
+      }, interval = 11 seconds)
     }
   }
 

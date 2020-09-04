@@ -6,9 +6,12 @@ import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.utils.TestUtility.Actions.Water
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
+import scala.util.Random
 
 trait TestUtility {
 
@@ -67,9 +70,19 @@ trait TestUtility {
     } sendTo.tell(message, sensor.ref)
   }
 
-  case object Temperature extends Category[IntType]
-  case object Humidity extends Category[IntType]
-  case object Weather extends Category[StringType]
-
-  case object Water extends Action
 }
+
+object TestUtility{
+  object Categories{
+    case object Temperature extends Category[IntType]
+    case object Humidity extends Category[IntType]
+    case object Weather extends Category[StringType]
+  }
+
+  object Actions{
+    case object Water extends Action
+    case object Light extends Action
+    case object Fan extends Action
+  }
+}
+
