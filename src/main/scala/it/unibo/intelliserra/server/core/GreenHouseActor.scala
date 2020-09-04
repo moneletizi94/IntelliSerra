@@ -5,10 +5,12 @@ import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
 import it.unibo.intelliserra.common.communication.Protocol.ServiceResponse
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.GreenHouseController
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
+import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
 import scala.concurrent.duration._
@@ -21,7 +23,7 @@ private[core] object GreenHouseActor {
   /**
    * Start the server
    */
-  case class Start(aggregators: List[Aggregator]) extends ServerCommand
+  case class Start(aggregators: List[Aggregator], rules: List[Rule]) extends ServerCommand
 
   /**
    * Responses to server commands
@@ -50,11 +52,13 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
+  var ruleEngineService: ActorRef = _
 
   private def idle: Receive = {
-    case Start(aggregators) =>
+    case Start(aggregators, rules) =>
       zoneManagerActor = ZoneManagerActor(aggregators)
       entityManagerActor = EntityManagerActor()
+      ruleEngineService = RuleEngineService(rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
       context.become(running orElse routeToController)
@@ -62,7 +66,7 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   }
 
   private def running: Receive = {
-    case Start(_) => sender ! ServerError(new IllegalStateException("Server is already running"))
+    case Start(_, _) => sender ! ServerError(new IllegalStateException("Server is already running"))
   }
 
   def routeToController: Receive = {

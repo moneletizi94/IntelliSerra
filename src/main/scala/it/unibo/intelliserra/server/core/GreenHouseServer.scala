@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started}
 
@@ -19,13 +20,15 @@ sealed trait GreenHouseServer {
 
   /**
    * Start the server
+   *
    * @return A future that complete when the server is started
    * @param aggregators list of aggregators for zoneManager
    */
-  def start(aggregators: List[Aggregator]): Future[Unit]
+  def start(aggregators: List[Aggregator], rules: List[Rule]): Future[Unit]
 
   /**
    * Terminate the server permanently
+   *
    * @return A future that complete when the server is terminated
    */
   def terminate(): Future[Unit]
@@ -36,9 +39,9 @@ object GreenHouseServer {
   /**
    * Create a new greenhouse server with specified name at the specified host and port.
    *
-   * @param name  the name of GreenHouse instance
-   * @param host  the hostname of the server
-   * @param port  the port of the server
+   * @param name the name of GreenHouse instance
+   * @param host the hostname of the server
+   * @param port the port of the server
    * @return an instance of a [[it.unibo.intelliserra.server.core.GreenHouseServer]]
    */
   // scalastyle:off magic.number
@@ -48,9 +51,10 @@ object GreenHouseServer {
 
   /**
    * Implementation of a greenhouse server. It uses Akka ActorSystem as a server
-   * @param name  the name of GreenHouse instance
-   * @param host  the hostname of the server
-   * @param port  the port of the server
+   *
+   * @param name the name of GreenHouse instance
+   * @param host the hostname of the server
+   * @param port the port of the server
    */
   private[core] class GreenHouseServerImpl(override val name: String,
                                            private val host: String,
@@ -64,8 +68,8 @@ object GreenHouseServer {
 
     private val serverActor = GreenHouseActor()
 
-    override def start(aggregators: List[Aggregator]): Future[Unit] =
-      (serverActor ? Start(aggregators))
+    override def start(aggregators: List[Aggregator], rules: List[Rule]): Future[Unit] =
+      (serverActor ? Start(aggregators, rules))
         .mapTo[ServerResponse]
         .flatMap {
           case Started => Future.unit
@@ -77,4 +81,5 @@ object GreenHouseServer {
       actorSystem.terminate().flatMap(_ => Future.unit)
     }
   }
+
 }
