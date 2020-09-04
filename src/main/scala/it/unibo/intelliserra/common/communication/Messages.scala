@@ -13,7 +13,7 @@ import it.unibo.intelliserra.core.state.State
 object Messages {
 
   /**
-   * Trait to represent requests forwarded to @see [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
    */
   sealed trait EntityManagerRequest
 
@@ -23,14 +23,14 @@ object Messages {
   sealed trait JoinRequest extends EntityManagerRequest
 
   /**
-   * Message to join a sensor to @see [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
+   * Message to join a sensor to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
    * @param sensingCapability the capability of the specified sensor
    * @param sensorRef the actor ref of the specified sensor
    */
 
   final case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
   /**
-   * Message to join an actuator to @see [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
+   * Message to join an actuator to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
    * @param actingCapability the capability of the specified actuator
    * @param actuatorRef the actor ref of the specified actuator
    */
@@ -50,7 +50,7 @@ object Messages {
   final case class RemoveEntity(entityId: String) extends EntityManagerRequest
 
   /**
-   * Trait to represent responses given by @see [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
+   * Trait to represent responses given by [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
    */
   sealed trait EntityManagerResponse
 
@@ -85,7 +85,7 @@ object Messages {
   case class JoinError(error: String) extends JoinResponse
 
   /**
-   * Trait to represent requests forwarded to @see [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    */
   /* ZoneManagerProtocol (From GH to ZoneManager) */
   sealed trait ZoneManagerRequest
@@ -102,7 +102,7 @@ object Messages {
   case class RemoveZone(zoneName: String) extends ZoneManagerRequest
 
   /**
-   * Message sent to ask for all the zones in @see [[it.unibo.intelliserra.server.zone.ZoneManagerActor]
+   * Message sent to ask for all the zones in [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    */
   case object GetZones extends ZoneManagerRequest
 
@@ -127,7 +127,7 @@ object Messages {
   case class GetStateOfZone(zoneName: String) extends ZoneManagerRequest
 
   /**
-   * Trait to represent responses given by @see [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
+   * Trait to represent responses given by [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    */
   sealed trait ZoneManagerResponse
 
@@ -152,8 +152,8 @@ object Messages {
   case object ZoneNotFound extends ZoneManagerResponse
 
   /**
-   * Message sent to tell which zones there are in @see [[it.unibo.intelliserra.server.zone.ZoneManagerActor]
-   * @param zones identifiers of the zones inside the @see [[it.unibo.intelliserra.server.zone.ZoneManagerActor]
+   * Message sent to tell which zones there are in [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
+   * @param zones identifiers of the zones inside the [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    */
   case class ZonesResult(zones: List[String]) extends ZoneManagerResponse
 
@@ -184,21 +184,18 @@ object Messages {
    */
   case object AlreadyDissociated extends ZoneManagerResponse
 
-  //TODO chiedere a chi e a cosa serve
-  case object Ok extends ZoneManagerResponse
-
   /**
-   * Trait to represent requests forwarded to @see [[it.unibo.intelliserra.server.zone.ZoneActor]]
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    */
   sealed trait ZoneRequest
 
   /**
-   * Message sent to add the specified entity to the ones associated to @see [[it.unibo.intelliserra.server.zone.ZoneActor]]
+   * Message sent to add the specified entity to the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
   case class AddEntity(entityChannel: EntityChannel) extends ZoneRequest
   /**
-   * Message sent to remove the specified entity from the ones associated to @see [[it.unibo.intelliserra.server.zone.ZoneActor]]
+   * Message sent to remove the specified entity from the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
   case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
@@ -215,13 +212,13 @@ object Messages {
   case class DoActions(actions: Set[Action]) extends ZoneRequest
 
   /**
-   * Message sent by @see [[it.unibo.intelliserra.server.zone.ZoneActor]] to communicate its state
+   * Message sent by [[it.unibo.intelliserra.server.zone.ZoneActor]] to communicate its state
    * @param state optional state of the zone
    */
   case class MyState(state : Option[State])
 
   /**
-   * Trait to represent requests forwarded to @see [[it.unibo.intelliserra.device.core.EntityActor]]
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.device.core.EntityActor]]
    */
   sealed trait EntityRequest
 
@@ -240,7 +237,7 @@ object Messages {
 
 
   /**
-   * Message sent to inform that an @see [[it.unibo.intelliserra.common.communication.Messages.AssociateTo]] message is received
+   * Message sent to inform that an [[it.unibo.intelliserra.common.communication.Messages.AssociateTo]] message is received
    */
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack

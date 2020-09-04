@@ -7,6 +7,7 @@ import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalS
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.server.ServerConfig
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
@@ -20,6 +21,7 @@ trait TestUtility {
   val Hostname = "localhost"
   val Port = 8080
   val GreenhouseName = "mySerra"
+  val defaultServerConfig: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port)
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val duration: FiniteDuration = 5 seconds

@@ -22,16 +22,15 @@ class ClientSpec extends WordSpecLike
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
-  private val aggregators: List[Aggregator] = List()
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
-    server = GreenHouseServer(GreenhouseName, Hostname, Port)
+    server = GreenHouseServer(defaultServerConfig)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
     deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(server.start(aggregators))
+    awaitReady(server.start())
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
   }

@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.server.ServerConfig.ZoneConfig
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 
@@ -13,7 +14,7 @@ import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEn
  * It manages link between entities (sensors and actuators) and zones.
  */
 
-private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) extends Actor with ActorLogging {
+private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends Actor with ActorLogging {
 
   implicit val system: ActorSystem = context.system
   /* It keeps links between zones names and zones ActorRefs */
@@ -109,7 +110,8 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators)()
+  //TODO add others fields from zoneConfig
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)()
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -141,5 +143,5 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
+  def apply(zoneConfig: ZoneConfig)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(zoneConfig)), name)
 }
