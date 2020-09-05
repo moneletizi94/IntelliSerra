@@ -14,10 +14,10 @@ trait Sample[T]{
 object Sample{
 
   implicit case object WeatherValuesSample extends Sample[StringType]{
-    override def sample: StringType = Generator.oneOf(Samples.WeatherCondition)
+    override def sample: StringType = Generator.oneOf(Samples.WeatherCondition.toList)
   }
 
-  implicit case class IntRangeSample(range: Range) extends Sample[IntType]{
+  case class IntRangeSample(range: Range) extends Sample[IntType]{
     //from scala 2.13 is available Random.between
     override def sample: IntType = Random.nextInt((range.end - range.start) + 1)
   }
@@ -34,10 +34,10 @@ object Sample{
     override def sample: Action = Generator.oneOf(Samples.Actions)
   }
 
-  case class MeasureSample[C : Category[A], A](category: C) extends Sample[Measure]{
-    //override def sample: Measure = Measure(implicitly[Sample[C]].sample)(implicitly[Sample[A]].sample)
+  /*case class MeasureSample[C : Category[A], A](category: C) extends Sample[Measure]{
+    override def sample: Measure = Measure(implicitly[Sample[C]].sample)(implicitly[Sample[A]].sample)
     override def sample: Measure = ???
-  }
+  }*/
 }
 
 object Generator{
@@ -53,5 +53,5 @@ object Generator{
 object Samples {
   val CategoriesSample = List(Temperature, Humidity, Weather)
   val Actions = List(Water, Fan, Light)
-  val WeatherCondition = List("SUNNY", "RAINY", "FOGGY")
+  val WeatherCondition: Seq[StringType] = List("SUNNY", "RAINY", "FOGGY")
 }

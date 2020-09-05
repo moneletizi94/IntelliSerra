@@ -1,5 +1,8 @@
 package it.unibo.intelliserra.server.zone
 
+import java.sql.Date
+import java.time.{LocalDateTime, ZoneId}
+
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.actuator.{Action, DoingAction, Idle, OperationalState}
@@ -9,13 +12,16 @@ import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.ActorWithRepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.common.utils.Utils._
+import it.unibo.intelliserra.server.ActorWithRepeatedAction.Tick
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
+// TODO: default in constructor or only in apply
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
-                              override val rate : FiniteDuration = ZoneActor.defaultTickRate)
-                              extends Actor with ActorWithRepeatedAction with ActorLogging with Timers{
+                              override val rate : FiniteDuration = ZoneActor.defaultStateEvaluationRate,
+                              val computeActionsRate : FiniteDuration = ZoneActor.defaultActionsEvaluationRate)
+                              extends Actor with ActorWithRepeatedAction with ActorLogging{
 
   private[zone] var state : Option[State] = None
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
@@ -31,7 +37,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                                                     .flatMap()*/
 
     case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
-    case Tick => computeState() ; sensorsValue = Map()
+    case Tick => state = Option(computeState()) ; sensorsValue = Map()
     case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
   }
 
@@ -44,20 +50,26 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   }
 
   private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
-    case DoingAction(action) => List(action)
+    case DoingAction(action) => action
     case Idle => Nil
   }).toList.distinct
 
-  private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
+  private[zone] def computeState() : State = {
+    State(computeAggregatedPerceptions(), computeActuatorState())
+  }
 
 }
 
 object ZoneActor {
-  private val defaultTickRate = 10 seconds
+  private val defaultStateEvaluationRate = 10 seconds
+  private val defaultActionsEvaluationRate = 10 seconds
 
-  def apply(name: String, aggregators: List[Aggregator],rate : FiniteDuration = defaultTickRate)(implicit system: ActorSystem): ActorRef = {
+  def apply(name: String, aggregators: List[Aggregator],
+            computeStateRate : FiniteDuration = defaultStateEvaluationRate,
+            computeActionsRate : FiniteDuration = defaultActionsEvaluationRate)
+           (implicit system: ActorSystem): ActorRef = {
     require(atMostOne(aggregators)(_.category), "only one aggregator must be assigned for each category")
-    system actorOf (Props(new ZoneActor(aggregators, rate)), name)
+    system actorOf (Props(new ZoneActor(aggregators, computeStateRate, computeActionsRate)), name)
   }
 
 }

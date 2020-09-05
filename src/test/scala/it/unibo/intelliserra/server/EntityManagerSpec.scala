@@ -9,6 +9,7 @@ import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 
 @RunWith(classOf[JUnitRunner])
 private class EntityManagerSpec extends TestKit(ActorSystem("MySpec")) with TestUtility

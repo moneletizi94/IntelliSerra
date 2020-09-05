@@ -1,19 +1,22 @@
 package it.unibo.intelliserra.server
 
-import akka.actor.Actor
+editimport akka.actor.{Actor, Timers}
+import it.unibo.intelliserra.core.sensor.StringType
+import it.unibo.intelliserra.server.ActorWithRepeatedAction.Tick
 
 import scala.concurrent.duration._
+import scala.util.Random
 
-trait ActorWithRepeatedAction extends Actor{
+trait ActorWithRepeatedAction extends Actor with Timers{
 
   val rate : FiniteDuration
 
-  case object Tick
-
-  private val scheduler = context.system.scheduler
-
   override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(100 milliseconds, rate, self, Tick)(context.dispatcher)
+    timers.startTimerAtFixedRate("key",Tick, rate)
   }
+}
 
+// TODO: visibility? 
+object ActorWithRepeatedAction{
+  case object Tick
 }
