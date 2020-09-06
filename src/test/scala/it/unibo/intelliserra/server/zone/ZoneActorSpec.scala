@@ -3,12 +3,11 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, GetState, MyState, SensorMeasureUpdated}
-import it.unibo.intelliserra.core.actuator.{DoingAction, Idle}
+import it.unibo.intelliserra.core.actuator.{DoingActions, Idle}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.server.ActorWithRepeatedAction
-import it.unibo.intelliserra.server.ActorWithRepeatedAction.Tick
+
 import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -16,6 +15,7 @@ import org.scalatestplus.junit.JUnitRunner
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation._
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
 import org.scalatest.concurrent.{AsyncAssertions, Timeouts, Waiters}
@@ -90,7 +90,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
       val actuator = TestProbe()
       val operationalState = Idle
       zone tell(ActuatorStateChanged(operationalState), actuator.ref)
-      val operationalState2 = DoingAction(List(Water))
+      val operationalState2 = DoingActions(List(Water))
       zone tell(ActuatorStateChanged(operationalState2), actuator.ref)
       zone.underlyingActor.actuatorsState(actuator.ref) shouldBe operationalState2
       zone.underlyingActor.actuatorsState(actuator.ref) should not be operationalState
@@ -118,8 +118,8 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" should {
     "compute actuators state correctly" in {
       sendNMessageFromNProbe(5, zone, ActuatorStateChanged(Idle))
-      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(DoingAction(List(Water))))
-      sendNMessageFromNProbe(2, zone, ActuatorStateChanged(DoingAction(List(Fan))))
+      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(DoingActions(List(Water))))
+      sendNMessageFromNProbe(2, zone, ActuatorStateChanged(DoingActions(List(Fan))))
       zone.underlyingActor.computeActuatorState().diff(List(Fan,Water)) shouldBe List()
     }
   }
@@ -141,10 +141,10 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
 
   "A zone " should  {
-    "compute its state after receiving tick" in {
+    "compute its state after receiving computeState" in {
       val probe = TestProbe()
       zone.tell(SensorMeasureUpdated(Measure(Temperature)(10)),probe.ref)
-      zone ! Tick
+      zone ! ComputeState
       zone.underlyingActor.state shouldBe Option(State(List(Measure(Temperature)(10)),List()))
     }
   }

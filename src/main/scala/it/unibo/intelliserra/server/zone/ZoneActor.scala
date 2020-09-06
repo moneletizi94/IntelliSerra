@@ -5,14 +5,14 @@ import java.time.{LocalDateTime, ZoneId}
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasureUpdated}
-import it.unibo.intelliserra.core.actuator.{Action, DoingAction, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.ActorWithRepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.common.utils.Utils._
-import it.unibo.intelliserra.server.ActorWithRepeatedAction.Tick
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
@@ -21,7 +21,11 @@ import scala.concurrent.duration._
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               override val rate : FiniteDuration = ZoneActor.defaultStateEvaluationRate,
                               val computeActionsRate : FiniteDuration = ZoneActor.defaultActionsEvaluationRate)
-                              extends Actor with ActorWithRepeatedAction with ActorLogging{
+                              extends Actor with ActorWithRepeatedAction[ComputeState] with ActorLogging{
+
+  context.actorOf(Props[RuleCheckerActor])
+
+  override val repeatedMessage: ComputeState = ComputeState()
 
   private[zone] var state : Option[State] = None
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
@@ -32,12 +36,15 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
-    case DoActions(actions) => /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
-                                                    .filter(_._2.nonEmpty)
-                                                    .flatMap()*/
+    case DoActions(actions) => associatedEntities.flatMap{
+                                  case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
+                                      Set((actuatorRef, actions.intersect(actingCapabilities)))
+                                  case _ =>  None
+                                }.filter(_._2.nonEmpty)
+                                .foreach({ case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) })
 
     case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
-    case Tick => state = Option(computeState()) ; sensorsValue = Map()
+    case ComputeState => state = Option(computeState()) ; sensorsValue = Map()
     case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
   }
 
@@ -46,11 +53,11 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
       (category, measures) <- sensorsValue.values.groupBy(_.category)
       aggregator <- aggregators.find(_.category == category)
     } yield aggregator.aggregate(measures.toList)
-    flattenIterableTry(measuresTry)(e => log.error(e,""))(identity).toList
+    flattenIterableTry(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
   private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
-    case DoingAction(action) => action
+    case DoingActions(action) => action
     case Idle => Nil
   }).toList.distinct
 
@@ -61,6 +68,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 }
 
 object ZoneActor {
+  case class ComputeState()
   private val defaultStateEvaluationRate = 10 seconds
   private val defaultActionsEvaluationRate = 10 seconds
 

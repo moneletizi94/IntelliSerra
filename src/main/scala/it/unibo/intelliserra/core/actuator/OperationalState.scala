@@ -5,7 +5,7 @@ sealed trait OperationalState{
 
 }
 
-final case class DoingAction(actions : List[Action]) extends OperationalState {
+final case class DoingActions(actions : List[Action]) extends OperationalState {
   override def isDoing(): Boolean = true
 }
 case object Idle extends OperationalState {
