@@ -246,6 +246,6 @@ object Messages {
   sealed trait RuleEntityManagerRequest
   case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
-  case class DoingActions(state: State) extends RuleEntityManagerRequest
+  case class InferActions(state: State) extends RuleEntityManagerRequest
 
 }
