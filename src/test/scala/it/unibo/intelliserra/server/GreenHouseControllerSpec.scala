@@ -10,6 +10,7 @@ import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.entityManager.EntityManagerActor
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -31,11 +32,10 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
   private var entityRef : ActorRef = _
-  private val aggregators: List[Aggregator] = List()
 
   before {
+    this.zoneManagerActor = ZoneManagerActor(defaultServerConfig.zoneConfig)
     this.entityManagerActor = EntityManagerActor()
-    this.zoneManagerActor = ZoneManagerActor(aggregators)
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor)))
   }
 
@@ -182,7 +182,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! DissociateEntity(actuator2.identifier)
       expectMsg(ServiceResponse(Ok))
       greenHouseController ! DissociateEntity(actuator2.identifier)
-      expectMsg(ServiceResponse(Error))
+      expectMsg(ServiceResponse(Error, "Entity already dissociated"))
     }
   }
 

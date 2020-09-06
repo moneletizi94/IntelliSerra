@@ -2,7 +2,6 @@ package it.unibo.intelliserra.client.core
 
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -22,16 +21,15 @@ class ClientSpec extends WordSpecLike
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
-  private val aggregators: List[Aggregator] = List()
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
-    server = GreenHouseServer(GreenhouseName, Hostname, Port)
+    server = GreenHouseServer(defaultServerConfig)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
     deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(server.start(aggregators))
+    awaitReady(server.start())
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
   }
@@ -120,5 +118,47 @@ class ClientSpec extends WordSpecLike
       }
     }
     /* --- END TESTING ASSIGN ---*/
+
+    /* --- START TEST ON REMOVE ENTITY --- */
+    "be able to remove an existing entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.removeEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to remove a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.removeEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON REMOVE ENTITY --- */
+
+    /* --- START TEST ON DISSOCIATE ENTITY --- */
+    "be able to dissociate an associated entity" in {
+      awaitReady(client.createZone(zoneName))
+      awaitReady(client.associateEntity(sensor1.identifier, zoneName))
+      awaitResult(client.dissociateEntity(sensor1.identifier)) shouldBe sensor1.identifier
+    }
+    "fail to dissociate a non-associated entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(sensor1.identifier))
+      }
+    }
+    "fail to dissociate a nonexistent entity" in {
+      assertThrows[IllegalArgumentException] {
+        awaitResult(client.dissociateEntity(notAddedSensor))
+      }
+    }
+    /* --- END TEST ON DISSOCIATE ENTITY --- */
+
+    "get state from nonexistent zone" in {
+      assertThrows[Exception] {
+        awaitResult(client.getState(zoneName))
+      }
+    }
+
+    "get state from existing zone" in {
+      awaitReady(client.createZone(zoneName))
+      awaitResult(client.getState(zoneName)) shouldBe None
+    }
   }
 }

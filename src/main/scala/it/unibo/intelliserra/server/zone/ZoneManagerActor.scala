@@ -3,17 +3,18 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.server.ServerConfig.ZoneConfig
 import it.unibo.intelliserra.server.aggregation.Aggregator
-import scala.concurrent.duration._
+import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 
 /**
  * This is the Zone Manager actor which is in charge to create new zone actors when
  * a client needs them, it keeps link between zone identifier (given by the client)
- * and the actor ref. It also be able to delete zones and check for zone existence
- * It manages link between entities (sensors and actuators) and zones
+ * and the actor ref. It also be able to delete zones and check for zone existence.
+ * It manages link between entities (sensors and actuators) and zones.
  */
 
-private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) extends Actor with ActorLogging {
+private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends Actor with ActorLogging {
 
   implicit val system: ActorSystem = context.system
   /* It keeps links between zones names and zones ActorRefs */
@@ -37,6 +38,10 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
     case DissociateEntityFromZone(entityChannel) => sender() ! onDissociateEntity(entityChannel)
 
     case Ack => onAck()
+
+    case PublishedOnRemoveEntity(entityChannel) => onDissociateEntity(entityChannel)
+
+    case GetStateOfZone(zoneID) => getState(zoneID)
   }
 
   /* --- ON RECEIVE ACTIONS --- */
@@ -66,8 +71,7 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
           pending.find({ case (_, set) => set.contains(entityChannel) })
             .foreach({case (zone, set) => removeFromPending(entityChannel, zone, set)})
           pending += (zoneID -> (pending.getOrElse(zoneID, Set()) + entityChannel))
-          entityChannel.channel ! AssociateTo(zones(zoneID), zoneID)
-          AssignOk
+          answerAndInformEntityTo(entityChannel.channel, AssignOk, AssociateTo(zones(zoneID),zoneID))
       }
     })
   }
@@ -77,13 +81,13 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
       case Some((zoneID, entities)) =>
         zones(zoneID) ! DeleteEntity(entityChannel) //if the zone exists in zones, it will exists also in assignedEntities
         assignedEntities += (zoneID -> entities.filter(_!= entityChannel))
-        informEntityToDissociate(entityChannel, zoneID)
+        answerAndInformEntityTo(entityChannel.channel, DissociateOk, DissociateFrom(zones(zoneID), zoneID))
       case None =>
         pending.find({case (_, set) => set.contains(entityChannel)})
           .fold[ZoneManagerResponse](AlreadyDissociated)({
           case (zoneID, entities) =>
             removeFromPending(entityChannel, zoneID, entities)
-            informEntityToDissociate(entityChannel, zoneID)
+            answerAndInformEntityTo(entityChannel.channel, DissociateOk, DissociateFrom(zones(zoneID), zoneID))
         })
     }
   }
@@ -97,10 +101,17 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
     })
   }
 
+  private def getState(zoneID: String): Unit = {
+    zones.find(zone => zone._1 == zoneID).fold(sender ! ZoneNotFound)(zone => {
+      zone._2.tell(GetState, sender())
+    })
+  }
+
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, aggregators,5 seconds)
+  //TODO add others fields from zoneConfig
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -113,11 +124,13 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
   }
 
   private def informEntitiesToDissociate(entities: Set[EntityChannel], zoneID: String): Unit = {
-    entities.foreach(entityChannel => informEntityToDissociate(entityChannel, zoneID))
+    entities.foreach(entityChannel =>
+      answerAndInformEntityTo(entityChannel.channel, DissociateOk, DissociateFrom(zones(zoneID),zoneID)))
   }
-  private def informEntityToDissociate(entityChannel: EntityChannel, zoneID: String): ZoneManagerResponse = {
-    entityChannel.channel ! DissociateFrom(zones(zoneID), zoneID)
-    DissociateOk
+
+  private def answerAndInformEntityTo(entity: ActorRef, answer: ZoneManagerResponse, information: EntityRequest): ZoneManagerResponse = {
+    entity ! information
+    answer
   }
 
   private def removeFromPending(entityToRemove: EntityChannel, zoneID: String, entities: Set[EntityChannel]): Unit = {
@@ -130,5 +143,5 @@ private[zone] class ZoneManagerActor(private val aggregators: List[Aggregator]) 
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply(aggregators: List[Aggregator])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(aggregators)), name)
+  def apply(zoneConfig: ZoneConfig)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(zoneConfig)), name)
 }

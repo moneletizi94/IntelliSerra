@@ -22,5 +22,7 @@ class RuleCheckerActor(override val rate: FiniteDuration) extends Actor with Act
 
 object RuleCheckerActor{
   case class CheckActions()
+
+  def apply(rate: FiniteDuration): RuleCheckerActor = new RuleCheckerActor(rate)
 }
 

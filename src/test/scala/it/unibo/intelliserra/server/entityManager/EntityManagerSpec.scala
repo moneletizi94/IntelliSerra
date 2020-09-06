@@ -1,67 +1,80 @@
-package it.unibo.intelliserra.server
+package it.unibo.intelliserra.server.entityManager
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinRequest, JoinSensor}
+import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity._
-import it.unibo.intelliserra.core.sensor.Category
+import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
+import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-import it.unibo.intelliserra.utils.TestUtility
-import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 
 @RunWith(classOf[JUnitRunner])
-private class EntityManagerSpec extends TestKit(ActorSystem("MySpec")) with TestUtility
+private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   with ImplicitSender
   with Matchers
   with WordSpecLike
   with BeforeAndAfter
-  with BeforeAndAfterAll  {
+  with BeforeAndAfterAll
+  with TestUtility {
 
   private var entityManager : TestActorRef[EntityManagerActor] = _
+  private var mockZoneManager: TestProbe = _
   private val mockSensorID = "sensorID"
   private val mockSensorCapability = SensingCapability(Temperature)
   private val mockActuatorID = "actuatorID"
   private val mockActuatorCapability = ActingCapability(Set())
 
-
   before{
-    entityManager = TestActorRef.create[EntityManagerActor](system, Props[EntityManagerActor])
+    mockZoneManager = TestProbe()
+    entityManager = TestActorRef.create(system, Props[EntityManagerActor])
   }
 
-  "An Entity Manager" must {
+  "An Entity Manager" should {
+
     "register a sensor after receiving join" in {
       val sensorActorProbe = TestProbe()
       sendJoinEntityMessage(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
     }
-  }
 
-  "An Entity Manager" must {
     "register an actuator after receiving join" in {
       val actuatorActorProbe = TestProbe()
       sendJoinEntityMessage(JoinActuator(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
     }
-  }
 
-  "An Entity Manager " should  {
     "not permit adding of sensor with existing identifier" in {
       val sensorActorProbe = TestProbe()
       checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
     }
-  }
 
-  "An Entity Manager " should  {
     "not permit adding of actuator with existing identifier" in {
       val actuatorActorProbe = TestProbe()
       checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, actuatorActorProbe.ref))
     }
-  }
 
-  "An Entity Manager just created " should  {
     "have no entities" in {
-      entityManager.underlyingActor.entities shouldBe List()
+      entitiesInEMShouldBe(List())
     }
+
+    /* --- START TESTING REMOVE ENTITY --- */
+    "not allow to delete a nonexistent entity" in {
+      entityManager ! RemoveEntity(mockSensorID)
+      expectMsg(EntityNotFound)
+    }
+
+    "delete an existing entity" in {
+      val actuatorActorProbe = TestProbe()
+      sendJoinEntityMessage(JoinActuator(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
+      EMEventBus.subscribe(mockZoneManager.ref, EMEventBus.topic)
+      entityManager ! RemoveEntity(mockActuatorID)
+      expectMsg(EntityRemoved)
+      mockZoneManager.expectMsgType[PublishedOnRemoveEntity]
+      entitiesInEMShouldBe(List())
+    }
+    /* --- END TESTING REMOVE ENTITY --- */
+
   }
 
   private def sendJoinEntityMessage(joinRequestMessage: JoinRequest){
@@ -69,16 +82,21 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec")) with Test
     expectMsg(JoinOK)
     joinRequestMessage match {
       case JoinSensor(identifier, sensingCapability, sensorRef) =>
-        entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef))
+        entitiesInEMShouldBe(List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef)))
       case JoinActuator(identifier, actingCapability, actuatorRef) =>
-        entityManager.underlyingActor.entities shouldBe List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef))
+        entitiesInEMShouldBe(List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef)))
     }
   }
 
+  private def entitiesInEMShouldBe(result: List[EntityChannel]) = {
+    entityManager.underlyingActor.entities shouldBe result
+  }
   private def checkNoDuplicateInsertion(joinRequest: JoinRequest) = {
     entityManager ! joinRequest
+    expectMsg(JoinOK)
     entityManager.underlyingActor.entities should have size 1
     entityManager ! joinRequest
+    expectMsgType[JoinError]
     entityManager.underlyingActor.entities should have size 1
   }
 

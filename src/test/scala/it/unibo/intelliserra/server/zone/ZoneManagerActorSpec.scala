@@ -4,6 +4,8 @@ import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
+import it.unibo.intelliserra.server.entityManager.EMEventBus
+import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
@@ -25,7 +27,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private var zoneManager: TestActorRef[ZoneManagerActor] = _
 
   before  {
-    zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(List())))
+    zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(defaultServerConfig.zoneConfig)))
   }
   after {
     killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
@@ -118,7 +120,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     /* --- START TEST ON ASSIGN --- */
     "refuse to assign an entity to a nonexistent zone" in {
       val entityProbe = TestProbe()
-      zoneManager ! AssignEntityToZone(zoneIdentifierNotAdded, entityChannelWithRef(entityProbe.ref))
+      zoneManager ! AssignEntityToZone(zoneIdentifierNotAdded, sensorEntityChannelFromRef(entityProbe.ref))
       expectMsg(ZoneNotFound)
     }
 
@@ -173,7 +175,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     /* --- START TEST ON DISSOCIATE --- */
     "not dissociate an entity not associated" in {
       val entityProbe = TestProbe()
-      zoneManager ! DissociateEntityFromZone(entityChannelWithRef(entityProbe.ref))
+      zoneManager ! DissociateEntityFromZone(sensorEntityChannelFromRef(entityProbe.ref))
       expectMsg(AlreadyDissociated)
     }
 
@@ -194,15 +196,8 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "dissociate an associated entity which was in associatedEntitities, inform it and its zone" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor(List()) {
-        override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
-      })
-      manager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreated)
-      val entityChannel = informAndExpectMsgOnAssign(manager, entityProbe, zoneIdentifier)
-      manager.tell(Ack, entityProbe.ref)
-      zoneProbe.expectMsgType[AddEntity]
-      manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe true
+      val manager = completeAssociation(entityProbe, zoneProbe, zoneIdentifier)
+      val entityChannel = sensorEntityChannelFromRef(entityProbe.ref)
       manager ! DissociateEntityFromZone(entityChannel)
       expectMsg(DissociateOk)
       entityProbe.expectMsgType[DissociateFrom]
@@ -215,21 +210,29 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     "move a pending entity to associatedEntities when Ack is received" in {
       val entityProbe = TestProbe()
       val zoneProbe = TestProbe()
-      val manager = TestActorRef(new ZoneManagerActor(List()) {
-        override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
-      })
-      manager ! CreateZone(zoneIdentifier)
-      expectMsg(ZoneCreated)
-      manager.underlyingActor.zones(zoneIdentifier) shouldBe zoneProbe.ref
-      val entityChannel = informAndExpectMsgOnAssign(manager, entityProbe, zoneIdentifier)
-      manager.underlyingActor.pending(zoneIdentifier).contains(entityChannel) shouldBe true
-      manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe false
-      manager.tell(Ack, entityProbe.ref)
-      zoneProbe.expectMsgType[AddEntity]
-      manager.underlyingActor.pending.contains(zoneIdentifier) shouldBe false
-      manager.underlyingActor.assignedEntities(zoneIdentifier).contains(entityChannel) shouldBe true
+      completeAssociation(entityProbe, zoneProbe, zoneIdentifier)
     }
     /* --- END TEST ON ACK --- */
+
+    /* --- START TEST ON PublishedOnRemoveEntity --- */
+    "remove pending entity on PublishedOnRemoveEntity from eventBus" in {
+      val entityProbe = TestProbe()
+      createZonesAndExpectMsg(zoneIdentifier)
+      informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier)
+      zoneManager ! PublishedOnRemoveEntity(sensorEntityChannelFromRef(entityProbe.ref))
+      zoneManager.underlyingActor.pending.contains(zoneIdentifier) shouldBe false
+    }
+    "remove associated entity on PublishedOnRemoveEntity from eventBus" in {
+      val entityProbe = TestProbe()
+      val zoneProbe = TestProbe()
+      createZonesAndExpectMsg(zoneIdentifier)
+      val entityChannel = informAndExpectMsgOnAssign(zoneManager, entityProbe, zoneIdentifier)
+      completeAssociation(entityProbe, zoneProbe, zoneIdentifier)
+      zoneManager ! PublishedOnRemoveEntity(sensorEntityChannelFromRef(entityProbe.ref))
+      zoneManager.underlyingActor.assignedEntities.get(zoneIdentifier).contains(entityChannel) shouldBe false
+    }
+
+    /* --- END TEST ON PublishedOnRemoveEntity --- */
   }
 
   /* --- UTILITY METHODS --- */
@@ -249,16 +252,30 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
         expectMsg(ZoneRemoved)
     }
   }
-  private def entityChannelWithRef(entityRef: ActorRef): EntityChannel = {
-    EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
-  }
 
   private def informAndExpectMsgOnAssign(zoneManager: TestActorRef[ZoneManagerActor], entityProbe: TestProbe, zone: String): EntityChannel = {
-    val entityChannel =  entityChannelWithRef(entityProbe.ref)
+    val entityChannel =  sensorEntityChannelFromRef(entityProbe.ref)
     zoneManager ! AssignEntityToZone(zone, entityChannel)
     entityProbe.expectMsgType[AssociateTo]
     expectMsg(AssignOk)
     entityChannel
+  }
+
+  private def completeAssociation(entityProbe: TestProbe, zoneProbe: TestProbe, zoneID: String): TestActorRef[ZoneManagerActor] = {
+    val manager = TestActorRef(new ZoneManagerActor(defaultServerConfig.zoneConfig) {
+      override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
+    })
+    manager ! CreateZone(zoneID)
+    expectMsg(ZoneCreated)
+    manager.underlyingActor.zones(zoneID) shouldBe zoneProbe.ref
+    val entityChannel = informAndExpectMsgOnAssign(manager, entityProbe, zoneID)
+    manager.underlyingActor.pending(zoneID).contains(entityChannel) shouldBe true
+    manager.underlyingActor.assignedEntities(zoneID).contains(entityChannel) shouldBe false
+    manager.tell(Ack, entityProbe.ref)
+    zoneProbe.expectMsgType[AddEntity]
+    manager.underlyingActor.pending.contains(zoneID) shouldBe false
+    manager.underlyingActor.assignedEntities(zoneID).contains(entityChannel) shouldBe true
+    manager
   }
 }
 

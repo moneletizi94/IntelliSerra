@@ -23,7 +23,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               val computeActionsRate : FiniteDuration = ZoneActor.defaultActionsEvaluationRate)
                               extends Actor with ActorWithRepeatedAction[ComputeState] with ActorLogging{
 
-  context.actorOf(Props[RuleCheckerActor])
+  context.actorOf(Props(new RuleCheckerActor(computeActionsRate)))
 
   override val repeatedMessage: ComputeState = ComputeState()
 
