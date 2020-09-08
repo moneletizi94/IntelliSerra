@@ -4,7 +4,7 @@ import akka.actor.{Actor, Timers}
 
 import scala.concurrent.duration._
 
-trait ActorWithRepeatedAction[M <: Any] extends Actor with Timers{
+trait RepeatedAction[M <: Any] extends Actor with Timers{
 
   val rate : FiniteDuration
   val repeatedMessage : M

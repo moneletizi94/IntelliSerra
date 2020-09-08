@@ -2,13 +2,12 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
-import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, GetState, MyState, SensorMeasureUpdated}
+import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.actuator.{DoingActions, Idle}
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.core.state.State
-
 import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -18,7 +17,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
-import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Water}
+import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
 import org.scalatest.concurrent.{AsyncAssertions, Timeouts, Waiters}
 
@@ -38,8 +37,10 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   private val aggregators = List(createAggregator(Temperature)(sum),
                                   createAggregator(Weather)(moreFrequent))
 
+
+
   before{
-    zone = TestActorRef.create(system, Props(new ZoneActor(aggregators,1 seconds)))
+    zone = TestActorRef.create(system, ZoneActor.props(aggregators,1 seconds))
   }
 
   "A zoneActor" must {
@@ -50,10 +51,8 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zoneActor" must {
     "allow you to associate entities that have not been associated with it" in {
-      val sensorProbe = TestProbe()
-      val entityChannel = EntityChannel(registeredSensor, sensorProbe.ref)
-      zone ! AddEntity(entityChannel)
-      zone.underlyingActor.associatedEntities.contains(entityChannel) shouldBe true
+      val addedEntity = addEntity(registeredSensor)
+      zone.underlyingActor.associatedEntities.contains(EntityChannel(registeredSensor, addedEntity)) shouldBe true
     }
   }
 
@@ -150,13 +149,25 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
-  "A zone" should  {
-    "compute its state every second" in {
-      /*awaitAssert({
-        zone.underlyingActor.state shouldBe Option(State.empty)
-      },2 seconds, 1.2 seconds)*/
-      // TODO:  
+  "A zone " should {
+    "send action to its actuator according to theirs capabilities" in {
+      val sensor1 = addEntity(registeredSensor)
+      val actuator1 = addEntity(RegisteredActuator("act1", ActingCapability(Set(Water, Fan))))
+      val actuator2 = addEntity(RegisteredActuator("act2", ActingCapability(Set(Water))))
+      val actuator3 = addEntity(RegisteredActuator("act3", ActingCapability(Set(Light))))
+      zone ! DoActions(Set(Water,Fan))
+      sensor1.expectNoMessage(1 seconds)
+      actuator3.expectNoMessage(1 seconds)
+      actuator1.expectMsg(DoActions(Set(Water, Fan)))
+      actuator2.expectMsg(DoActions(Set(Water)))
     }
+  }
+
+  private def addEntity(entity : RegisteredEntity): TestProbe = {
+    val entityProbe = TestProbe()
+    val entityChannel = EntityChannel(entity, entityProbe)
+    zone ! AddEntity(entityChannel)
+    entityProbe
   }
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)

@@ -9,7 +9,7 @@ import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, Operatio
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator}
 import it.unibo.intelliserra.core.sensor.{Category, Measure}
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.server.ActorWithRepeatedAction
+import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.common.utils.Utils._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
@@ -19,11 +19,11 @@ import scala.concurrent.duration._
 
 // TODO: default in constructor or only in apply
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
-                              override val rate : FiniteDuration = ZoneActor.defaultStateEvaluationRate,
-                              val computeActionsRate : FiniteDuration = ZoneActor.defaultActionsEvaluationRate)
-                              extends Actor with ActorWithRepeatedAction[ComputeState] with ActorLogging{
+                              override val rate : FiniteDuration,
+                              val computeActionsRate : FiniteDuration)
+                              extends Actor with RepeatedAction[ComputeState] with ActorLogging{
 
-  context.actorOf(Props(new RuleCheckerActor(computeActionsRate)))
+  context.actorOf(Props(RuleCheckerActor(computeActionsRate)))
 
   override val repeatedMessage: ComputeState = ComputeState()
 
@@ -36,6 +36,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
+    // TODO: the best solution? I think no
     case DoActions(actions) => associatedEntities.flatMap{
                                   case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
                                       Set((actuatorRef, actions.intersect(actingCapabilities)))
@@ -65,6 +66,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     State(computeAggregatedPerceptions(), computeActuatorState())
   }
 
+
 }
 
 object ZoneActor {
@@ -72,12 +74,19 @@ object ZoneActor {
   private val defaultStateEvaluationRate = 10 seconds
   private val defaultActionsEvaluationRate = 10 seconds
 
-  def apply(name: String, aggregators: List[Aggregator],
+  def apply(name: String,
+            aggregators: List[Aggregator],
             computeStateRate : FiniteDuration = defaultStateEvaluationRate,
             computeActionsRate : FiniteDuration = defaultActionsEvaluationRate)
            (implicit system: ActorSystem): ActorRef = {
+    system actorOf (props(aggregators, computeStateRate, computeActionsRate), name)
+  }
+
+  def props(aggregators: List[Aggregator],
+            computeStateRate : FiniteDuration = defaultStateEvaluationRate,
+            computeActionsRate : FiniteDuration = defaultActionsEvaluationRate): Props = {
     require(atMostOne(aggregators)(_.category), "only one aggregator must be assigned for each category")
-    system actorOf (Props(new ZoneActor(aggregators, computeStateRate, computeActionsRate)), name)
+    Props(new ZoneActor(aggregators, computeStateRate, computeActionsRate))
   }
 
 }

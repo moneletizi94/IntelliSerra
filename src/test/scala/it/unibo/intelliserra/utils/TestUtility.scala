@@ -94,6 +94,7 @@ trait TestUtility {
     EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
   }
 
+  implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
 }
 
 object TestUtility{
@@ -108,7 +109,6 @@ object TestUtility{
     case object Light extends Action
     case object Fan extends Action
   }
-  case object Water extends Action
 
 }
 
