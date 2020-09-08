@@ -6,11 +6,15 @@ import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
+import it.unibo.intelliserra.core.rule.dsl.MajorOperator
+import it.unibo.intelliserra.core.rule.{Rule, RuleInfo}
 import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.EntityManagerActor
+import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -31,17 +35,27 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private var greenHouseController: TestActorRef[GreenHouseController] = _
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
-  private var entityRef : ActorRef = _
+  private var ruleEngineServiceActor: ActorRef = _
+  private var entityRef: ActorRef = _
   private val aggregators: List[Aggregator] = List()
+  private var rule: Rule = _
+  private val actionSet: Set[Action] = Set(Water)
+  private val ruleID = "rule0"
+  private val rule1ID = "rule1"
+  private val temperatureValue = 20
+  private var temperatureStatement: AtomicConditionStatement = _
 
   before {
+    this.temperatureStatement = AtomicConditionStatement(Temperature, MajorOperator, temperatureValue)
+    this.rule = Rule(temperatureStatement, actionSet)
     this.zoneManagerActor = ZoneManagerActor(aggregators)
     this.entityManagerActor = EntityManagerActor()
-    this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor)))
+    this.ruleEngineServiceActor = RuleEngineService(List(rule))
+    this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)))
   }
 
   after {
-    killActors(entityManagerActor, zoneManagerActor, greenHouseController)
+    killActors(entityManagerActor, zoneManagerActor, ruleEngineServiceActor, greenHouseController)
   }
 
   override def afterAll: Unit = {
@@ -212,4 +226,40 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       expectMsg(ServiceResponse(NotFound, "Entity not found"))
     }
   }
+
+  "A greenHouseController " must {
+    "take all rules" in {
+      greenHouseController ! GetRules
+      expectMsg(ServiceResponse(Ok, List(RuleInfo(ruleID, rule))))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to enable an existing rule" in {
+      greenHouseController ! EnableRule(ruleID)
+      expectMsg(ServiceResponse(Ok, "Rule enabled"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to to enable a nonexistent rule" in {
+      greenHouseController ! EnableRule(rule1ID)
+      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to disable an existing rule" in {
+      greenHouseController ! DisableRule(ruleID)
+      expectMsg(ServiceResponse(Ok, "Rule disabled"))
+    }
+  }
+
+  "A greenHouseController " must {
+    "ask to to disable a nonexistent rule" in {
+      greenHouseController ! DisableRule(rule1ID)
+      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+    }
+  }
 }
+

@@ -3,7 +3,8 @@ package it.unibo.intelliserra.client.core
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
-import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.common.communication.Protocol
+import it.unibo.intelliserra.common.communication.Protocol.{ClientRequest, DisableRule, EnableRule, GetRules, ServiceResponse, _}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -71,6 +72,24 @@ private[core] object Client {
       }
     }
 
+    private def handleRulesRequests: Receive = {
+
+      case GetRules => makeRequest(GetRules) {
+        case ServiceResponse(Ok, rules) => Success(rules)
+      }
+
+      case EnableRule(ruleID) => ruleMode(EnableRule(ruleID))
+
+      case DisableRule(ruleID) => ruleMode(DisableRule(ruleID))
+    }
+
+    private def ruleMode(request: => ClientRequest): Unit = {
+      makeRequest(request) {
+        case ServiceResponse(Ok, str) => Success(str)
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
+    }
+
     private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
       makeRequest(request)(function orElse fallback)
     }
@@ -86,7 +105,8 @@ private[core] object Client {
 
     override def receive: Receive =
       handleZoneRequests orElse
-      handleEntitiesRequests orElse {
+      handleEntitiesRequests orElse
+        handleRulesRequests orElse{
         case msg@_ => log.warning(s"Unknown message: $msg")
       }
   }

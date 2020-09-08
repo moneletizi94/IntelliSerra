@@ -52,15 +52,15 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
-  var ruleEngineService: ActorRef = _
+  var ruleEngineServiceActor: ActorRef = _
 
   private def idle: Receive = {
     case Start(aggregators, rules) =>
       zoneManagerActor = ZoneManagerActor(aggregators)
       entityManagerActor = EntityManagerActor()
-      ruleEngineService = RuleEngineService(rules)
+      ruleEngineServiceActor = RuleEngineService(rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
-      greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
+      greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)
       context.become(running orElse routeToController)
       sender ! Started
   }

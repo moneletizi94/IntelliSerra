@@ -30,7 +30,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
     killActors(serverActor,
       serverActor.underlyingActor.entityManagerActor,
       serverActor.underlyingActor.zoneManagerActor,
-      serverActor.underlyingActor.ruleEngineService,
+      serverActor.underlyingActor.ruleEngineServiceActor,
       serverActor.underlyingActor.greenHouseController)
   }
 

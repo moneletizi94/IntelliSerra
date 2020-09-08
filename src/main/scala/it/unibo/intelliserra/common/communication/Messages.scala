@@ -3,6 +3,7 @@ package it.unibo.intelliserra.common.communication
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
 
 //noinspection ScalaStyle
@@ -10,11 +11,13 @@ object Messages {
 
   // Entity Manager Protocol
   sealed trait EntityManagerRequest
+
   sealed trait JoinRequest extends EntityManagerRequest
   final case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
-  final case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
+  final case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef: ActorRef) extends JoinRequest
   final case class GetEntity(entityId: String) extends EntityManagerRequest
   final case class RemoveEntity(entityId: String) extends EntityManagerRequest
+
   // final case class Subscribe(observer: ActorRef) extends EntityManagerRequest
 
   sealed trait EntityManagerResponse
@@ -47,11 +50,11 @@ object Messages {
   //Used to Answer to GetZones
   case class ZonesResult(zones: List[String]) extends ZoneManagerResponse
   case class AlreadyAssigned(zone: String) extends ZoneManagerResponse
+
   case object AssignOk extends ZoneManagerResponse // From ZoneManager to GH
   case object DissociateOk extends ZoneManagerResponse // From ZoneManager to GH
   case class AssignError(error: String) extends ZoneManagerResponse
   case object AlreadyDissociated extends ZoneManagerResponse
-  case object Ok extends ZoneManagerResponse
 
   // Zone Protocol (From ZoneManager to Zone)
   sealed trait ZoneRequest
@@ -59,11 +62,11 @@ object Messages {
   case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
   case object GetState extends ZoneRequest
   case class DoActions(actions: Set[Action]) extends ZoneRequest
-  case class MyState(state : Option[State])
+  case class MyState(state: Option[State])
 
   sealed trait EntityRequest
-  case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
-  case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
+  case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest //From ZoneManager to Sensor/ Actuator
+  case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest //From ZoneManager to Sensor/ Actuator
 
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
@@ -72,6 +75,13 @@ object Messages {
   sealed trait RuleEntityManagerRequest
   case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
-  case class DoingActions(state: State) extends RuleEntityManagerRequest
+  case class InferActions(state: State) extends RuleEntityManagerRequest
+  case object GetRules extends  RuleEntityManagerRequest
+
+  sealed trait RuleEntityResponse
+  case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
+
+  case object Ok
+  case object NotFound
 
 }
