@@ -4,8 +4,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
+import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started}
 
 import scala.concurrent.duration._
@@ -20,15 +20,12 @@ sealed trait GreenHouseServer {
 
   /**
    * Start the server
-   *
    * @return A future that complete when the server is started
-   * @param aggregators list of aggregators for zoneManager
    */
-  def start(aggregators: List[Aggregator], rules: List[Rule]): Future[Unit]
+  def start(): Future[Unit]
 
   /**
    * Terminate the server permanently
-   *
    * @return A future that complete when the server is terminated
    */
   def terminate(): Future[Unit]
@@ -37,39 +34,31 @@ sealed trait GreenHouseServer {
 object GreenHouseServer {
 
   /**
-   * Create a new greenhouse server with specified name at the specified host and port.
-   *
-   * @param name the name of GreenHouse instance
-   * @param host the hostname of the server
-   * @param port the port of the server
+   * Create a new greenhouse server with specified configuration.
    * @return an instance of a [[it.unibo.intelliserra.server.core.GreenHouseServer]]
    */
   // scalastyle:off magic.number
-  def apply(name: String,
-            host: String = "localhost",
-            port: Int = 8080): GreenHouseServer = new GreenHouseServerImpl(name, host, port)
+  def apply(serverConfig: ServerConfig): GreenHouseServer = new GreenHouseServerImpl(serverConfig)
 
   /**
    * Implementation of a greenhouse server. It uses Akka ActorSystem as a server
-   *
-   * @param name the name of GreenHouse instance
-   * @param host the hostname of the server
-   * @param port the port of the server
+   * @param serverConfig use
    */
-  private[core] class GreenHouseServerImpl(override val name: String,
-                                           private val host: String,
-                                           private val port: Int) extends GreenHouseServer {
+  private[core] class GreenHouseServerImpl(serverConfig: ServerConfig) extends GreenHouseServer {
 
+    override val name: String = serverConfig.appConfig.name
+    private val host: String = serverConfig.appConfig.host
+    private val port: Int = serverConfig.appConfig.port
     private val config = GreenHouseConfig(host, port)
 
     private implicit val timeout: Timeout = Timeout(5 seconds)
     private implicit val actorSystem: ActorSystem = ActorSystem(name, config)
     private implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
 
-    private val serverActor = GreenHouseActor()
+    private val serverActor = GreenHouseActor(serverConfig.ruleConfig, serverConfig.zoneConfig)
 
-    override def start(aggregators: List[Aggregator], rules: List[Rule]): Future[Unit] =
-      (serverActor ? Start(aggregators, rules))
+    override def start(): Future[Unit] =
+      (serverActor ? Start)
         .mapTo[ServerResponse]
         .flatMap {
           case Started => Future.unit
@@ -81,5 +70,4 @@ object GreenHouseServer {
       actorSystem.terminate().flatMap(_ => Future.unit)
     }
   }
-
 }

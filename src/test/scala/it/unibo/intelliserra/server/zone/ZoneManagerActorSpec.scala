@@ -26,7 +26,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   private var zoneManager: TestActorRef[ZoneManagerActor] = _
 
   before  {
-    zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(List())))
+    zoneManager = TestActorRef.create(system, Props(new ZoneManagerActor(defaultServerConfig.zoneConfig)))
   }
   after {
     killActors(zoneManager.underlyingActor.zones.values.toSeq:_*)
@@ -260,7 +260,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
   }
 
   private def completeAssociation(entityProbe: TestProbe, zoneProbe: TestProbe, zoneID: String): TestActorRef[ZoneManagerActor] = {
-    val manager = TestActorRef(new ZoneManagerActor(List()) {
+    val manager = TestActorRef(new ZoneManagerActor(defaultServerConfig.zoneConfig) {
       override def createZoneActor(zoneID: String): ActorRef = zoneProbe.ref
     })
     manager ! CreateZone(zoneID)

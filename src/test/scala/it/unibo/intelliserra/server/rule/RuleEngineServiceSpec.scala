@@ -6,6 +6,8 @@ import it.unibo.intelliserra.common.communication.Messages.{DisableRule, InferAc
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
 import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

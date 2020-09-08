@@ -36,7 +36,7 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
    * @param ruleChecked boolean who represents if rule exists or not.
    */
   private def sendResponse(ruleChecked: Boolean): Unit = {
-    if (ruleChecked) sender ! Ok else sender ! NotFound
+    if (ruleChecked) sender ! ServiceResponse(Ok) else sender ! ServiceResponse(NotFound, "Rule not found")
   }
 }
 

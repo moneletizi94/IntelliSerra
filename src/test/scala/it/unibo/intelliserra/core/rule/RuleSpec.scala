@@ -4,6 +4,8 @@ import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.sensor.{Category, IntType, StringType}
+import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
+import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature, Weather}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

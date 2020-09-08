@@ -46,9 +46,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private var temperatureStatement: AtomicConditionStatement = _
 
   before {
-    this.temperatureStatement = AtomicConditionStatement(Temperature, MajorOperator, temperatureValue)
-    this.rule = Rule(temperatureStatement, actionSet)
-    this.zoneManagerActor = ZoneManagerActor(aggregators)
+    this.zoneManagerActor = ZoneManagerActor(defaultServerConfig.zoneConfig)
     this.entityManagerActor = EntityManagerActor()
     this.ruleEngineServiceActor = RuleEngineService(List(rule))
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)))

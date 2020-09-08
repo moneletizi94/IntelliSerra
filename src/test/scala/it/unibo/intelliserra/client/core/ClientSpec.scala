@@ -35,16 +35,12 @@ with StatementTestUtils {
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
-  private val temperatureValue = 20
-  private var temperatureStatement: AtomicConditionStatement = _
 
   before {
-    //this.temperatureStatement = AtomicConditionStatement(Temperature, MajorOperator, temperatureValue)
-    //this.rule = Rule(temperatureStatement, actionSet)
-    server = GreenHouseServer(GreenhouseName, Hostname, Port)
+    server = GreenHouseServer(defaultServerConfig)
     client = GreenHouseClient(GreenhouseName, Hostname, Port)
     deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(server.start(aggregators, List(rule)))
+    awaitReady(server.start())
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
   }
