@@ -3,7 +3,7 @@ package it.unibo.intelliserra.utils
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
-import it.unibo.intelliserra.core.actuator.{Action, Actuator}
+import it.unibo.intelliserra.core.actuator.{Action, Actuator, TimedTask}
 import it.unibo.intelliserra.core.entity.Capability.SensingCapability
 import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
@@ -63,7 +63,7 @@ trait TestUtility {
   def mockActuator(actuatorID: String): Actuator = {
     new Actuator {
       override def capability: Capability.ActingCapability = Capability.acting(Water)
-      override def actionHandler: ActionHandler = { case _ => Future.unit }
+      override def actionHandler: ActionHandler = { case _ => TimedTask.now(Water) }
       override def identifier: String = actuatorID
       override def onInit(): Unit = {}
       override def onAssociateZone(zoneName: String): Unit = {}

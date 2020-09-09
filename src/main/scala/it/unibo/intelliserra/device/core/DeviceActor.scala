@@ -16,11 +16,17 @@ trait DeviceActor extends Actor with ActorLogging {
 
   def zoneManagement: Receive = {
     case AssociateTo(zoneRef, zoneName) =>
+      context.become(associateBehaviour(zoneRef) orElse zoneManagement)
+      sender() ! Ack
+      device.onAssociateZone(zoneName)
 
     case DissociateFrom(zoneRef, zoneName) =>
-
+      device.onDissociateZone(zoneName)
+      context.become(dissociateBehaviour(zoneRef) orElse zoneManagement)
   }
 
+  protected def associateBehaviour(zoneRef: ActorRef): Receive
+  protected def dissociateBehaviour(zoneRef: ActorRef): Receive
 
   protected val fallback: Receive = {
     case msg@_ => log.debug(s"unknown message: $msg")

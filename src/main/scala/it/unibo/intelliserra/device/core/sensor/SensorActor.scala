@@ -7,6 +7,14 @@ import it.unibo.intelliserra.device.core.DeviceActor
 class SensorActor(override val device: Sensor) extends DeviceActor {
 
   override def receive: Receive = zoneManagement orElse fallback
+
+  override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
+    case _ => {}
+  }
+
+  override protected def dissociateBehaviour(zoneRef: ActorRef): Receive = {
+    case _ => {}
+  }
 }
 
 object SensorActor {
