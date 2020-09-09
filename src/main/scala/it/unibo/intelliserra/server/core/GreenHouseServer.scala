@@ -3,10 +3,11 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started}
+import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started, Stop, Stopped}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -63,11 +64,17 @@ object GreenHouseServer {
         .flatMap {
           case Started => Future.unit
           case ServerError(error) => Future.failed(error)
+          case _ => Future.failed(new Exception("unknown error"))
         }
 
     override def terminate(): Future[Unit] = {
-      actorSystem.stop(serverActor)
-      actorSystem.terminate().flatMap(_ => Future.unit)
+      (serverActor ? Stop)
+        .mapTo[ServerResponse]
+        .flatMap {
+          case Stopped => actorSystem.terminate().flatMap(_ => Future.unit)
+          case ServerError(error) => Future.failed(error)
+          case _ => Future.failed(new Exception("unknown error"))
+        }
     }
   }
 }
