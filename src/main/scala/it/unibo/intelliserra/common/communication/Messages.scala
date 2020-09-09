@@ -2,7 +2,8 @@ package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.state.State
 
 //noinspection ScalaStyle

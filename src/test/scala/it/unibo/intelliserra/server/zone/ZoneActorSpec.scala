@@ -3,9 +3,7 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, GetState, MyState}
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.core.sensor.Category
-import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -20,7 +18,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with BeforeAndAfterAll {
 
   private var zone: TestActorRef[ZoneActor] = _
-  private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
+  private val registeredSensor = RegisteredSensor("sensorId", Capability.sensing(Temperature))
 
   before{
     zone = TestActorRef.create(system, Props(new ZoneActor(List())))

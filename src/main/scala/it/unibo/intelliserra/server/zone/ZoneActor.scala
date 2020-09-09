@@ -45,7 +45,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(println(_))(_.get).toList
   }
 
-  private[zone] def computeActuatorState() : List[DoingAction] = actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
+  private[zone] def computeActuatorState() : List[DoingAction] = ??? //actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
 
   private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
 

@@ -4,9 +4,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor}
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.Capability.SensingCapability
+import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import monix.reactive.Observable
 
@@ -38,26 +37,24 @@ trait TestUtility {
     }
   }
 
-  def mockSensor(sensorID: String): Sensor = {
-    new Sensor {
-      override def identifier: String = sensorID
-
-      override def capability: SensingCapability = SensingCapability(Temperature)
-
-      override def measures: Observable[Measure] = Observable()
-    }
+  def mockSensor(sensorID: String): Sensor = new Sensor {
+    override def readPeriod: FiniteDuration = 5 seconds
+    override def read(): Measure = Measure(Temperature)(10)
+    override def onInit(): Unit = {}
+    override def onAssociateZone(zoneName: String): Unit = {}
+    override def onDissociateZone(zoneName: String): Unit = {}
+    override def capability: Capability.SensingCapability = SensingCapability(Temperature)
+    override def identifier: String = sensorID
   }
+
   def mockActuator(actuatorID: String): Actuator = {
     new Actuator {
+      override def capability: Capability.ActingCapability = Capability.acting(Water)
+      override def actionHandler: ActionHandler = { case _ => Future.unit }
       override def identifier: String = actuatorID
-
-      override def capability: ActingCapability = ActingCapability(Set(Water))
-
-      override def state: Observable[OperationalState] = Observable()
-
-      override def actionHandler: ActionHandler = {
-        case _ => Future.successful(Idle)
-      }
+      override def onInit(): Unit = {}
+      override def onAssociateZone(zoneName: String): Unit = {}
+      override def onDissociateZone(zoneName: String): Unit = {}
     }
   }
 

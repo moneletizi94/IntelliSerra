@@ -1,15 +1,24 @@
 package it.unibo.intelliserra.device.core.actuator
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.core.actuator.Actuator
-import it.unibo.intelliserra.device.core.EntityActor
+import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.device.core.DeviceActor
 
-class ActuatorActor(private val actuator : Actuator) extends EntityActor {
+case class CompleteAction(action: Action, whenComplete: Action => Unit)
+
+class ActuatorActor(override val device: Actuator) extends DeviceActor {
+
+
   override def receive: Receive = zoneManagement orElse fallback
 }
 
 object ActuatorActor {
-  def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = {
-    actorSystem.actorOf(Props(new ActuatorActor(actuator)), name = actuator.identifier)
-  }
+
+  case class DoActions(actions: Set[Action])
+  case class ActuatorStateChanged(operationalState: OperationalState)
+
+  private case class OnCompleteAction(action: Action)
+
+  def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(actuator)
+  def props(actuator: Actuator): Props = Props(new ActuatorActor(actuator))
 }

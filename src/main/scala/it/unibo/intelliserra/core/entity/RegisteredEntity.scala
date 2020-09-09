@@ -1,6 +1,7 @@
 package it.unibo.intelliserra.core.entity
 
 import akka.actor.ActorRef
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 
 sealed trait RegisteredEntity {
   def identifier : String

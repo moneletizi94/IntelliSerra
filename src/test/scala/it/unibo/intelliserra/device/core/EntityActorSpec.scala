@@ -3,7 +3,9 @@ package it.unibo.intelliserra.device.core
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom}
-import it.unibo.intelliserra.device.core.actuator.ActuatorActor
+import it.unibo.intelliserra.core.Device
+import it.unibo.intelliserra.core.entity.Capability
+import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -19,52 +21,34 @@ class EntityActorSpec extends TestKit(ActorSystem("device"))
   with BeforeAndAfterAll
   with TestUtility {
 
-  private var sensor: TestActorRef[SensorActor] = _
-  private var actuator: TestActorRef[ActuatorActor] = _
+  private var device: TestActorRef[DeviceActor] = _
   private var zoneManagerProbe: TestProbe = _
   private var zoneProbe: TestProbe = _
   private val zoneID = "ZONE1"
-  private val sensorMocked = mockSensor("sensor")
-  private val actuatorMocked = mockActuator("actuator")
+  private val deviceMocked = mockSensor("mockSensor")
 
   before {
     zoneManagerProbe = TestProbe()
     zoneProbe = TestProbe()
+    device = TestActorRef.create(system, SensorActor.props(deviceMocked))
   }
 
   after {
-    killActors(sensor, actuator)
+    killActors(device)
   }
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
 
-  "A sensor " must {
+  "A device " must {
     "send an ack to confirm association" in {
-      sensor = TestActorRef.create(system, Props(new SensorActor(sensorMocked)))
-      sensor.tell(AssociateTo(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
+      device.tell(AssociateTo(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
       zoneManagerProbe.expectMsg(Ack)
-      sensor.underlyingActor.zone.contains(zoneManagerProbe.ref)
+      //device.underlyingActor.zone.contains(zoneManagerProbe.ref)
     }
 
     "dissociate from a zone" in {
-      sensor = TestActorRef.create(system, Props(new SensorActor(sensorMocked)))
-      sensor.tell(DissociateFrom(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
-      sensor.underlyingActor.zone.isEmpty shouldBe true
-    }
-  }
-
-  "An actuator " must {
-    "send an ack to confirm association" in {
-      actuator = TestActorRef.create(system, Props(new ActuatorActor(actuatorMocked)))
-      actuator.tell(AssociateTo(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
-      zoneManagerProbe.expectMsg(Ack)
-      actuator.underlyingActor.zone.contains(zoneManagerProbe.ref)
-    }
-
-    "dissociate from a zone" in {
-      actuator = TestActorRef.create(system, Props(new ActuatorActor(actuatorMocked)))
-      actuator.tell(DissociateFrom(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
-      actuator.underlyingActor.zone.isEmpty shouldBe true
+      device.tell(DissociateFrom(zoneProbe.ref, zoneID), zoneManagerProbe.ref)
+      //device.underlyingActor.zone.isEmpty shouldBe true
     }
   }
 }

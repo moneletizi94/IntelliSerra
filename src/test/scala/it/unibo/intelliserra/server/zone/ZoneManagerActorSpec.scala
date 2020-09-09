@@ -3,8 +3,7 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.server.entityManager.EMEventBus
+import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
