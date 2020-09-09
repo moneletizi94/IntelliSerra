@@ -1,13 +1,9 @@
 package it.unibo.intelliserra.core.actuator
 
-import java.util.concurrent.Executors
-
-import akka.dispatch.ExecutionContexts
 import it.unibo.intelliserra.core.Device
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.entity.Capability.ActingCapability
 
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration.FiniteDuration
 
 trait Actuator extends Device {
