@@ -32,10 +32,9 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
   private var entityRef : ActorRef = _
-  private val aggregators: List[Aggregator] = List()
 
   before {
-    this.zoneManagerActor = ZoneManagerActor(aggregators)
+    this.zoneManagerActor = ZoneManagerActor(defaultServerConfig.zoneConfig)
     this.entityManagerActor = EntityManagerActor()
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor)))
   }
@@ -183,7 +182,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! DissociateEntity(actuator2.identifier)
       expectMsg(ServiceResponse(Ok))
       greenHouseController ! DissociateEntity(actuator2.identifier)
-      expectMsg(ServiceResponse(Error))
+      expectMsg(ServiceResponse(Error, "Entity already dissociated"))
     }
   }
 

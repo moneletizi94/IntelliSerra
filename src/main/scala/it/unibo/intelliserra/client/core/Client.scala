@@ -28,39 +28,47 @@ private[core] object Client {
 
     private val serverActor = context actorSelection serverUri
 
-    private def handleRequest: Receive = {
-      case CreateZone(zone) =>
-        makeRequestWithFallback(CreateZone(zone)) {
-          case ServiceResponse(Created, _) => Success(zone)
-          case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
-        }
+    private def handleZoneRequests: Receive = {
 
-      case DeleteZone(zone) =>
-        makeRequestWithFallback(DeleteZone(zone)) {
-          case ServiceResponse(Deleted, _) => Success(zone)
-          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
-        }
+      case CreateZone(zone) => makeRequestWithFallback(CreateZone(zone)) {
+        case ServiceResponse(Created, _) => Success(zone)
+        case ServiceResponse(Conflict, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
 
-      case GetZones() =>
-        makeRequestWithFallback(GetZones()) {
-          case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
-        }
+      case DeleteZone(zone) => makeRequestWithFallback(DeleteZone(zone)) {
+        case ServiceResponse(Deleted, _) => Success(zone)
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
 
-      case AssignEntity(zoneID, entityID) =>
-        makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
-          case ServiceResponse(Ok,_) => Success(zoneID)
-          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
-          case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
-          case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
-        }
+      case GetZones() => makeRequestWithFallback(GetZones()) {
+        case ServiceResponse(Ok, zones) => Success(zones.asInstanceOf[List[String]])
+      }
 
-      case GetState(zone) =>
-        makeRequest(GetState(zone)) {
-          case ServiceResponse(Ok, state) => Success(state)
-          case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
-        }
+      case GetState(zone) => makeRequest(GetState(zone)) {
+        case ServiceResponse(Ok, state) => Success(state)
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
+    }
 
-      case msg => log.debug(s"ignored unknown request $msg")
+    private def handleEntitiesRequests: Receive = {
+
+      case AssignEntity(zoneID, entityID) => makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
+        case ServiceResponse(Ok,_) => Success(zoneID)
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
+        case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
+
+      case DissociateEntity(entityID) => makeRequestWithFallback(DissociateEntity(entityID)) {
+        case ServiceResponse(Ok, _) => Success(entityID)
+        case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
+
+      case RemoveEntity(entityID) => makeRequest(RemoveEntity(entityID)) {
+        case ServiceResponse(Deleted, _) => Success(entityID)
+        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+      }
     }
 
     private def makeRequestWithFallback[T](request: => ClientRequest)(function: ServiceResponseMap[T]): Future[T] = {
@@ -76,6 +84,10 @@ private[core] object Client {
       case _ => Failure(new Exception())
     }
 
-    override def receive: Receive = handleRequest
+    override def receive: Receive =
+      handleZoneRequests orElse
+      handleEntitiesRequests orElse {
+        case msg@_ => log.warning(s"Unknown message: $msg")
+      }
   }
 }

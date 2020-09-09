@@ -38,9 +38,17 @@ trait ZoneClient {
   def associateEntity(entity: Entity, zone: Zone): Future[Zone]
 
   /**
+   * Dissociate the specified entity, whether it is associated or in pending
+   * @param entity the entity to remove
+   * @return
+   */
+  def dissociateEntity(entity: Entity): Future[Entity]
+
+  /**
    * Get state of a specified zone, if possible
    * @param zone, name of zone
    * @return if success, the state of zone, a failure otherwise
    */
   def getState(zone: Zone): Future[Option[State]]
+
 }

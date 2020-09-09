@@ -5,10 +5,13 @@ import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
 import it.unibo.intelliserra.common.communication.Protocol.ServiceResponse
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.server.ServerConfig.{RuleConfig, ZoneConfig}
+import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.server.aggregation.Aggregator
-import it.unibo.intelliserra.server.GreenHouseController
+import it.unibo.intelliserra.server.{GreenHouseController, ServerConfig}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
+import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
 
 import scala.concurrent.duration._
@@ -21,7 +24,7 @@ private[core] object GreenHouseActor {
   /**
    * Start the server
    */
-  case class Start(aggregators: List[Aggregator]) extends ServerCommand
+  case object Start extends ServerCommand
 
   /**
    * Responses to server commands
@@ -33,14 +36,16 @@ private[core] object GreenHouseActor {
   /**
    * Create a green house server actor
    * @param actorSystem the actor system for create the actor
+   * @param ruleConfig rules configuration for rule engine service
+   * @param zoneConfig zones configuration for zone manager
    * @return an actor ref of green house server actor
    */
-  def apply()(implicit actorSystem: ActorSystem): ActorRef = {
-    actorSystem actorOf (Props[GreenHouseActor], name = "serverActor")
+  def apply(ruleConfig: RuleConfig, zoneConfig: ZoneConfig)(implicit actorSystem: ActorSystem): ActorRef = {
+    actorSystem actorOf (Props(new GreenHouseActor(ruleConfig, zoneConfig)), name = "serverActor")
   }
 }
 
-private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
+private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConfig) extends Actor with DefaultExecutionContext {
 
   type ResponseMap[T] = PartialFunction[Try[T], ServiceResponse]
 
@@ -50,11 +55,13 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
+  var ruleEngineService: ActorRef = _
 
   private def idle: Receive = {
-    case Start(aggregators) =>
-      zoneManagerActor = ZoneManagerActor(aggregators)
+    case Start =>
+      zoneManagerActor = ZoneManagerActor(zoneConfig)
       entityManagerActor = EntityManagerActor()
+      ruleEngineService = RuleEngineService(ruleConfig.rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
       context.become(running orElse routeToController)
@@ -62,7 +69,7 @@ private[core] class GreenHouseActor extends Actor with DefaultExecutionContext {
   }
 
   private def running: Receive = {
-    case Start(_) => sender ! ServerError(new IllegalStateException("Server is already running"))
+    case Start => sender ! ServerError(new IllegalStateException("Server is already running"))
   }
 
   def routeToController: Receive = {
