@@ -7,6 +7,7 @@ import it.unibo.intelliserra.core.actuator.{Action, Actuator}
 import it.unibo.intelliserra.core.entity.Capability.SensingCapability
 import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestUtility.Actions._
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 
