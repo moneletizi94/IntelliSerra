@@ -9,11 +9,17 @@ class SensorActor(override val device: Sensor) extends DeviceActor with Timers w
 
   override def receive: Receive = zoneManagement orElse fallback
 
-  timers.startTimerAtFixedRate(device.identifier, SensorPollingTime, device.readPeriod)
-
   override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
-    case SensorPollingTime =>
-      device.read().foreach(measure => zoneRef ! SensorMeasureUpdated(measure))
+    timers.startTimerAtFixedRate(device.identifier, SensorPollingTime, device.readPeriod)
+    val newBehaviour: PartialFunction[Any, Unit] = {
+      case SensorPollingTime =>
+        device.read().filter(_.category == device.capability.category).foreach {
+          measure =>
+            log.info(s"Sending measure: $measure")
+            zoneRef ! SensorMeasureUpdated(measure)
+        }
+    }
+    newBehaviour
   }
 
   override protected def dissociateBehaviour(zoneRef: ActorRef): Receive = {

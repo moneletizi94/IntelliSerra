@@ -11,7 +11,7 @@ import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestUtility.Actions._
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 
-import scala.concurrent.{Await, Awaitable, Future}
+import scala.concurrent.{Await, Awaitable}
 
 trait TestUtility {
 
@@ -47,7 +47,7 @@ trait TestUtility {
    */
   def mockSensor(sensorID: String): Sensor = new Sensor {
     override def readPeriod: FiniteDuration = 5 seconds
-    override def read(): Measure = Measure(Temperature)(10)
+    override def read(): Option[Measure] = Option(Measure(Temperature)(10))
     override def onInit(): Unit = {}
     override def onAssociateZone(zoneName: String): Unit = {}
     override def onDissociateZone(zoneName: String): Unit = {}
