@@ -9,5 +9,5 @@ import scala.concurrent.duration.FiniteDuration
 trait Sensor extends Device {
   override def capability: SensingCapability
   def readPeriod: FiniteDuration
-  def read(): Measure
+  def read(): Option[Measure]
 }

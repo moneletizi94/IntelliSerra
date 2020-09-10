@@ -13,7 +13,7 @@ class SensorActor(override val device: Sensor) extends DeviceActor with Timers w
 
   override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
     case SensorPollingTime =>
-      zoneRef ! SensorMeasureUpdated(device.read())
+      device.read().foreach(measure => zoneRef ! SensorMeasureUpdated(measure))
   }
 
   override protected def dissociateBehaviour(zoneRef: ActorRef): Receive = {

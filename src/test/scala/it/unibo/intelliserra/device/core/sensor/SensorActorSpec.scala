@@ -37,7 +37,6 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
   }
 
   "A sensor" must {
-
     "" in {
 
 
