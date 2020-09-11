@@ -17,7 +17,7 @@ object SensorActuatorExample extends App {
                                     override val capability: SensingCapability,
                                     override val readPeriod: FiniteDuration,
                                     measures: Stream[Measure]) extends Sensor {
-      override def read(): Measure = measures.iterator.next()
+      override def read(): Option[Measure] = Option(measures.iterator.next())
       override def onInit(): Unit = ()
       override def onAssociateZone(zoneName: String): Unit = ()
       override def onDissociateZone(zoneName: String): Unit = ()
