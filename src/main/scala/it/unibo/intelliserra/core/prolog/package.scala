@@ -1,11 +1,11 @@
 package it.unibo.intelliserra.core
 
-import alice.tuprolog.Struct
-import it.unibo.intelliserra.core.prolog.Representations.{ActionPrologRepresentation, ConditionStatementPrologRepresentation, RulePrologRepresentation}
+import alice.tuprolog.Term
+import it.unibo.intelliserra.core.prolog.Representations._
 
 package object prolog {
   implicit class RichAny[A : PrologRepresentation](toEnrich : A) {
-    def toTerm : Struct = {
+    def toTerm : Term = {
       implicitly[PrologRepresentation[A]].toTerm(toEnrich)
     }
   }
@@ -13,4 +13,6 @@ package object prolog {
   implicit val prologRepresentationRule = RulePrologRepresentation
   implicit val prologRepresentationAction = ActionPrologRepresentation
   implicit val prologRepresentationConditionStatement = ConditionStatementPrologRepresentation
+  implicit val prologRepresentationCategory = CategoryPrologRepresentation
+  implicit val prologRepresentationValueType = ValueTypePrologRepresentation
 }
