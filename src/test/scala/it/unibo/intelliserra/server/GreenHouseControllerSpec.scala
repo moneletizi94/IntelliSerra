@@ -6,13 +6,10 @@ import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.actuator._
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
-import it.unibo.intelliserra.core.rule.dsl.MajorOperator
-import it.unibo.intelliserra.core.rule.{Rule, RuleInfo}
+import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
 import it.unibo.intelliserra.core.sensor._
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
-import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.EntityManagerActor
 import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
@@ -28,22 +25,17 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   with BeforeAndAfter
   with TestUtility
   with ImplicitSender
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll
+  with StatementTestUtils{
 
   private var mockZoneID: String = _
-
   private var greenHouseController: TestActorRef[GreenHouseController] = _
   private var entityManagerActor: ActorRef = _
   private var zoneManagerActor: ActorRef = _
   private var ruleEngineServiceActor: ActorRef = _
   private var entityRef: ActorRef = _
-  private val aggregators: List[Aggregator] = List()
-  private var rule: Rule = _
-  private val actionSet: Set[Action] = Set(Water)
   private val ruleID = "rule0"
   private val rule1ID = "rule1"
-  private val temperatureValue = 20
-  private var temperatureStatement: AtomicConditionStatement = _
 
   before {
     this.zoneManagerActor = ZoneManagerActor(defaultServerConfig.zoneConfig)

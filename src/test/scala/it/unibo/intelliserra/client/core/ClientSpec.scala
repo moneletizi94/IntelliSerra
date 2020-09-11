@@ -1,12 +1,8 @@
 package it.unibo.intelliserra.client.core
 
-import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
-import it.unibo.intelliserra.core.rule.dsl.MajorOperator
-import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -18,8 +14,7 @@ class ClientSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with TestUtility
-with StatementTestUtils {
+  with TestUtility{
 
   private val zoneName = "zone1"
   private val zoneName2 = "zone2"
@@ -27,19 +22,16 @@ with StatementTestUtils {
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
-  private val aggregators: List[Aggregator] = List()
-  private val actionSet: Set[Action] = Set(Water)
   private val ruleID = "rule0"
   private val rule1ID = "rule1"
-  private var rule: Rule = _
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
-    server = GreenHouseServer(defaultServerConfig)
-    client = GreenHouseClient(GreenhouseName, Hostname, Port)
-    deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
+    this.server = GreenHouseServer(defaultConfigWithRule)
+    this.client = GreenHouseClient(GreenhouseName, Hostname, Port)
+    this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(server.start())
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
@@ -174,7 +166,7 @@ with StatementTestUtils {
 
     /*--- START TEST RULES ---*/
     "get all rules" in {
-      awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, _))
+     awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
     }
 
     "enable an existing rule" in {

@@ -3,12 +3,9 @@ package it.unibo.intelliserra.server.core
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.actor.DefaultExecutionContext
-import it.unibo.intelliserra.common.communication.Protocol.ServiceResponse
-import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.common.communication.Protocol.{ServiceResponse, _}
+import it.unibo.intelliserra.server.GreenHouseController
 import it.unibo.intelliserra.server.ServerConfig.{RuleConfig, ZoneConfig}
-import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.server.aggregation.Aggregator
-import it.unibo.intelliserra.server.{GreenHouseController, ServerConfig}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
 import it.unibo.intelliserra.server.rule.RuleEngineService
