@@ -5,6 +5,7 @@ import it.unibo.intelliserra.core.sensor.{DoubleType, IntType}
 
 package object aggregation {
 
+  // TODO: context bound 
   implicit class RichList[T](list: List[T]){
     def avg(implicit fractional: Fractional[T]) : T = fractional.mkNumericOps(list.sum(fractional)) / fractional.fromInt(list.size)
   }
