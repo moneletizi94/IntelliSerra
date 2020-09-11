@@ -6,74 +6,73 @@ import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, WordSpecLike}
+import org.scalatest.{AsyncWordSpecLike, BeforeAndAfter}
 import org.scalatestplus.junit.JUnitRunner
-import scala.concurrent.Await
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 
 @RunWith(classOf[JUnitRunner])
-private class DeviceDeploySpec extends WordSpecLike
+private class DeviceDeploySpec extends AsyncWordSpecLike
   with BeforeAndAfter
   with TestUtility {
 
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private var sensor: Sensor = _
+  private var sensor2: Sensor = _
+  private var actuator: Actuator = _
+  private var actuator2: Actuator = _
 
   before {
     this.server = GreenHouseServer(defaultServerConfig)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(this.server.start())
+    sensor = mockSensor("sensor")
+    sensor2 = mockSensor("sensor2")
+    actuator = mockActuator("actuator")
+    actuator2 = mockActuator("actuator2")
   }
 
   after {
     awaitReady(this.server.terminate())
   }
 
-  private val sensor:Sensor = mockSensor("sensor")
-  private val sensor2:Sensor = mockSensor("sensor2")
-  private val actuator:Actuator = mockActuator("actuator")
-  private val actuator2:Actuator = mockActuator("actuator2")
-
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {
-      Try(awaitReady(deviceDeploy.deploySensor(sensor))) match {
-        case Success(_) => succeed
-        case Failure(exception)=> fail(exception)
+      deviceDeploy.deploySensor(sensor).transform {
+        case Success(_) => Success(succeed)
+        case Failure(exception) => fail(exception)
       }
     }
   }
 
-  "A deviceDeploy ask for a sensor assignment with an identify that already exists" in {
-      Try(awaitReady(deviceDeploy.deploySensor(sensor2))) match {
-        case Success(_) =>
-          Try(awaitReady(deviceDeploy.deploySensor(sensor2))) match {
-            case Success(_) => fail()
-            case Failure(_) => succeed
-          }
-        case Failure(exception) => fail(exception)
+  "A deviceDeploy" must {
+    "ask for a sensor assignment with an identify that already exists" in {
+      awaitReady(deviceDeploy.deploySensor(sensor2))
+      deviceDeploy.deploySensor(sensor2).transform {
+        case Success(_) => Failure(fail())
+        case Failure(_) => Success(succeed)
       }
+    }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment" in {
-      Try(Await.ready(deviceDeploy.deployActuator(actuator), timeout.duration)) match {
-        case Success(_) => succeed
-        case Failure(exception)=> fail(exception)
+      deviceDeploy.deployActuator(actuator).transform {
+        case Success(_) => Success(succeed)
+        case Failure(exception) => fail(exception)
       }
     }
   }
 
   "A deviceDeploy " must {
     "ask for an actuator assignment with an identify that already exists" in {
-      Try(awaitReady(deviceDeploy.deployActuator(actuator2))) match {
-        case Success(_) =>
-          Try(awaitReady(deviceDeploy.deployActuator(actuator2))) match {
-            case Success(_) => fail()
-            case Failure(_) => succeed
-          }
-        case Failure(exception) => fail(exception)
+      awaitReady(deviceDeploy.deployActuator(actuator2))
+      deviceDeploy.deployActuator(actuator2).transform {
+        case Success(_) => Failure(fail())
+        case Failure(_) => Success(succeed)
       }
     }
   }
+
 }
