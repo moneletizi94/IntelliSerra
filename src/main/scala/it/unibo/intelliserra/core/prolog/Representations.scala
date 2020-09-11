@@ -34,13 +34,14 @@ object Representations {
       Struct.of("measure", measure.value.toTerm, measure.category.toTerm)
   }
 
-  case object RulePrologRepresentation extends PrologRepresentation[Rule]{
+  implicit object RulePrologRepresentation extends PrologRepresentation[Rule]{
     override def toTerm(data: Rule): Struct = {
       //data.actions.map(p => Struct.rule(p.toTerm,data.condition.toTerm)
       Struct.atom("")
     }
   }
-  case object ActionPrologRepresentation extends PrologRepresentation[Action] {
+
+  implicit object ActionPrologRepresentation extends PrologRepresentation[Action] {
     override def toTerm(data: Action): Struct = Struct.atom(s"action(${data.getClass.getSimpleName.split('$').head.toLowerCase})")
   }
 
