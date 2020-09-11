@@ -6,6 +6,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Categories._
 import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.Success

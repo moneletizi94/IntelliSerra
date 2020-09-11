@@ -3,12 +3,13 @@ package it.unibo.intelliserra.server.rule
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
-import it.unibo.intelliserra.common.communication.Messages.{DisableRule, DoingActions, EnableRule}
+import it.unibo.intelliserra.common.communication.Messages.{DisableRule, EnableRule, InferActions}
 import it.unibo.intelliserra.common.communication.Protocol.{NotFound, Ok, ServiceResponse}
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.{Rule, RuleEngine, StatementTestUtils}
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -61,7 +62,7 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
     }
 
     "deduce a set of actions starting from the state" in {
-      ruleEngineService ! DoingActions(state)
+      ruleEngineService ! InferActions(state)
     }
   }
 }

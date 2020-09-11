@@ -41,7 +41,7 @@ trait DeviceDeploy {
     private val entityManagerActor = actorSystem actorSelection RemotePath.entityManager(greenHouseName, serverAddress, serverPort)
 
     /**
-     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManagerActor]] to insert a new sensor in the system
+     * This method is used to ask at the [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]] to insert a new sensor in the system
      *
      * @param sensor the sensor to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message
@@ -55,7 +55,7 @@ trait DeviceDeploy {
     }
 
     /**
-     * This method is used to ask at the [[it.unibo.intelliserra.server.EntityManagerActor]] to insert a new actuator in the system
+     * This method is used to ask at the [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]] to insert a new actuator in the system
      *
      * @param actuator the actuator to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message

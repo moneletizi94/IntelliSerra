@@ -3,7 +3,6 @@ package it.unibo.intelliserra.server
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -20,12 +19,11 @@ private class DeviceDeploySpec extends WordSpecLike
 
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
-  private val aggregators: List[Aggregator] = List()
 
   before {
-    this.server = GreenHouseServer(GreenhouseName, Hostname, Port)
+    this.server = GreenHouseServer(defaultServerConfig)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
-    awaitReady(this.server.start(aggregators, List()))
+    awaitReady(this.server.start())
   }
 
   after {

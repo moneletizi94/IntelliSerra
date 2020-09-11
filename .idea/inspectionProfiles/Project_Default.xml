@@ -239,7 +239,6 @@
     <inspection_tool class="SideEffectsInMonadicTransformation" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="SomeToOption" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnitMethodDeclaredWithTypeAnnotation" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UnitMethodDefinedLikeFunction" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnitMethodDefinedWithEqualsSign" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="VariablePatternShadow" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="XmlWrongFileType" enabled="true" level="ERROR" enabled_by_default="true" />
