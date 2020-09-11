@@ -1,9 +1,10 @@
 package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
-import it.unibo.intelliserra.core.sensor.{Category, Measure, ValueType}
+import it.unibo.intelliserra.core.prolog.Representations._
+import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.utils.TestUtility.Categories.{CharCategory, LightToggle, Pressure, Temperature, Weather}
+import it.unibo.intelliserra.utils.TestUtility.Categories._
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -11,37 +12,25 @@ import org.scalatestplus.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class StateToPrologSpec extends WordSpecLike with Matchers with BeforeAndAfter {
 
-  private var measures: List[Measure] = _
+  private var measures: List[(Measure, String)] = _
 
   before {
-    measures = measuresFromList(List(
-      Temperature -> 10,
-      Weather -> "sun",
-      LightToggle -> true,
-      Pressure -> 1056.2,
-      CharCategory -> 'a'
-    ))
+    measures = List[(Measure, String)](
+      Measure(Temperature)(10) -> "measure(10, temperature).",
+      Measure(Weather)("sun") -> "measure(string(sun), weather).",
+      Measure(LightToggle)(true) -> "measure(1, lighttoggle).",
+      Measure(Pressure)(1056.2) -> "measure(1056.2, pressure).",
+      Measure(CharCategory)('a')-> s"measure(${'a'.toInt}, charcategory)."
+    )
   }
 
   "A prolog state converter " must {
     "convert state to right prolog struct" in {
 
-      val expectedStruct = List(
-        "measure(10, temperature).",
-        "measure(string(sun), weather).",
-        "measure(1, lighttoggle).",
-        "measure(1056.2, pressure).",
-        s"measure(${'a'.toInt}, charcategory)."
-      )
+      val expectedStruct = measures.map(_._2).map(Term.createTerm)
+      val state = State(measures.map(_._1), List())
 
-      val state = State(measures, List())
-      val stateToProlog = new StateToProlog()
-
-      stateToProlog.toTerm(state) shouldBe Struct.list(expectedStruct.map(Term.createTerm):_*)
+      state.toTerm shouldBe Struct.list(expectedStruct:_*)
     }
-
   }
-
-  private def measuresFromList(measureMap: List[(Category[ValueType], ValueType)]): List[Measure] =
-    measureMap.map(kv => Measure(kv._1)(kv._2))
 }
