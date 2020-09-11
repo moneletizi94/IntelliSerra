@@ -1,6 +1,8 @@
 package it.unibo.intelliserra.core.rule
 
 import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.prolog.Representations._
+import it.unibo.intelliserra.core.prolog.RichAny
 import it.unibo.intelliserra.core.state.State
 
 /**
