@@ -6,7 +6,7 @@ import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 import it.unibo.intelliserra.utils.TestUtility.Actions._
@@ -89,6 +89,9 @@ object TestUtility{
     case object Temperature extends Category[IntType]
     case object Humidity extends Category[IntType]
     case object Weather extends Category[StringType]
+    case object LightToggle extends Category[BooleanType]
+    case object Pressure extends Category[DoubleType]
+    case object CharCategory extends Category[CharType]
   }
 
   object Actions{
