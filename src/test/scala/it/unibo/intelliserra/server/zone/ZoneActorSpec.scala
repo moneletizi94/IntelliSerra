@@ -7,6 +7,7 @@ import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, Sensi
 import it.unibo.intelliserra.core.sensor.Category
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

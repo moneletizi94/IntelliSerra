@@ -6,8 +6,8 @@ import akka.util.Subclassification
 import it.unibo.intelliserra.core.entity.EntityChannel
 
 /**
- * This object represents the pubSub channel from EntityManager to ZoneManager
- * to update the last one after an entityRemove
+ * This object represents the pubSub channel
+ * to update subscriber on an entityRemove
  */
 object EMEventBus extends EventBus with SubchannelClassification {
   type Event = (String, PublishedOnRemoveEntity)

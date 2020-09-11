@@ -2,9 +2,9 @@ package it.unibo.intelliserra.core.rule
 
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
 import it.unibo.intelliserra.core.rule.dsl.{EqualsOperator, MajorOperator}
-import it.unibo.intelliserra.utils.{TestActions, TestCategory}
+import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature, Weather}
 
-trait StatementTestUtils extends TestActions with TestCategory {
+trait StatementTestUtils {
 
   val temperatureValue = 20
   val humidityValue = 21
