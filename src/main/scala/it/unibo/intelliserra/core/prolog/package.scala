@@ -1,7 +1,6 @@
 package it.unibo.intelliserra.core
 
 import alice.tuprolog.Term
-import it.unibo.intelliserra.core.prolog.Representations._
 
 package object prolog {
   import it.unibo.intelliserra.core.prolog.Representations._

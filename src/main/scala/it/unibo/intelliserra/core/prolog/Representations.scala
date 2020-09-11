@@ -3,12 +3,11 @@ package it.unibo.intelliserra.core.prolog
 import alice.tuprolog.{Struct, Term}
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.core.rule.dsl.ConditionStatement
+import it.unibo.intelliserra.core.rule.dsl.ConditionStatement._
 import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType, ValueType}
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.sensor.{Category, ValueType}
-import ConditionStatement._
 import it.unibo.intelliserra.examples.RuleDslExample._
 
 object Representations {
@@ -28,12 +27,6 @@ object Representations {
     override def toTerm(data: Category[ValueType]): Term =
       Term.createTerm(data.getClass.getSimpleName.split('$').head.toLowerCase)
   }
-  implicit object RulePrologRepresentation extends PrologRepresentation[Rule]{
-    override def toTerm(data: Rule): Term = {
-       Struct.list(data.actions.map(action => Struct.rule(action.toTerm,data.condition.toTerm)).toList:_*)
-    }
-  }
-
   implicit object ActionPrologRepresentation extends PrologRepresentation[Action] {
     override def toTerm(data: Action): Term = Struct.atom(s"action(${data.getClass.getSimpleName.split('$').head.toLowerCase})")
   }
@@ -52,7 +45,7 @@ object Representations {
       data match {
         case AtomicConditionStatement(left, operator, right) =>
           val actualCounter = counter.next
-          Term.createTerm(s"measure(X${actualCounter},${left.toTerm}),X${actualCounter} ${operatorToProlog(operator)} ${right.toTerm}")
+          Term.createTerm(s"measure(X$actualCounter,${left.toTerm}),X$actualCounter ${operatorToProlog(operator)} ${right.toTerm}")
         case AndConditionStatement(statements) => Struct.list(statements.map(statement => toTerm(statement)).toList:_*) //TODO serve una virgola ?
       }
     }
@@ -65,9 +58,15 @@ object Representations {
       case NotEqualsOperator => "\\="
     }
   }
+  implicit object RulePrologRepresentation extends PrologRepresentation[Rule]{
+    override def toTerm(data: Rule): Term = {
+       Struct.list(data.actions.map(action => Struct.rule(action.toTerm,data.condition.toTerm)).toList:_*)
+    }
+  }
 }
 
 object Prova extends App {
+  import it.unibo.intelliserra.core.prolog.Representations._
   val simpleRule = Temperature > 10 execute Water
   val compositeRule = Temperature > 20 && Humidity > 50.0 executeMany Set(Water, Fan)
   println(simpleRule.toTerm)
