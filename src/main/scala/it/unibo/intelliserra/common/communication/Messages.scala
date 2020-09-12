@@ -2,7 +2,8 @@ package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
 
@@ -219,7 +220,7 @@ object Messages {
   case class MyState(state : Option[State])
 
   /**
-   * Trait to represent requests forwarded to [[it.unibo.intelliserra.device.core.EntityActor]]
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
    */
   sealed trait EntityRequest
 

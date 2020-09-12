@@ -10,10 +10,13 @@ import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
-trait TestUtility extends StatementTestUtils{
+import it.unibo.intelliserra.utils.TestUtility.Actions.Water
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
+import it.unibo.intelliserra.core.rule.dsl._
+
 import scala.concurrent.{Await, Awaitable}
 
-trait TestUtility {
+trait TestUtility extends StatementTestUtils {
 
   import akka.util.Timeout
 
@@ -71,7 +74,7 @@ trait TestUtility {
   }
 }
 
-object TestUtility{
+object TestUtility {
   object Categories{
     case object Temperature extends Category[IntType]
     case object Humidity extends Category[IntType]
