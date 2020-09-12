@@ -2,9 +2,10 @@ package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
 import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.prolog.Representations.ConditionStatementPrologRepresentation.counter
 import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement._
-import it.unibo.intelliserra.core.sensor.{BooleanType,CharType, DoubleType, IntType, Measure, StringType, ValueType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, CharType, DoubleType, IntType, Measure, StringType, ValueType}
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.sensor.{Category, ValueType}
@@ -40,16 +41,19 @@ object Representations {
 
   implicit object ConditionStatementPrologRepresentation extends PrologRepresentation[ConditionStatement] {
     private var counter = Stream.from(0).iterator
-    override def toTerm(data: ConditionStatement): Term = {
-      data match {
-        case AtomicConditionStatement(left, operator, right) =>
-          val actualCounter = counter.next
-          Term.createTerm(s"measure(X$actualCounter,${left.toTerm}),X$actualCounter ${operatorToProlog(operator)} ${right.toTerm}")
-        case AndConditionStatement(statements) =>
+    override def toTerm(data: ConditionStatement): Term = data match {
+        case atomic: AtomicConditionStatement =>
           counter = Stream.from(0).iterator
-          Term.createTerm(statements.map(statement => toTerm(statement)).mkString(","))
+          nextConditionToProlog(atomic, counter)
+        case compound: AndConditionStatement =>
+          counter = Stream.from(0).iterator
+          Term.createTerm(toAtomicStatements(compound).map(statement => nextConditionToProlog(statement, counter)).mkString(","))
       }
+    def nextConditionToProlog(statement: AtomicConditionStatement, counter: Iterator[Int]): Term = {
+      val actualCounter = counter.next()
+      Term.createTerm(s"measure(X$actualCounter,${statement.left.toTerm}),X$actualCounter ${operatorToProlog(statement.operator)} ${statement.right.toTerm}")
     }
+
     def operatorToProlog(operator: ConditionOperator): String = operator match {
       case MajorOperator => ">"
       case MajorEqualsOperator => ">="

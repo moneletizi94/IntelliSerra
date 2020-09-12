@@ -19,8 +19,8 @@ class RuleToPrologSpec extends WordSpecLike
   before {
     rules += ((Temperature > 10 execute Water) -> List("action(water):-measure(X0, temperature), X0 > 10."),
       (Temperature > 20 && Humidity > 50.0 execute Fan) -> List("action(fan):-(measure(X0, temperature), X0>20), measure(X1, humidity), X1 > 50.0."),
-        (Humidity > 10.0 executeMany Set(Water, Fan)) -> List("action(water):-measure(X2, humidity), X2 > 10.0.",
-          "action(fan):-measure(X3, humidity), X3> 10.0."))
+        (Humidity > 10.0 executeMany Set(Water, Fan)) -> List("action(water):-measure(X0, humidity), X0 > 10.0.",
+          "action(fan):-measure(X0, humidity), X0> 10.0."))
   }
 
   "A rule prolog converter" must {
