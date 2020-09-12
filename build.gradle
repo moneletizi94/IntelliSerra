@@ -30,6 +30,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.scalatest:scalatest_2.12:3.0.8'
     testImplementation "com.typesafe.akka:akka-testkit_${scalaBinary}:${akkaVersion}"
+    testImplementation "org.mockito:mockito-scala-scalatest_${scalaBinary}:1.5.0"
 
     testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.12:1.2.0'
 }

@@ -4,10 +4,11 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, TimedTask}
-import it.unibo.intelliserra.core.entity.Capability.SensingCapability
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
+import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 import it.unibo.intelliserra.utils.TestUtility.Actions._
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 
@@ -45,31 +46,18 @@ trait TestUtility {
    * @param sensorID the identifier of the sensor
    * @return Sensor
    */
-  def mockSensor(sensorID: String): Sensor = new Sensor {
-    override def readPeriod: FiniteDuration = 5 seconds
-    override def read(): Option[Measure] = Option(Measure(Temperature)(10))
-    override def onInit(): Unit = {}
-    override def onAssociateZone(zoneName: String): Unit = {}
-    override def onDissociateZone(zoneName: String): Unit = {}
-    override def capability: Capability.SensingCapability = SensingCapability(Temperature)
-    override def identifier: String = sensorID
-  }
+  def mockSensor(sensorID: String): Sensor = mockSensor(sensorID, Capability.sensing(Temperature), 5 seconds, Stream.continually(Measure(Temperature)(10)))
+  def mockSensor(sensorID: String, sensorCapability: SensingCapability, period: FiniteDuration, measures: Stream[Measure]): Sensor =
+    TestSensor(sensorID, sensorCapability, period, measures)
 
   /**
    * This is an utility method used in tests. It mocks an Actuator given the actuatorID
    * @param actuatorID the identifier of the actuator
    * @return Actuator
    */
-  def mockActuator(actuatorID: String): Actuator = {
-    new Actuator {
-      override def capability: Capability.ActingCapability = Capability.acting(Water)
-      override def actionHandler: ActionHandler = { case _ => TimedTask.now(Water) }
-      override def identifier: String = actuatorID
-      override def onInit(): Unit = {}
-      override def onAssociateZone(zoneName: String): Unit = {}
-      override def onDissociateZone(zoneName: String): Unit = {}
-    }
-  }
+  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water)){ case _ => TimedTask.now(Water) }
+  def mockActuator(actuatorID: String, actingCapability: ActingCapability)(handler: ActionHandler): Actuator =
+    TestActuator(actuatorID, actingCapability)(handler)
 
   /**
    * This is an utility method used to create an EntityChannel given an actorRef

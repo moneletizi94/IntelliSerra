@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.device.core
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, PoisonPill}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo}
 import it.unibo.intelliserra.device.core.sensor.SensorActor
@@ -31,7 +31,7 @@ class DeviceActorSpec extends TestKit(ActorSystem("device"))
   }
 
   after {
-    killActors(device)
+    device ! PoisonPill
   }
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
