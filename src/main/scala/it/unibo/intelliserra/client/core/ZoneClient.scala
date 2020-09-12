@@ -51,25 +51,4 @@ trait ZoneClient {
    * @return if success, the state of zone, a failure otherwise
    */
   def getState(zone: Zone): Future[Option[State]]
-
-  /**
-   * Get all rules.
-   * @return all rules with info
-   */
-  def getRules: Future[List[RuleInfo]]
-
-  /**
-   * Enable an existing rule
-   * @param ruleID, rule identifier
-   * @return string who represents a Controller response.
-   */
-  def enableRule(ruleID: String): Future[String]
-
-  /**
-   * Disable an existing rule
-   * @param ruleID, rule identifier
-   * @return string who represents a Controller response.
-   */
-  def disableRule(ruleID: String): Future[String]
-
 }

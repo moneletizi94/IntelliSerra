@@ -12,7 +12,7 @@ import it.unibo.intelliserra.core.state.State
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-trait GreenHouseClient extends ZoneClient {
+trait GreenHouseClient extends ZoneClient with RuleClient {
   /**
   * Remove an entity, either or not associated to a zone
   * @param entity the entity to remove
