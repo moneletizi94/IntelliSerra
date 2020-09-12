@@ -20,8 +20,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   with BeforeAndAfterAll
   with TestUtility {
 
-  private var serverActor: TestActorRef[GreenHouseActor] = TestActorRef
-    .create(system, Props(new GreenHouseActor(defaultServerConfig.ruleConfig, defaultServerConfig.zoneConfig)))
+  private var serverActor: TestActorRef[GreenHouseActor] = _
 
   before {
     serverActor = TestActorRef.create(system, Props(new GreenHouseActor(defaultServerConfig.ruleConfig, defaultServerConfig.zoneConfig)))
