@@ -2,15 +2,13 @@ package it.unibo.intelliserra.server.core
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props, Terminated}
 import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
-import it.unibo.intelliserra.common.communication.Protocol.{ServiceResponse, _}
+import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.GreenHouseController
 import it.unibo.intelliserra.server.ServerConfig.{RuleConfig, ZoneConfig}
-import it.unibo.intelliserra.server.core.GreenHouseActor._
+import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started, _}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
 import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
-
-import scala.util.Try
 
 private[core] object GreenHouseActor {
 
@@ -63,15 +61,15 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
   var greenHouseController: ActorRef = _
   var zoneManagerActor: ActorRef = _
   var entityManagerActor: ActorRef = _
-  var ruleEngineService: ActorRef = _
+  var ruleEngineServiceActor: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
       zoneManagerActor = ZoneManagerActor(zoneConfig)
       entityManagerActor = EntityManagerActor()
-      ruleEngineService = RuleEngineService(ruleConfig.rules)
+      ruleEngineServiceActor = RuleEngineService(ruleConfig.rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
-      greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor)
+      greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)
       context.become(running)
       sender ! Started
     case Stop =>
@@ -81,7 +79,7 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
   private def running: Receive = {
     case Start => sender ! ServerError(new IllegalStateException("Server is already running"))
     case request: ClientRequest  => greenHouseController.tell(request, sender())
-    case Stop => shutdownActors(sender, List(greenHouseController, ruleEngineService, zoneManagerActor, entityManagerActor))
+    case Stop => shutdownActors(sender, List(greenHouseController, ruleEngineServiceActor, zoneManagerActor, entityManagerActor))
   }
 
   private def terminating(actors: List[ActorRef], replyTo: ActorRef): Receive = actors match {

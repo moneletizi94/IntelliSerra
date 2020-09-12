@@ -1,7 +1,6 @@
 package it.unibo.intelliserra.core.rule
 
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.dsl.MajorOperator
 import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
