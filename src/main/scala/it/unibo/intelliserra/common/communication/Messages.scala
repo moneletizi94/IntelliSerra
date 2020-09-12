@@ -10,7 +10,7 @@ import it.unibo.intelliserra.core.state.State
  * Object to describe all the messages exchanged on server-side with
  * a request-response fashion
  */
-//noinspection ScalaStyle
+// scalastyle:off
 object Messages {
 
   /**
