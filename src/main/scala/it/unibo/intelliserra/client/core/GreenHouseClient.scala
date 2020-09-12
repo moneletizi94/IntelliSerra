@@ -6,12 +6,13 @@ import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.common.communication.Protocol._
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-trait GreenHouseClient extends ZoneClient {
+trait GreenHouseClient extends ZoneClient with RuleClient {
   /**
   * Remove an entity, either or not associated to a zone
   * @param entity the entity to remove
@@ -55,6 +56,12 @@ object GreenHouseClient {
     override def getState(zone: Zone): Future[Option[State]] = (client ? GetState(zone)).mapTo[Option[State]]
 
     override def removeEntity(entity: Entity): Future[Entity] = (client ? RemoveEntity(entity)).mapTo[Entity]
+
+    override def getRules: Future[List[RuleInfo]] = (client ? GetRules).mapTo[List[RuleInfo]]
+
+    override def enableRule(ruleID: String): Future[String] = (client ? EnableRule(ruleID)).mapTo[String]
+
+    override def disableRule(ruleID: String): Future[String] = (client ? DisableRule(ruleID)).mapTo[String]
   }
 
 }

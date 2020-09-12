@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.client.core
 
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
 import it.unibo.intelliserra.server.core.GreenHouseServer
@@ -13,7 +14,7 @@ class ClientSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with TestUtility {
+  with TestUtility{
 
   private val zoneName = "zone1"
   private val zoneName2 = "zone2"
@@ -21,14 +22,16 @@ class ClientSpec extends WordSpecLike
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private val ruleID = "rule0"
+  private val rule1ID = "rule1"
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
-    server = GreenHouseServer(defaultServerConfig)
-    client = GreenHouseClient(GreenhouseName, Hostname, Port)
-    deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
+    this.server = GreenHouseServer(defaultConfigWithRule)
+    this.client = GreenHouseClient(GreenhouseName, Hostname, Port)
+    this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(server.start())
     awaitReady(deviceDeploy.deploySensor(sensor1))
     awaitReady(deviceDeploy.deploySensor(sensor2))
@@ -160,5 +163,32 @@ class ClientSpec extends WordSpecLike
       awaitReady(client.createZone(zoneName))
       awaitResult(client.getState(zoneName)) shouldBe None
     }
+
+    /*--- START TEST RULES ---*/
+    "get all rules" in {
+     awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
+    }
+
+    "enable an existing rule" in {
+      awaitResult(client.enableRule(ruleID)) shouldBe "Rule enabled"
+    }
+
+    "not enable a nonexistent rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.enableRule(rule1ID))
+      }
+    }
+
+    "disable an existing rule" in {
+      awaitResult(client.disableRule(ruleID)) shouldBe "Rule disabled"
+    }
+
+    "not disable a nonexistent rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.disableRule(rule1ID))
+      }
+    }
+    /*--- END TEST RULES ---*/
+
   }
 }

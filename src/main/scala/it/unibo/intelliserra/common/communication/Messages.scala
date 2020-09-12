@@ -2,15 +2,15 @@ package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
 
 /**
  * Object to describe all the messages exchanged on server-side with
  * a request-response fashion
  */
-//noinspection ScalaStyle
+// scalastyle:off
 object Messages {
 
   /**
@@ -248,5 +248,12 @@ object Messages {
   case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
   case class InferActions(state: State) extends RuleEntityManagerRequest
+  case object GetRules extends  RuleEntityManagerRequest
+
+  sealed trait RuleEntityResponse
+  case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
+
+  case object Ok
+  case object NotFound
 
 }
