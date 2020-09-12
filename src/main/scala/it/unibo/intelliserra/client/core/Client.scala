@@ -99,7 +99,7 @@ private[core] object Client {
     }
 
     private def fallback[T]: ServiceResponseMap[T] = {
-      case ServiceResponse(Error, errMsg) => Failure(new Exception(errMsg.toString))
+      case ServiceResponse(_, errMsg) => Failure(new Exception(errMsg.toString))
       case _ => Failure(new Exception())
     }
 
