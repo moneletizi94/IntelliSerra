@@ -1,12 +1,10 @@
 package it.unibo.intelliserra.server.rule
 
-
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
-import it.unibo.intelliserra.common.communication.Messages.{DisableRule, EnableRule, InferActions}
-import it.unibo.intelliserra.common.communication.Protocol.{NotFound, Ok, ServiceResponse}
+import it.unibo.intelliserra.common.communication.Messages.{DisableRule, InferActions, EnableRule, GetRules, NotFound, Ok, Rules}
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.{Rule, RuleEngine, StatementTestUtils}
+import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
@@ -41,24 +39,29 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
   }
 
   "A ruleEngineService" should {
+    "obtain all rules" in{
+      ruleEngineService ! GetRules
+      expectMsg(Rules(List(RuleInfo(ruleID, rule))))
+    }
+
     "enable an existing rule" in {
       ruleEngineService ! EnableRule(ruleID)
-      expectMsg(ServiceResponse(Ok))
+      expectMsg(Ok)
     }
 
     "not enable an nonexistent rule" in {
       ruleEngineService ! EnableRule(rule1ID)
-      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+      expectMsg(NotFound)
     }
 
     "disable an existing rule" in {
       ruleEngineService ! DisableRule(ruleID)
-      expectMsg(ServiceResponse(Ok))
+      expectMsg(Ok)
     }
 
     "not disable an nonexistent rule" in {
       ruleEngineService ! DisableRule(rule1ID)
-      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+      expectMsg(NotFound)
     }
 
     "deduce a set of actions starting from the state" in {

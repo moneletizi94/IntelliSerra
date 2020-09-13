@@ -6,13 +6,15 @@ import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.utils.TestUtility.Actions._
-import it.unibo.intelliserra.utils.TestUtility.Categories._
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
+import it.unibo.intelliserra.core.rule.dsl._
+import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
+trait TestUtility extends StatementTestUtils{
 import scala.util.Random
 
 trait TestUtility {
@@ -24,7 +26,10 @@ trait TestUtility {
   val Hostname = "localhost"
   val Port = 8080
   val GreenhouseName = "mySerra"
+  val actionSet: Set[Action] = Set(Water)
+  val rule: Rule = Temperature >20 executeMany actionSet
   val defaultServerConfig: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port)
+  val defaultConfigWithRule: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port, rules = List(rule))
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val duration: FiniteDuration = 5 seconds

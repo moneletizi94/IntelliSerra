@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 object GreenHouseConfig {
 
-  //noinspection ScalaStyle
+  // scalastyle:off magic.number
   def apply(host: String = "localhost", port: Int = 8080): Config = {
     val properties = Map(
       "akka.remote.classic.netty.tcp.hostname" -> host,
