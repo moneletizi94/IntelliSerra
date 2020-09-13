@@ -14,10 +14,8 @@ import monix.reactive.Observable
 import scala.concurrent.{Await, Awaitable, Future}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
-trait TestUtility extends StatementTestUtils{
-import scala.util.Random
 
-trait TestUtility {
+trait TestUtility extends StatementTestUtils{
 
   import akka.util.Timeout
 
