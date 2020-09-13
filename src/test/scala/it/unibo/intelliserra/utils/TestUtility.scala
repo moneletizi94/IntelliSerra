@@ -8,11 +8,12 @@ import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.utils.TestUtility.Categories._
 import it.unibo.intelliserra.utils.TestUtility.Actions._
+import it.unibo.intelliserra.utils.TestUtility.Categories._
 import monix.reactive.Observable
 
 import scala.concurrent.{Await, Awaitable, Future}
+import scala.util.Random
 
 trait TestUtility {
 
@@ -55,6 +56,7 @@ trait TestUtility {
       override def measures: Observable[Measure] = Observable()
     }
   }
+
   /**
    * This is an utility method used in tests. It mocks an Actuator given the actuatorID
    * @param actuatorID the identifier of the actuator
@@ -74,6 +76,13 @@ trait TestUtility {
     }
   }
 
+  def sendNMessageFromNProbe[T](messagesNumber: Int, sendTo : ActorRef, message : T)(implicit system: ActorSystem): Unit = {
+    for {
+      _ <- 1 to messagesNumber
+      sensor = TestProbe()
+    } sendTo.tell(message, sensor.ref)
+  }
+
   /**
    * This is an utility method used to create an EntityChannel given an actorRef
    * @param entityRef actorRef of the entityChannel
@@ -82,6 +91,8 @@ trait TestUtility {
   def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
     EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
   }
+
+  implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
 }
 
 object TestUtility{

@@ -111,7 +111,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
 
   //This is done to override the creation of an actor to test it
   //TODO add others fields from zoneConfig
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)()
+  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities

@@ -15,9 +15,6 @@ object Aggregator{
   class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
     override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(category)(f(measures.map(_.value.asInstanceOf[V]))) }
   }
-
-  def atMostOneCategory(aggregators: List[Aggregator]) : Boolean = aggregators.groupBy(a => a.category).forall(_._2.lengthCompare(1) == 0)
-
 }
 
 object AggregateFunctions{

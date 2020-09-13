@@ -1,8 +1,9 @@
 package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
 import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, SensingCapability}
+import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 
 /**
@@ -248,4 +249,9 @@ object Messages {
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
   case class InferActions(state: State) extends RuleEntityManagerRequest
 
+  /* --- From SensorActor to ZoneActor --- */
+  case class SensorMeasureUpdated(measure: Measure)
+
+  /* --- From ActuatorActor to ZoneActor --- */
+  case class ActuatorStateChanged(operationalState: OperationalState)
 }
