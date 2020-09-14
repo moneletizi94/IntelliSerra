@@ -2,7 +2,7 @@
 % TODO: doc
 % infer(+List_Measures, -List_Actions)
 infer([], ACTIONS):- 
-	findall(X, action(X), ACTIONS), 
+	findall(action(X), action(X), ACTIONS),
 	retractall(measure(_, _)).
 
 infer([measure(X, Y)|T], ACTIONS):- 

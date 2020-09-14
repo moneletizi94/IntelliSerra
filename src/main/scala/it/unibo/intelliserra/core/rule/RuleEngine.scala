@@ -1,9 +1,13 @@
 package it.unibo.intelliserra.core.rule
 
+import alice.tuprolog.{Prolog, Struct, Theory}
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.prolog.Representations._
 import it.unibo.intelliserra.core.prolog.RichAny
 import it.unibo.intelliserra.core.state.State
+
+import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
  * This trait represent a RuleEngine interface to interact with Rule.
@@ -21,21 +25,32 @@ trait RuleEngine {
 
 object RuleEngine {
 
-  def apply(rules: List[Rule]): RuleEngine = RuleEngineImpl(rules.zipWithIndex.map(pair => RuleInfo(s"rule${pair._2}", pair._1)))
+  def apply(rules: List[Rule]): RuleEngine = PrologRuleEngine(rules.zipWithIndex.map(pair => RuleInfo(s"rule${pair._2}", pair._1)))
 
-  def apply(rules: Map[String, Rule]): RuleEngine = RuleEngineImpl(rules.map(pair => RuleInfo(pair._1, pair._2)).toList)
+  def apply(rules: Map[String, Rule]): RuleEngine = PrologRuleEngine(rules.map(pair => RuleInfo(pair._1, pair._2)).toList)
 
-  private[rule] case class RuleEngineImpl(override val rules: List[RuleInfo]) extends RuleEngine {
+  private[rule] case class PrologRuleEngine(override val rules: List[RuleInfo]) extends RuleEngine {
 
-    private[rule] var rulesMode: Map[String, Boolean] = rules.map(rule => (rule.identifier, false)).toMap
+    private val engine = initializeProlog
+
+    private[rule] var rulesMode: Map[String, Boolean] = rules.map(rule => (rule.identifier, true)).toMap
 
     /**
-     * Returns a set of possible actions that can be performed
+     * Returns a set of possible actions that can be performed.
+     * This method asks the prolog engine to resolve a new Theory.
      *
      * @param state represents the state of zone
      * @return set of actions
      */
-    override def inferActions(state: State): Set[Action] = ???
+    override def inferActions(state: State): Set[Action] =
+      Try {
+        engine.solve(s"infer(${state.toTerm},ACTIONS)")
+          .getTerm("ACTIONS")
+      }
+        .fold(_ => List(), listTerm => listTerm.castTo(classOf[Struct]).listIterator().asScala.toList)
+        .map { actionSolve => rules.flatMap(_.rule.actions).find(action => action.toTerm == actionSolve) }
+        .filter(_.isDefined)
+        .map(_.get).toSet
 
     /**
      * Method to enabled an existing rule
@@ -44,7 +59,11 @@ object RuleEngine {
      * @return boolean, if rule exist true otherwise false
      */
     override def enableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, !_)
+      ruleChecker(ruleID, !_).fold(false)(ruleClause => {
+        Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
+          .foreach(rule => engine.solve(s"assert($rule)"))
+        true
+      })
     }
 
     /**
@@ -54,19 +73,37 @@ object RuleEngine {
      * @return boolean if rule exist true otherwise false
      */
     override def disableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, _ => true)
+      ruleChecker(ruleID, identity).fold(false)(ruleClause => {
+        Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
+          .foreach(rule => engine.solve(s"retract($rule)"))
+        true
+      })
     }
 
     /**
-     * This method check if rule exist and change her boolean condition who represent rule's mode.
+     * This method check if rule exist and change her boolean condition to disabled it.
      *
      * @param ruleID rule identifier
-     * @param f function to filter
      * @return if rule exist true otherwise false
      */
-    private def ruleChecker(ruleID: String, f: Boolean => Boolean): Boolean = {
-      if (rulesMode.contains(ruleID)) { rulesMode += (ruleID -> rulesMode.get(ruleID).filter(f(_)).map(!_).get); true } else false
+     private def ruleChecker(ruleID: String, p: Boolean => Boolean): Option[Rule] = {
+      val optionRule = rulesMode.get(ruleID).filter(p)
+      rulesMode = optionRule.fold(rulesMode)(ruleValue => rulesMode + (ruleID -> !ruleValue))
+      optionRule.fold[Option[Rule]](None)(_ => rules.find(_.identifier == ruleID).map(_.rule))
+    }
+
+    private def initializeProlog: Prolog = {
+      val engine = new Prolog()
+      val file = scala.io.Source.fromResource("greenhouse-theory.pl")
+      val lines = file.mkString
+      file.close()
+      engine.setTheory(new Theory(lines))
+      rules.map { ruleInfo => ruleInfo.rule.toTerm }
+        .filter(_.isList)
+        .flatMap { rule => Theory.fromPrologList(rule.castTo(classOf[Struct])).getClauses.asScala }
+        .foreach(ruleClause => engine.solve(s"assert($ruleClause)"))
+
+      engine
     }
   }
-
 }
