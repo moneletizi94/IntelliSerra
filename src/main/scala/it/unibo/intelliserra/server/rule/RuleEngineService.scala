@@ -2,7 +2,7 @@ package it.unibo.intelliserra.server.rule
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages.{DisableRule, DoActions, InferActions, EnableRule}
-import it.unibo.intelliserra.common.communication.Protocol.{NotFound, Ok, ServiceResponse}
+import it.unibo.intelliserra.common.communication.Protocol.{NotFound, Ok, ServiceResponse, Error}
 import it.unibo.intelliserra.core.rule.{Rule, RuleEngine}
 
 /**
@@ -35,7 +35,7 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
    * @param ruleChecked boolean who represents if rule exists or not.
    */
   private def sendResponse(ruleChecked: Boolean): Unit = {
-    if (ruleChecked) sender ! ServiceResponse(Ok) else sender ! ServiceResponse(NotFound, "Rule not found")
+    if (ruleChecked) sender ! ServiceResponse(Ok) else sender ! ServiceResponse(Error, "not possible")
   }
 }
 

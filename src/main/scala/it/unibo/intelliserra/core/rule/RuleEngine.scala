@@ -60,11 +60,6 @@ object RuleEngine {
      */
     override def enableRule(ruleID: String): Boolean = {
       ruleChecker(ruleID, !_).fold(false)(ruleClause => prologRuleStateUpdate(ruleClause, "assert"))
-        /*
-        Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
-          .foreach(rule => engine.solve(s"assert($rule)"))
-        true
-      })*/
     }
 
     /**
