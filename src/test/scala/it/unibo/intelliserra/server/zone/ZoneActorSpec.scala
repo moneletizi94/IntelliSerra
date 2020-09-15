@@ -1,20 +1,23 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.Idle
+import it.unibo.intelliserra.core.actuator.{DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
+import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
-import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
+import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
+import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
-
 import scala.concurrent.duration._
 
 // scalastyle:off magic.number
@@ -84,7 +87,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
       val actuator = TestProbe()
       val operationalState = Idle
       zone tell(ActuatorStateChanged(operationalState), actuator.ref)
-      val operationalState2 = DoingActions(List(Water))
+      val operationalState2 = OperationalState(Water)
       zone tell(ActuatorStateChanged(operationalState2), actuator.ref)
       zone.underlyingActor.actuatorsState(actuator.ref) shouldBe operationalState2
       zone.underlyingActor.actuatorsState(actuator.ref) should not be operationalState
@@ -112,8 +115,8 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" should {
     "compute actuators state correctly" in {
       sendNMessageFromNProbe(5, zone, ActuatorStateChanged(Idle))
-      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(DoingActions(List(Water))))
-      sendNMessageFromNProbe(2, zone, ActuatorStateChanged(DoingActions(List(Fan))))
+      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(OperationalState(Water)))
+      sendNMessageFromNProbe(2, zone, ActuatorStateChanged(OperationalState(Fan)))
       zone.underlyingActor.computeActuatorState().diff(List(Fan,Water)) shouldBe List()
     }
   }

@@ -2,12 +2,15 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.{Action, Idle, OperationalState}
+import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability.ActingCapability
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator}
 import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
+import it.unibo.intelliserra.common.utils.Utils._
 
 import scala.concurrent.duration.{FiniteDuration, _}
 
@@ -51,7 +54,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   }
 
   private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
-    case DoingActions(action) => action
+    case DoingActions(actions) => actions
     case Idle => Nil
   }).toList.distinct
 

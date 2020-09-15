@@ -6,23 +6,16 @@ import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator.{Action, Actuator, TimedTask}
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
+import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
 import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
-import it.unibo.intelliserra.utils.TestUtility.Actions.Water
-import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
-import monix.reactive.Observable
-
-import scala.concurrent.{Await, Awaitable, Future}
-import it.unibo.intelliserra.core.rule.dsl._
 
 import scala.concurrent.{Await, Awaitable}
-
-trait TestUtility extends StatementTestUtils {
 import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 
-trait TestUtility extends StatementTestUtils{
+trait TestUtility extends StatementTestUtils {
 
   import akka.util.Timeout
 
@@ -57,7 +50,8 @@ trait TestUtility extends StatementTestUtils{
    * @param sensorID the identifier of the sensor
    * @return Sensor
    */
-  def mockSensor(sensorID: String): Sensor = mockSensor(sensorID, Capability.sensing(Temperature), 5 seconds, Stream.continually(Measure(Temperature)(10)))
+  def mockSensor(sensorID: String): Sensor =
+    mockSensor(sensorID, Capability.sensing(Temperature), 5 seconds, Stream.continually(Measure(Temperature)(10)))
   def mockSensor(sensorID: String, sensorCapability: SensingCapability, period: FiniteDuration, measures: Stream[Measure]): Sensor =
     TestSensor(sensorID, sensorCapability, period, measures)
 
