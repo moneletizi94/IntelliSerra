@@ -59,11 +59,12 @@ object RuleEngine {
      * @return boolean, if rule exist true otherwise false
      */
     override def enableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, !_).fold(false)(ruleClause => {
+      ruleChecker(ruleID, !_).fold(false)(ruleClause => prologRuleStateUpdate(ruleClause, "assert"))
+        /*
         Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
           .foreach(rule => engine.solve(s"assert($rule)"))
         true
-      })
+      })*/
     }
 
     /**
@@ -73,25 +74,27 @@ object RuleEngine {
      * @return boolean if rule exist true otherwise false
      */
     override def disableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, identity).fold(false)(ruleClause => {
-        Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
-          .foreach(rule => engine.solve(s"retract($rule)"))
-        true
-      })
+      ruleChecker(ruleID, identity).fold(false)(ruleClause => prologRuleStateUpdate(ruleClause, "retract"))
     }
 
     /**
-     * This method check if rule exist and change her boolean condition to disabled it.
+     * This method check if rule exist and change her boolean condition's mode.
      *
      * @param ruleID rule identifier
      * @return if rule exist true otherwise false
      */
-     private def ruleChecker(ruleID: String, p: Boolean => Boolean): Option[Rule] = {
+    private def ruleChecker(ruleID: String, p: Boolean => Boolean): Option[Rule] = {
       val optionRule = rulesMode.get(ruleID).filter(p)
       rulesMode = optionRule.fold(rulesMode)(ruleValue => rulesMode + (ruleID -> !ruleValue))
       optionRule.fold[Option[Rule]](None)(_ => rules.find(_.identifier == ruleID).map(_.rule))
     }
 
+    /**
+     * This method initializes the prolog engine.
+     * Loads the whole theory from file and set of all rules.
+     *
+     * @return prolog engine
+     */
     private def initializeProlog: Prolog = {
       val engine = new Prolog()
       val file = scala.io.Source.fromResource("greenhouse-theory.pl")
@@ -104,6 +107,12 @@ object RuleEngine {
         .foreach(ruleClause => engine.solve(s"assert($ruleClause)"))
 
       engine
+    }
+
+    private def prologRuleStateUpdate(ruleClause: Rule, str: String): Boolean = {
+      Theory.fromPrologList(ruleClause.toTerm.castTo(classOf[Struct])).getClauses.asScala
+        .foreach(rule => engine.solve(s"$str($rule)"))
+      true
     }
   }
 }
