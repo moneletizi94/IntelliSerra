@@ -26,6 +26,7 @@ dependencies {
     implementation "io.netty:netty:3.10.6.Final"
 
     implementation "io.monix:monix_${scalaBinary}:3.2.2"
+    implementation "io.spray:spray-json_${scalaBinary}:1.3.5"
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.scalatest:scalatest_2.12:3.0.8'
