@@ -8,12 +8,12 @@ import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCa
 import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 
 import scala.concurrent.{Await, Awaitable}
-import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 
 trait TestUtility extends StatementTestUtils {
 
@@ -83,11 +83,14 @@ trait TestUtility extends StatementTestUtils {
   implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
 }
 
-object TestUtility {
+object TestUtility{
   object Categories{
     case object Temperature extends Category[IntType]
     case object Humidity extends Category[IntType]
     case object Weather extends Category[StringType]
+    case object LightToggle extends Category[BooleanType]
+    case object Pressure extends Category[DoubleType]
+    case object CharCategory extends Category[CharType]
   }
 
   object Actions{

@@ -169,18 +169,20 @@ class ClientSpec extends WordSpecLike
      awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
     }
 
-    "enable an existing rule" in {
-      awaitResult(client.enableRule(ruleID)) shouldBe "Rule enabled"
+    "disable an existing rule" in {
+      awaitResult(client.disableRule(ruleID)) shouldBe "Rule disabled"
+    }
+
+    "enable an enabled rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.enableRule(ruleID))
+      }
     }
 
     "not enable a nonexistent rule" in {
       assertThrows[Exception] {
         awaitResult(client.enableRule(rule1ID))
       }
-    }
-
-    "disable an existing rule" in {
-      awaitResult(client.disableRule(ruleID)) shouldBe "Rule disabled"
     }
 
     "not disable a nonexistent rule" in {

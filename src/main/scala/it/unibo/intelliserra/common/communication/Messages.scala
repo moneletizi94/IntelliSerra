@@ -257,6 +257,7 @@ object Messages {
 
   case object Ok
   case object NotFound
+  case object Error
 
   /* --- From SensorActor to ZoneActor --- */
   case class SensorMeasureUpdated(measure: Measure)

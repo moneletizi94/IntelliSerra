@@ -104,19 +104,14 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
         case Success(Messages.Rules(rules)) => ServiceResponse(Ok, rules)
       }
 
-    case EnableRule(ruleID) =>  sendResponseWithFallback(ruleEngineServiceActor ? Messages.EnableRule(ruleID), sender()) {
+    case EnableRule(ruleID) => sendResponseWithFallback(ruleEngineServiceActor ? Messages.EnableRule(ruleID), sender()) {
       case Success(Messages.Ok) => ServiceResponse(Ok, "Rule enabled")
-      case Success(Messages.NotFound) => ServiceResponse(NotFound, "Rule not found")
-    }//ruleMode(ruleID, "Rule enabled")
+      case Success(Messages.Error) => ServiceResponse(Error, "not possible")
+    }
 
-    case DisableRule(ruleID) => ruleMode(ruleID, "Rule disabled")
-
-  }
-
-  private def ruleMode(ruleID: String, payload: String): Unit = {
-    sendResponseWithFallback(ruleEngineServiceActor ? Messages.EnableRule(ruleID), sender()) {
-      case Success(Messages.Ok) => ServiceResponse(Ok, payload)
-      case Success(Messages.NotFound) => ServiceResponse(NotFound, "Rule not found")
+    case DisableRule(ruleID) => sendResponseWithFallback(ruleEngineServiceActor ? Messages.DisableRule(ruleID), sender()) {
+      case Success(Messages.Ok) => ServiceResponse(Ok, "Rule disabled")
+      case Success(Messages.Error) => ServiceResponse(Error, "not possible")
     }
   }
 }

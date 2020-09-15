@@ -2,12 +2,13 @@ package it.unibo.intelliserra.server.rule
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
-import it.unibo.intelliserra.common.communication.Messages.{DisableRule, InferActions, EnableRule, GetRules, NotFound, Ok, Rules}
+import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
+import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -23,14 +24,14 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
 
   private var ruleEngineService: TestActorRef[RuleEngineService] = _
   private var rule: Rule = _
-  private var state: State = _
   private val actionSet: Set[Action] = Set(Water, OpenWindow)
+  private val measure = Measure(Temperature)(temperatureValue + 1)
+  private val state = State(List(measure), List())
   private val ruleID = "rule0"
   private val rule1ID = "rule1"
 
   before {
     rule = Rule(temperatureStatement, actionSet)
-    state = State(List(), List())
     ruleEngineService = TestActorRef.create(system, Props(new RuleEngineService(List(rule))))
   }
 
@@ -45,13 +46,15 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
     }
 
     "enable an existing rule" in {
+      ruleEngineService ! DisableRule(ruleID)
+      expectMsg(Ok)
       ruleEngineService ! EnableRule(ruleID)
       expectMsg(Ok)
     }
 
     "not enable an nonexistent rule" in {
       ruleEngineService ! EnableRule(rule1ID)
-      expectMsg(NotFound)
+      expectMsg(Error)
     }
 
     "disable an existing rule" in {
@@ -61,11 +64,12 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
 
     "not disable an nonexistent rule" in {
       ruleEngineService ! DisableRule(rule1ID)
-      expectMsg(NotFound)
+      expectMsg(Error)
     }
 
     "deduce a set of actions starting from the state" in {
       ruleEngineService ! InferActions(state)
+      expectMsg(DoActions(actionSet))
     }
   }
 }

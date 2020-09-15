@@ -226,6 +226,8 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
   "A greenHouseController " must {
     "ask to enable an existing rule" in {
+      greenHouseController ! DisableRule(ruleID)
+      expectMsg(ServiceResponse(Ok, "Rule disabled"))
       greenHouseController ! EnableRule(ruleID)
       expectMsg(ServiceResponse(Ok, "Rule enabled"))
     }
@@ -234,7 +236,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   "A greenHouseController " must {
     "ask to to enable a nonexistent rule" in {
       greenHouseController ! EnableRule(rule1ID)
-      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+      expectMsg(ServiceResponse(Error, "not possible"))
     }
   }
 
@@ -248,7 +250,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   "A greenHouseController " must {
     "ask to to disable a nonexistent rule" in {
       greenHouseController ! DisableRule(rule1ID)
-      expectMsg(ServiceResponse(NotFound, "Rule not found"))
+      expectMsg(ServiceResponse(Error, "not possible"))
     }
   }
 }

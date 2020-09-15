@@ -13,6 +13,7 @@ object RuleDslExample extends App {
   case object Humidity extends Category[DoubleType]
 
   case object Water extends Action
+  case object Fan extends Action
 
   val ruleSingleAction: Rule = Temperature > 20 && Humidity =:= 20.3 execute Water
   val ruleMultipleAction: Rule = Temperature > 20 && Humidity < 20.3 executeMany Set(Water)

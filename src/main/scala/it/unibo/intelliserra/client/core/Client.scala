@@ -3,7 +3,6 @@ package it.unibo.intelliserra.client.core
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
-import it.unibo.intelliserra.common.communication.Protocol
 import it.unibo.intelliserra.common.communication.Protocol.{ClientRequest, DisableRule, EnableRule, GetRules, ServiceResponse, _}
 
 import scala.concurrent.Future
@@ -86,7 +85,7 @@ private[core] object Client {
     private def ruleMode(request: => ClientRequest): Unit = {
       makeRequest(request) {
         case ServiceResponse(Ok, str) => Success(str)
-        case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
+        case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))
       }
     }
 
