@@ -92,6 +92,7 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   private def entitiesInEMShouldBe(result: List[EntityChannel]) = {
     entityManager.underlyingActor.entities shouldBe result
   }
+
   private def checkNoDuplicateInsertion(joinRequest: JoinRequest) = {
     entityManager ! joinRequest
     expectMsg(JoinOK)

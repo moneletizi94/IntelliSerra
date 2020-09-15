@@ -38,10 +38,6 @@ class AggregatorSpec extends FlatSpec with Matchers with TestUtility {
     aggregatedMeasure shouldBe Success(Measure(Temperature)(8))
   }
 
-  /*"An aggregator " should "not permit aggregate measures of different types " in {
-    createAggregator(Temperature)(_.avg).aggregate(intTempMeasures.+:(Measure('c',Temperature))).isFailure
-  }*/
-
   "An aggregator of textual type" should "aggregate measures correctly" in {
     val aggregatedMeasure = createAggregator(Weather)(moreFrequent).aggregate(stringWeatherMeasures)
     aggregatedMeasure shouldBe Success(Measure(Weather)("SUNNY"))

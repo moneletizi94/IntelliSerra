@@ -1,21 +1,24 @@
 package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Messages.{AddEntity, DeleteEntity, DoActions, GetState, MyState}
-import it.unibo.intelliserra.core.actuator.{DoingAction, OperationalState}
-import it.unibo.intelliserra.core.entity.EntityChannel
-import it.unibo.intelliserra.core.sensor.{Category, Measure}
+import it.unibo.intelliserra.common.communication.Messages._
+import it.unibo.intelliserra.core.actuator.{Action, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator}
+import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.server.ActorWithRepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration.{FiniteDuration, _}
 
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
-                              override val rate : FiniteDuration = ZoneActor.defaultTickRate)
-                              extends ActorWithRepeatedAction with ActorLogging {
+                              override val rate : FiniteDuration,
+                              val computeActionsRate : FiniteDuration)
+                              extends Actor with RepeatedAction[ComputeState] with ActorLogging{
+
+  context.actorOf(Props(RuleCheckerActor(computeActionsRate)))
+
+  override val repeatedMessage: ComputeState = ComputeState()
 
   private[zone] var state : Option[State] = None
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
@@ -26,47 +29,57 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case AddEntity(entityChannel) => associatedEntities += entityChannel
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
-    case DoActions(actions) =>
-    /*associatedActuators.map(actuator => (actuator._1,actuator._2.capabilities.actions.intersect(actions)))
-                        .filter(_._2.nonEmpty)
-                        //.flatMap()*/
+    // TODO: the best solution? I think no
+    case DoActions(actions) => associatedEntities.flatMap{
+                                  case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
+                                      Set((actuatorRef, actions.intersect(actingCapabilities)))
+                                  case _ =>  None
+                                }.filter(_._2.nonEmpty)
+                                .foreach({ case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) })
 
+    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
+    case ComputeState => state = Option(computeState()) ; sensorsValue = Map()
+    case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
-    /*val measureByCat = sensorsValue.values.groupBy(_.category)
-    measureByCat.flatMap({ case (category, measures) => {
-                          aggregators.find(_.category == category).map(_.aggregate(measures.toList)).flatten
-              }})*/
     val measuresTry = for {
       (category, measures) <- sensorsValue.values.groupBy(_.category)
       aggregator <- aggregators.find(_.category == category)
     } yield aggregator.aggregate(measures.toList)
-    flattenIterableTry(measuresTry)(println(_))(_.get).toList
+    flattenIterableTry(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
-  private[zone] def computeActuatorState() : List[DoingAction] = ??? //actuatorsState.values.filter(_.isDoing()).map(_.asInstanceOf[DoingAction]).toList
+  private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
+    case DoingActions(action) => action
+    case Idle => Nil
+  }).toList.distinct
 
-  private[zone] def computeState() : Option[State] = Option(State(computeAggregatedPerceptions(), computeActuatorState()))
-
-  override def onTick(): Unit = {
-    state = computeState()
+  private[zone] def computeState() : State = {
+    State(computeAggregatedPerceptions(), computeActuatorState())
   }
 
-  // TODO: specific type TRY in signature?
-  private[zone] def flattenIterableTry[A,B,C](iterable: Iterable[Try[B]])(ifFailure : Try[B] => A)(ifSuccess : Try[B] => C) : Iterable[C]  = {
-    val (successes, failures) = iterable.partition(_.isSuccess)
-    failures.foreach(ifFailure)
-    successes.map(ifSuccess)
-  }
 
 }
 
 object ZoneActor {
-  private val defaultTickRate = 10 seconds
+  case class ComputeState()
+  private val defaultStateEvaluationRate = 10 seconds
+  private val defaultActionsEvaluationRate = 10 seconds
 
-  def apply(name: String, aggregators: List[Aggregator])(rate : FiniteDuration = defaultTickRate)(implicit system: ActorSystem): ActorRef = {
-    require(Aggregator.atMostOneCategory(aggregators), "only one aggregator must be assigned for each category")
-    system actorOf (Props(new ZoneActor(aggregators, rate)), name)
+  def apply(name: String,
+            aggregators: List[Aggregator],
+            computeStateRate : FiniteDuration = defaultStateEvaluationRate,
+            computeActionsRate : FiniteDuration = defaultActionsEvaluationRate)
+           (implicit system: ActorSystem): ActorRef = {
+    system actorOf (props(aggregators, computeStateRate, computeActionsRate), name)
   }
+
+  def props(aggregators: List[Aggregator],
+            computeStateRate : FiniteDuration = defaultStateEvaluationRate,
+            computeActionsRate : FiniteDuration = defaultActionsEvaluationRate): Props = {
+    require(atMostOne(aggregators)(_.category), "only one aggregator must be assigned for each category")
+    Props(new ZoneActor(aggregators, computeStateRate, computeActionsRate))
+  }
+
 }

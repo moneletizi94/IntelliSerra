@@ -6,6 +6,7 @@ import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -242,6 +243,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
     zoneManager.underlyingActor.zones.values.toList
   }
+
   private def deleteZonesAndExpectMsg(identifiers: String*): Unit = {
     identifiers.foreach {
       zoneID =>

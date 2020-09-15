@@ -12,11 +12,17 @@ import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 import it.unibo.intelliserra.utils.TestUtility.Actions.Water
 import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
+import monix.reactive.Observable
+
+import scala.concurrent.{Await, Awaitable, Future}
 import it.unibo.intelliserra.core.rule.dsl._
 
 import scala.concurrent.{Await, Awaitable}
 
 trait TestUtility extends StatementTestUtils {
+import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
+
+trait TestUtility extends StatementTestUtils{
 
   import akka.util.Timeout
 
@@ -64,6 +70,13 @@ trait TestUtility extends StatementTestUtils {
   def mockActuator(actuatorID: String, actingCapability: ActingCapability)(handler: ActionHandler): Actuator =
     TestActuator(actuatorID, actingCapability)(handler)
 
+  def sendNMessageFromNProbe[T](messagesNumber: Int, sendTo : ActorRef, message : T)(implicit system: ActorSystem): Unit = {
+    for {
+      _ <- 1 to messagesNumber
+      sensor = TestProbe()
+    } sendTo.tell(message, sensor.ref)
+  }
+
   /**
    * This is an utility method used to create an EntityChannel given an actorRef
    * @param entityRef actorRef of the entityChannel
@@ -72,6 +85,8 @@ trait TestUtility extends StatementTestUtils {
   def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
     EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
   }
+
+  implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
 }
 
 object TestUtility {
