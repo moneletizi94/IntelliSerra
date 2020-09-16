@@ -7,13 +7,14 @@ import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.core.GreenHouseServer
-import it.unibo.intelliserrademo.CategoriesAndActions.{AirTemperature, Fan, Light, OpenWindow, SoilMoisture, Water, Weather, DayNight}
+import it.unibo.intelliserrademo.CategoriesAndActions.{AirTemperature, DayNight, Fan, Humidity, Light, OpenWindow, SoilMoisture, Water, Weather}
+
 import scala.concurrent.duration._
 
 object ServerMain extends App {
   val aggregators = List(createAggregator(AirTemperature)(avg),
                           createAggregator(SoilMoisture)(avg),
-                          createAggregator(Weather)(moreFrequent),
+                          createAggregator(Humidity)(max),
                           createAggregator(DayNight)(moreFrequent))
 
   GreenHouseServer(ServerConfig(AppConfig("SerraDiPomodori", "localhost",8080),
