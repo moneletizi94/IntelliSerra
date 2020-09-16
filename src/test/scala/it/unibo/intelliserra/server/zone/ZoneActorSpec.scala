@@ -15,9 +15,11 @@ import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
 import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
+import it.unibo.intelliserrademo.Sample
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+
 import scala.concurrent.duration._
 
 // scalastyle:off magic.number
