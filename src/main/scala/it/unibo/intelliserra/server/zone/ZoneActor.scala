@@ -29,20 +29,37 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
 
   override def receive: Receive = {
-    case AddEntity(entityChannel) => associatedEntities += entityChannel
-    case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
+    case AddEntity(entityChannel) =>
+      associatedEntities += entityChannel
+      log.info(s"entity ${entityChannel.entity.identifier} added to zone ${self.path.name}")
+    case DeleteEntity(entityChannel) =>
+      associatedEntities -= entityChannel
+      log.info(s"entity ${entityChannel.entity.identifier} removed to zone ${self.path.name}")
     case GetState => sender ! MyState(state)
     // TODO: the best solution? I think no
-    case DoActions(actions) => associatedEntities.flatMap{
-                                  case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-                                      Set((actuatorRef, actions.intersect(actingCapabilities)))
-                                  case _ =>  None
-                                }.filter(_._2.nonEmpty)
-                                .foreach({ case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) })
+    case DoActions(actions) =>
+      log.info(s"inferred actions: $actions")
+      associatedEntities.flatMap{
+        case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
+            Set((actuatorRef, actions.intersect(actingCapabilities)))
+        case _ =>  None
+      }
+      .filter(_._2.nonEmpty)
+      .foreach({ case (actuatorRef, actionsToDo) =>
+        log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
+        actuatorRef ! DoActions(actionsToDo)
+      })
 
-    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
-    case ComputeState => state = Option(computeState()) ; sensorsValue = Map()
-    case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
+    case SensorMeasureUpdated(measure) =>
+      sensorsValue += sender -> measure
+      log.info(s"zone update value for sensor ${sender.path.name}; new value: $measure")
+    case ComputeState =>
+      state = Option(computeState())
+      sensorsValue = Map()
+      log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
+    case ActuatorStateChanged(operationalState) =>
+      actuatorsState += sender -> operationalState
+      log.info(s"zone update state for actuator ${sender.path.name}; new actuator state: $operationalState")
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
@@ -61,7 +78,6 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   private[zone] def computeState() : State = {
     State(computeAggregatedPerceptions(), computeActuatorState())
   }
-
 
 }
 
