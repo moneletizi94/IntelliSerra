@@ -60,7 +60,7 @@ trait TestUtility extends StatementTestUtils {
    * @param actuatorID the identifier of the actuator
    * @return Actuator
    */
-  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water)){ case _ => TimedTask.now(Water) }
+  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water)){ case _ => TimedTask.now() }
   def mockActuator(actuatorID: String, actingCapability: ActingCapability)(handler: ActionHandler): Actuator =
     TestActuator(actuatorID, actingCapability)(handler)
 
