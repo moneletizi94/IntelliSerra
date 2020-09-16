@@ -2,7 +2,7 @@ package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.examples.RuleDslExample.{Fan, Humidity, Temperature, Water}
+import it.unibo.intelliserra.examples.RuleDslExample.{ActionWithArg, Fan, Humidity, Temperature, Water}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -17,10 +17,11 @@ class RuleToPrologSpec extends WordSpecLike
   private var rules: Map[Rule, List[String]]= Map()
 
   before {
-    rules += ((Temperature > 10 execute Water) -> List("action(water):-measure(X0, temperature), X0 > 10."),
+    rules = Map((Temperature > 10 execute Water) -> List("action(water):-measure(X0, temperature), X0 > 10."),
       (Temperature > 20 && Humidity > 50.0 execute Fan) -> List("action(fan):-(measure(X0, temperature), X0>20), measure(X1, humidity), X1 > 50.0."),
         (Humidity > 10.0 executeMany Set(Water, Fan)) -> List("action(water):-measure(X0, humidity), X0 > 10.0.",
-          "action(fan):-measure(X0, humidity), X0> 10.0."))
+          "action(fan):-measure(X0, humidity), X0> 10.0."),
+      (Temperature > 20 execute ActionWithArg("args")) -> List("action('actionwitharg(args)'):-measure(X0, temperature), X0 > 20."))
   }
 
   "A rule prolog converter" must {
