@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.utils
 
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, NumericType, StringType, ValueType}
+import it.unibo.intelliserra.core.sensor.{Category, IntType, NumericType, StringType}
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature, Weather}
 
@@ -45,6 +45,7 @@ object Generator{
   def generateOpt[G : Sample] : Option[G] = if(Random.nextBoolean()) Option(gen) else None
   def generateMore[G : Sample](size : Int) : List[G] = List.fill(size)(gen)
   def generateMore[G : Sample](size : Int)(valueTrend : NumericType => NumericType) : List[G] = ??? // TODO: implement this
+  def generateStream[G : Sample]: Stream[G] = Stream.continually(gen)
   def oneOf[G](list : List[G]): G = list(Random.nextInt(list.length))
 
   private def gen[G: Sample] : G = implicitly[Sample[G]].sample
