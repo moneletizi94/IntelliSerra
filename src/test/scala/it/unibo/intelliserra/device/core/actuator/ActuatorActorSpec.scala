@@ -34,7 +34,7 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
 
   before {
     actuator = spy(mockActuator(ActuatorName, ActuatorCapability) {
-      case (_, action) => TimedTask(action, 1 seconds)(_ => ())
+      case (_, _) => TimedTask(1 seconds)
     })
     actuatorActor = TestActorRef.create(system, ActuatorActor.props(actuator))
   }
@@ -72,7 +72,7 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
 
     "send its operational state if an action is completed" in {
       associateToZone(actuatorActor)
-      actuatorActor ! OnCompleteAction(TimedTask.now(Water))
+      actuatorActor ! OnCompleteAction(Water, TimedTask.now())
       expectMsgType[ActuatorStateChanged]
     }
 

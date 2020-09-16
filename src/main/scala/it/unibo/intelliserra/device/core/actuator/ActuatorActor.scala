@@ -1,7 +1,6 @@
 package it.unibo.intelliserra.device.core.actuator
 
 import akka.actor.{ActorRef, ActorSystem, Props, Timers}
-import akka.pattern.pipe
 import it.unibo.intelliserra.common.communication.Messages.DoActions
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator._
@@ -23,14 +22,14 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
       operationalState = dispatchActionsIfDefined(actionAllowed, operationalState, device.actionHandler)
       zoneRef ! ActuatorStateChanged(operationalState)
 
-    case OnCompleteAction(timedTask) =>
+    case OnCompleteAction(action, timedTask) =>
       timedTask.callback()
-      operationalState -= timedTask.associatedAction
+      operationalState -= action
       zoneRef ! ActuatorStateChanged(operationalState)
   }
 
   override protected def dissociateBehaviour(zoneRef: ActorRef): Receive = {
-    case OnCompleteAction(deferredTask) => operationalState -= deferredTask.associatedAction
+    case OnCompleteAction(action, _) => operationalState -= action
   }
 
   private def dispatchActionsIfDefined(actions: Set[Action],
@@ -44,13 +43,13 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
   private def dispatchActionIfDefined(action: Action, operationalState: OperationalState, handler: ActionHandler): OperationalState = {
     handler.lift((operationalState, action)).fold(operationalState) {
       pendingComplete =>
-        scheduleTimedTask(pendingComplete)
+        scheduleTimedTask(action, pendingComplete)
         operationalState + action
     }
   }
 
-  private def scheduleTimedTask(timedTask: TimedTask): Unit = {
-    timers.startSingleTimer(timedTask.associatedAction, OnCompleteAction(timedTask), timedTask.delay)
+  private def scheduleTimedTask(action: Action, timedTask: TimedTask): Unit = {
+    timers.startSingleTimer(action, OnCompleteAction(action, timedTask), timedTask.delay)
   }
 }
 
@@ -58,7 +57,7 @@ object ActuatorActor {
 
   case class ActuatorStateChanged(operationalState: OperationalState)
 
-  private[actuator] case class OnCompleteAction(task: TimedTask)
+  private[actuator] case class OnCompleteAction(action: Action, task: TimedTask)
 
   def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(actuator)
   def props(actuator: Actuator): Props = Props(new ActuatorActor(actuator))
