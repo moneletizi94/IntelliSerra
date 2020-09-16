@@ -2,13 +2,11 @@ package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
 import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.prolog.Representations.ConditionStatementPrologRepresentation.counter
 import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement._
-import it.unibo.intelliserra.core.sensor.{BooleanType, CharType, DoubleType, IntType, Measure, StringType, ValueType}
-import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.core.rule.dsl._
-import it.unibo.intelliserra.core.sensor.{Category, ValueType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType, ValueType}
+import it.unibo.intelliserra.core.state.State
 
 object Representations {
   implicit object ValueTypeToProlog extends PrologRepresentation[ValueType] {
@@ -28,7 +26,7 @@ object Representations {
       Term.createTerm(data.getClass.getSimpleName.split('$').head.toLowerCase)
   }
   implicit object ActionPrologRepresentation extends PrologRepresentation[Action] {
-    override def toTerm(data: Action): Term = Term.createTerm(s"action(${data.getClass.getSimpleName.dropRight(1).toLowerCase})")
+    override def toTerm(data: Action): Term = Term.createTerm(s"action('${data.toString.toLowerCase}')")
   }
 
   implicit object StateToProlog extends PrologRepresentation[State] {
