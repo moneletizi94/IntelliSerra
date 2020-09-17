@@ -1,6 +1,6 @@
 package it.unibo.intelliserrademo
 
-import it.unibo.intelliserra.core.actuator.{Action, TimedAction}
+import it.unibo.intelliserra.core.actuator.{Action, TimedAction, ToggledAction}
 import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, StringType}
 
 import scala.concurrent.duration.FiniteDuration
@@ -20,5 +20,5 @@ object CategoriesAndActions {
   case class Heat(override val time : FiniteDuration) extends TimedAction
   case class OpenWindow(override val time : FiniteDuration) extends TimedAction
   case class Notification(message : String) extends Action
-  case class Dehumidifies(switchOn: Boolean) extends Action
+  case class Dehumidifies(override val switchStatus: Boolean) extends ToggledAction
 }
