@@ -6,8 +6,8 @@ import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalS
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.ActingCapability
-import it.unibo.intelliserrademo.CategoriesAndActions.{Dehumidifies, Fan, Heat, Water}
-import it.unibo.intelliserrademo.customsensor.SimulatedDevice.CustomActuator
+import it.unibo.intelliserrademo.common.CategoriesAndActions.{Dehumidifies, Fan, Heat, Water}
+import it.unibo.intelliserrademo.customdevice.SimulatedDevice.CustomActuator
 
 import scala.concurrent.duration._
 object TomatoActuators {

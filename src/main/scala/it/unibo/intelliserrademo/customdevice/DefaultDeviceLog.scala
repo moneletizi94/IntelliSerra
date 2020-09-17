@@ -1,4 +1,4 @@
-package it.unibo.intelliserrademo
+package it.unibo.intelliserrademo.customdevice
 
 import it.unibo.intelliserra.core.Device
 

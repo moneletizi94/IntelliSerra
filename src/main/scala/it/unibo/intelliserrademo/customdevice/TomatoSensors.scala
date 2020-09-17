@@ -1,10 +1,11 @@
-package it.unibo.intelliserrademo.customsensor
+package it.unibo.intelliserrademo.customdevice
 
 import it.unibo.intelliserra.core.sensor.{DoubleType, StringType}
-import it.unibo.intelliserrademo.CategoriesAndActions.{AirTemperature, DayNight, SoilMoisture, Weather}
-import it.unibo.intelliserrademo.Generator
+import it.unibo.intelliserrademo.common.CategoriesAndActions.{AirTemperature, DayNight, Humidity, SoilMoisture, Weather}
 import SimulatedDevice.CustomSensor
-import it.unibo.intelliserrademo.Simulation.{DoubleSinSample, StringSample}
+import it.unibo.intelliserrademo.common.Generator
+import it.unibo.intelliserrademo.common.Simulation.{DoubleSinSample, StringSample}
+
 import scala.concurrent.duration._
 
 /**
@@ -24,6 +25,14 @@ object TomatoSensors {
 
     def apply(name: String): CustomSensor[DoubleType] =
       CustomSensor(name, 5 seconds, AirTemperature)(Generator.generateStream(DoubleSinSample(StdValue, Delta)))
+  }
+
+  object AirHumiditySensor {
+    private val StdValue = 50
+    private val Delta = 25
+
+    def apply(name: String): CustomSensor[DoubleType] =
+      CustomSensor(name, 5 seconds, Humidity)(Generator.generateStream(DoubleSinSample(StdValue, Delta)))
   }
 
   object SoilMoistureSensor {

@@ -1,11 +1,10 @@
-package it.unibo.intelliserrademo.customsensor
+package it.unibo.intelliserrademo.customdevice
 
 import it.unibo.intelliserra.core.actuator.{Action, Actuator}
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, ActionTag, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor, ValueType}
-import it.unibo.intelliserrademo.DefaultDeviceLog
 
 import scala.concurrent.duration.FiniteDuration
 

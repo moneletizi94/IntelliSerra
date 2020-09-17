@@ -1,9 +1,9 @@
-package it.unibo.intelliserrademo
+package it.unibo.intelliserrademo.server
 
-import it.unibo.intelliserrademo.CategoriesAndActions.{AirTemperature, DayNight, Dehumidifies, Fan, Heat, Humidity, SoilMoisture, Water}
+import it.unibo.intelliserrademo.common.CategoriesAndActions._
 import it.unibo.intelliserra.core.rule.dsl._
-
 import scala.concurrent.duration._
+
 /**
  * Some rules for tomato greenhouse. Extracted from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6111376/
  */

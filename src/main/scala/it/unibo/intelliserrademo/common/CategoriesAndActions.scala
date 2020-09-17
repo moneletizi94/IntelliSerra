@@ -1,7 +1,7 @@
-package it.unibo.intelliserrademo
+package it.unibo.intelliserrademo.common
 
 import it.unibo.intelliserra.core.actuator.{Action, TimedAction}
-import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, StringType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, Category, DoubleType, StringType}
 
 import scala.concurrent.duration.FiniteDuration
 

@@ -1,4 +1,4 @@
-package it.unibo.intelliserrademo
+package it.unibo.intelliserrademo.common
 
 import it.unibo.intelliserra.core.sensor.{DoubleType, StringType}
 

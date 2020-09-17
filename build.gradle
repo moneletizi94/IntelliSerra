@@ -40,5 +40,5 @@ dependencies {
 }
 
 scoverage {
-    excludedPackages = [".*examples.*"]
+    excludedPackages = [".*examples.*", "it.unibo.intelliserrademo.*"]
 }
