@@ -3,7 +3,7 @@ package it.unibo.intelliserrademo.customsensor
 import it.unibo.intelliserra.core.actuator.{Action, Actuator}
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, ActionTag, SensingCapability}
 import it.unibo.intelliserra.core.sensor.{Category, Measure, Sensor, ValueType}
 import it.unibo.intelliserrademo.DefaultDeviceLog
 
@@ -22,7 +22,7 @@ object SimulatedDevice {
   }
 
   case class CustomActuator(override val identifier: String,
-                            handledActions : Set[Action],
+                            handledActions : Set[ActionTag],
                             override val actionHandler: ActionHandler) extends Actuator with DefaultDeviceLog {
 
     override val capability: ActingCapability = Capability.acting(handledActions)
