@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.server.core
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
 import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.server.GreenHouseController
@@ -53,6 +53,7 @@ private[core] object GreenHouseActor {
 }
 
 private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConfig) extends Actor
+  with ActorLogging
   with DefaultTimeout
   with DefaultExecutionContext {
 
@@ -65,6 +66,7 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
 
   private def idle: Receive = {
     case Start =>
+      log.info("GreenHouse started")
       zoneManagerActor = ZoneManagerActor(zoneConfig)
       entityManagerActor = EntityManagerActor()
       ruleEngineServiceActor = RuleEngineService(ruleConfig.rules)
@@ -73,6 +75,7 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
       context.become(running)
       sender ! Started
     case Stop =>
+      log.info("GreenHouse stopped")
       sender ! ServerError(new IllegalStateException("Server is not running"))
   }
 

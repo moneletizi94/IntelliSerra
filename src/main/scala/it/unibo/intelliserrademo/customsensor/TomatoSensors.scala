@@ -3,7 +3,7 @@ package it.unibo.intelliserrademo.customsensor
 import it.unibo.intelliserra.core.sensor.{DoubleType, StringType}
 import it.unibo.intelliserrademo.CategoriesAndActions.{AirTemperature, DayNight, SoilMoisture, Weather}
 import it.unibo.intelliserrademo.Generator
-import SimulatedSensor.CustomSensor
+import SimulatedDevice.CustomSensor
 import it.unibo.intelliserrademo.Simulation.{DoubleSinSample, StringSample}
 import scala.concurrent.duration._
 
