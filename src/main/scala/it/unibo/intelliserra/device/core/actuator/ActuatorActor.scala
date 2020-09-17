@@ -4,11 +4,13 @@ import akka.actor.{ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.DoActions
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.device.core.DeviceActor
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.{ActuatorStateChanged, OnCompleteAction}
 
 import scala.concurrent.ExecutionContextExecutor
 
+// TODO: rivedere stacking con class tag
 class ActuatorActor(override val device: Actuator) extends DeviceActor with Timers {
 
   implicit val executionContext: ExecutionContextExecutor = context.dispatcher
@@ -18,7 +20,7 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
 
   override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
     case DoActions(actions) =>
-      val actionAllowed = actions.filter(action => device.capability.actions.contains(action) && !operationalState.isDoing(action))
+      val actionAllowed = actions.filter(action => Capability.canDo(device.capability, action.getClass) && !operationalState.isDoing(action))
       operationalState = dispatchActionsIfDefined(actionAllowed, operationalState, device.actionHandler)
       zoneRef ! ActuatorStateChanged(operationalState)
 

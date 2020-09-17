@@ -2,18 +2,20 @@ package it.unibo.intelliserra.core.actuator
 
 sealed trait OperationalState {
   def isDoing(action: Action): Boolean = this match {
-    case DoingActions(actions) => actions.contains(action)
+    case DoingActions(actions) => actions.map(_.getClass).contains(action.getClass)
     case _ => false
   }
 
   def +(action: Action): OperationalState = this match {
-    case DoingActions(actions) => OperationalState(actions + action)
     case Idle => OperationalState(Set(action))
+    case DoingActions(actions) if !isDoing(action) => OperationalState(actions + action)
+    case DoingActions(actions) => OperationalState(actions)
   }
 
   def -(action: Action): OperationalState = this match {
-    case DoingActions(actions) => OperationalState(actions - action)
     case Idle => OperationalState()
+    case DoingActions(actions) if isDoing(action) => OperationalState(actions - action)
+    case DoingActions(actions) => OperationalState(actions)
   }
 }
 

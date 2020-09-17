@@ -41,8 +41,8 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
       log.info(s"inferred actions: $actions")
       associatedEntities.flatMap{
         case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-            Set((actuatorRef, actions.intersect(actingCapabilities)))
-        case _ =>  None
+          Set((actuatorRef, actions.filter(action => actingCapabilities contains action.getClass)))
+        case _ =>  Nil
       }
       .filter(_._2.nonEmpty)
       .foreach({ case (actuatorRef, actionsToDo) =>

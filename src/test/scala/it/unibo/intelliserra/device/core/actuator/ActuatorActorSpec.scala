@@ -3,7 +3,7 @@ package it.unibo.intelliserra.device.core.actuator
 import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom, DoActions}
-import it.unibo.intelliserra.core.actuator.{Actuator, Idle, OperationalState, TimedTask}
+import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState, TimedTask}
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.{ActuatorStateChanged, OnCompleteAction}
 import it.unibo.intelliserra.utils.TestUtility
@@ -27,7 +27,8 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
   with TestUtility {
 
   private val ActuatorName = "MockActuator"
-  private val ActuatorCapability = Capability.acting(Water, OpenWindow)
+  private val ActuatorActions: Set[Action] = Set(Water, OpenWindow)
+  private val ActuatorCapability = Capability.acting(ActuatorActions.map(_.getClass))
   private val NotSupportedAction = Fan
   private var actuator: Actuator = _
   private var actuatorActor: TestActorRef[ActuatorActor] = _
@@ -66,7 +67,7 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
     }
 
     "ignore actions if is not associated to zone" in {
-      actuatorActor ! DoActions(ActuatorCapability.actions)
+      actuatorActor ! DoActions(ActuatorActions.toSet)
       expectNoMessage()
     }
 
@@ -77,7 +78,7 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
     }
 
     "dispatch action and return to Idle when complete" in {
-      val todoActions = ActuatorCapability.actions
+      val todoActions = ActuatorActions
       associateToZone(actuatorActor)
       actuatorActor ! DoActions(todoActions)
       expectMsg(ActuatorStateChanged(OperationalState(todoActions)))
@@ -85,10 +86,10 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
     }
 
     "complete only the actions declared as its capability" in {
-      val todoActions = ActuatorCapability.actions + NotSupportedAction
+      val todoActions = ActuatorActions + NotSupportedAction
       associateToZone(actuatorActor)
       actuatorActor ! DoActions(todoActions)
-      expectMsg(ActuatorStateChanged(OperationalState(ActuatorCapability.actions)))
+      expectMsg(ActuatorStateChanged(OperationalState(ActuatorActions)))
       expectIdleState(ActuatorCapability.actions.size)
     }
   }
