@@ -132,7 +132,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     "compute its state after receiving computeState" in {
       val probe = TestProbe()
       zone.tell(SensorMeasureUpdated(Measure(Temperature)(10)),probe.ref)
-      zone ! ComputeState
+      zone ! ComputeState()
       zone.underlyingActor.state shouldBe Option(State(List(Measure(Temperature)(10)),List()))
     }
   }
