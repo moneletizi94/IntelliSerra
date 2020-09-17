@@ -2,11 +2,11 @@ package it.unibo.intelliserrademo.gui
 
 import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserrademo.gui.util.SwingFuture._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.swing.event.ButtonClicked
 import scala.swing.{Button, Dialog, FlowPanel}
 import scala.util.{Failure, Success}
+import it.unibo.intelliserrademo.gui.util.GuiUtility._
 
 private[gui] class EntityComponent(implicit client: GreenHouseClient) extends FlowPanel {
 
@@ -30,10 +30,10 @@ private[gui] class EntityComponent(implicit client: GreenHouseClient) extends Fl
       if(entity.length > 0) {
         client.removeEntity(entity)
           .safeSwingOnComplete {
-            case Failure(exception) => Dialog.showMessage(contents.head, exception.getMessage)
-            case Success(_) => Dialog.showMessage(contents.head, "Entity deleted")
+            case Failure(exception) => createDialog(contents, exception.getMessage)
+            case Success(_) => createDialog(contents, "Entity deleted")
           }
-      } else { Dialog.showMessage(contents.head, "Invalid parameter")}
+      } else { createDialog(contents, "Invalid parameter")}
     })
   }
   private def dissociateEntity(): Unit = {
@@ -42,14 +42,15 @@ private[gui] class EntityComponent(implicit client: GreenHouseClient) extends Fl
       val entity = entityValue.replaceAll(" ", "")
       if(entity.length > 0) {
         client.dissociateEntity(entity)
-          .safeSwingOnComplete {
-            case Failure(exception) => Dialog.showMessage(contents.head, exception.getMessage)
-            case Success(_) => Dialog.showMessage(contents.head, "Entity dissociated")
+         .safeSwingOnComplete {
+            case Failure(exception) => createDialog(contents, exception.getMessage)
+            case Success(_) => createDialog(contents, "Entity dissociated")
           }
-      } else { Dialog.showMessage(contents.head, "Invalid parameter")}
+      } else { createDialog(contents, "Invalid parameter")}
     })
   }
 }
+
 
 object EntityComponent {
   def apply()(implicit client: GreenHouseClient): EntityComponent = new EntityComponent

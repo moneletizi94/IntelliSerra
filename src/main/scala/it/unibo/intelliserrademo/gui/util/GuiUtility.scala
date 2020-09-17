@@ -1,6 +1,7 @@
 package it.unibo.intelliserrademo.gui.util
 
-import scala.swing.{Button, TextArea}
+import scala.collection.mutable
+import scala.swing.{ComboBox, Component, Dialog, TextArea}
 
 // scalastyle:off magic.number
 object GuiUtility {
@@ -12,6 +13,14 @@ object GuiUtility {
       wordWrap = true;
       editable = false
     }
+  }
+
+  def createDialog(contents: mutable.Buffer[Component], message: String): Unit = {
+    Dialog.showMessage(contents.head, message)
+  }
+
+  def updateComboBox[A](items: Seq[A])(implicit comboBox: ComboBox[A]): Unit = {
+    comboBox.peer.setModel(ComboBox.newConstantModel(items))
   }
 
 }

@@ -3,7 +3,7 @@ package it.unibo.intelliserrademo.gui
 import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserra.core.actuator.Action
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
+import it.unibo.intelliserra.examples.RuleDslExample.{Humidity, Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.core.rule.dsl._
@@ -32,7 +32,7 @@ object ISerraGui {
   val GreenhouseName = "mySerra"
   val defaultServerConfig: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port)
   val actionSet: Set[Action] = Set(Water)
-  val rule: Rule = Temperature > 20 executeMany actionSet
+  val rule: Rule = Temperature > 20 && Humidity < 10 executeMany actionSet
   val defaultConfigWithRule: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port, rules = List(rule))
 
   def main(args: Array[String]): Unit = {

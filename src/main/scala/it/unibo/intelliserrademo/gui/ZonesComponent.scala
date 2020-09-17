@@ -1,9 +1,9 @@
 package it.unibo.intelliserrademo.gui
 
 import it.unibo.intelliserra.client.core.GreenHouseClient
+import it.unibo.intelliserrademo.gui.util.GuiUtility.updateComboBox
 import it.unibo.intelliserrademo.gui.util.SwingFuture._
 import javax.swing.{BorderFactory, ScrollPaneConstants}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.swing.ScrollPane.BarPolicy
 import scala.swing.event.{ButtonClicked, SelectionChanged}
@@ -15,7 +15,7 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
 
   private val createZoneButton = new Button("Create Zone")
   private var zones: Map[String, ZonePanel] = Map()
-  private val deleteBox = new ComboBox(zones.keySet.toSeq)
+  implicit val deleteBox = new ComboBox(zones.keySet.toSeq)
   private val zonesWrapperPanel = new FlowPanel()
 
   deleteBox.peer.setBorder(BorderFactory.createTitledBorder("Delete a zone"))
@@ -26,10 +26,11 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
     contents += deleteBox
   }, BorderPanel.Position.North)
 
+  //TODO: SCROLL
   private val scroll = new ScrollPane(zonesWrapperPanel)
   scroll.horizontalScrollBarPolicy = BarPolicy.wrap(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
   scroll.verticalScrollBarPolicy = BarPolicy.wrap(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
-  add(zonesWrapperPanel, BorderPanel.Position.Center)
+  add(scroll, BorderPanel.Position.Center)
 
   listenTo(createZoneButton, deleteBox.selection)
 
@@ -38,7 +39,7 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
     case SelectionChanged(`deleteBox`) => deleteZone(deleteBox.selection.item)
 
   }
-  //TODO refactor Dialog.showInput
+
   private def createZone(): Unit = {
     val zoneToCreate = Dialog.showInput(contents.head, "Zone name:", initial = "")
     zoneToCreate.foreach(zoneValue => {
@@ -57,7 +58,7 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
     val zonePanel = ZonePanel(zoneName)
     zones += zoneName -> zonePanel
     zonesWrapperPanel.contents += zonePanel
-    deleteBox.peer.setModel(ComboBox.newConstantModel(zones.keySet.toSeq))
+    updateComboBox(zones.keySet.toSeq)
   }
 
   private def deleteZone(zone: String): Unit = {
@@ -66,11 +67,10 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
       case Success(_) =>
         zonesWrapperPanel.contents -= zones(zone)
         zones -= zone
-        deleteBox.peer.setModel(ComboBox.newConstantModel(zones.keySet.toSeq))
+        updateComboBox(zones.keySet.toSeq)
         zonesWrapperPanel.repaint()
     }
   }
-
 }
 
 object ZonesComponent {
