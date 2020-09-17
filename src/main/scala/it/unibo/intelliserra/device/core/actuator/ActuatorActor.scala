@@ -20,7 +20,7 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
 
   override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
     case DoActions(actions) =>
-      val actionAllowed = actions.filter(action => Capability.canDo(device.capability, action.getClass) && !operationalState.isDoing(action))
+      val actionAllowed = actions.filter(action => Capability.canDo(device.capability, action) && !operationalState.isDoing(action))
       operationalState = dispatchActionsIfDefined(actionAllowed, operationalState, device.actionHandler)
       zoneRef ! ActuatorStateChanged(operationalState)
 

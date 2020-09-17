@@ -15,8 +15,8 @@ object Capability {
   def acting(actions: Set[ActionTag] = Set()): ActingCapability = ActingCapability(actions)
   def acting(action: ActionTag, actions: ActionTag*): ActingCapability = ActingCapability(actions :+ action toSet)
 
-  def canDo(capability: Capability, action: ActionTag): Boolean = capability match {
-    case ActingCapability(actions) => actions.contains(action)
+  def canDo(capability: Capability, action: Action): Boolean = capability match {
+    case ActingCapability(actions) => actions.contains(action.getClass)
     case _ => false
   }
 
