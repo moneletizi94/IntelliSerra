@@ -3,11 +3,12 @@ package it.unibo.intelliserrademo.gui
 import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserrademo.gui.util.GuiUtility.updateComboBox
 import it.unibo.intelliserrademo.gui.util.SwingFuture._
-import javax.swing.{BorderFactory, ScrollPaneConstants}
+import javax.swing.{BorderFactory, BoxLayout, ScrollPaneConstants}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.swing.ScrollPane.BarPolicy
 import scala.swing.event.{ButtonClicked, SelectionChanged}
-import scala.swing.{BorderPanel, Button, ComboBox, Dialog, Dimension, FlowPanel, ScrollPane}
+import scala.swing.{BorderPanel, Button, ComboBox, Dialog, Dimension, FlowPanel, GridPanel, ScrollPane}
 import scala.util.{Failure, Success}
 
 // scalastyle:off magic.number
@@ -15,8 +16,13 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
 
   private val createZoneButton = new Button("Create Zone")
   private var zones: Map[String, ZonePanel] = Map()
-  implicit val deleteBox = new ComboBox(zones.keySet.toSeq)
-  private val zonesWrapperPanel = new FlowPanel()
+  implicit val deleteBox: ComboBox[String] = new ComboBox(zones.keySet.toSeq)
+  private val zonesWrapperPanel = new GridPanel(0,2){
+    hGap = 30
+    vGap = 30
+  }
+
+  zonesWrapperPanel.peer.setBorder(BorderFactory.createTitledBorder("Zones: "))
 
   deleteBox.peer.setBorder(BorderFactory.createTitledBorder("Delete a zone"))
   deleteBox.preferredSize = new Dimension(150,50)
@@ -26,11 +32,7 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
     contents += deleteBox
   }, BorderPanel.Position.North)
 
-  //TODO: SCROLL
-  private val scroll = new ScrollPane(zonesWrapperPanel)
-  scroll.horizontalScrollBarPolicy = BarPolicy.wrap(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
-  scroll.verticalScrollBarPolicy = BarPolicy.wrap(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
-  add(scroll, BorderPanel.Position.Center)
+  add(new ScrollPane(zonesWrapperPanel), BorderPanel.Position.Center)
 
   listenTo(createZoneButton, deleteBox.selection)
 
