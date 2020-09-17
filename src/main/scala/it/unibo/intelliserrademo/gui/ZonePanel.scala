@@ -1,36 +1,42 @@
 package it.unibo.intelliserrademo.gui
 
+import java.awt.FlowLayout
+
 import it.unibo.intelliserra.client.core.GreenHouseClient
-import it.unibo.intelliserrademo.gui.GuiUtility.createTextArea
+import it.unibo.intelliserrademo.gui.util.GuiUtility.createTextArea
+
 import scala.swing.Action.NoAction.title
 import scala.swing._
 import scala.swing.event.ButtonClicked
 import it.unibo.intelliserrademo.gui.util.SwingFuture._
+import javax.swing.BorderFactory
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 // scalastyle:off magic.number
 private[gui] class ZonePanel(zoneName: String)(implicit client: GreenHouseClient) extends GridPanel(1, 2) {
 
-  title = zoneName
+  peer.setBorder(BorderFactory.createTitledBorder(zoneName))
+
   hGap = 10
   private val textArea = createTextArea
 
   private val buttonAssign = new Button("AssignEntity")
   private val buttonState = new Button("GetState")
-  private val buttonDelete = new Button("DeleteZone")
 
-  contents += new GridPanel(3, 1) {
+  contents += new GridPanel(2, 1) {
     vGap = 15
     contents += buttonAssign
     contents += buttonState
-    contents += buttonDelete
   }
   contents += new ScrollPane(textArea)
   listenTo(buttonAssign)
+  listenTo(buttonState)
+
+
   reactions += {
     case ButtonClicked(`buttonAssign`) => assignEntity()
-    case ButtonClicked(`buttonDelete`) => ???
-    case ButtonClicked(`buttonDelete`) => ???
+    case ButtonClicked(`buttonState`) => exposeState()
   }
 
   /*
@@ -38,8 +44,12 @@ private[gui] class ZonePanel(zoneName: String)(implicit client: GreenHouseClient
    */
   private def assignEntity(): Unit = {
     Dialog.showInput(contents.head, "Input name of entity to assign:", initial = "")
-      .foreach(entityName => client.associateEntity(entityName, zoneName)//TODO CAMBIARE
-        .safeSwingOnComplete(value => println(value)))
+      .foreach(entityName => client.associateEntity(entityName, zoneName)
+        .safeSwingOnCompleteValue(value => textArea.append(value + "\n")))
+  }
+
+  private def exposeState(): Unit = {
+    client.getState(zoneName).safeSwingOnCompleteValue(value => textArea.append(value + "\n"))
   }
 
 }

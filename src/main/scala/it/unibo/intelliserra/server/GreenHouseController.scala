@@ -45,7 +45,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
     case CreateZone(zoneName) =>
       sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender()) {
         case Success(Messages.ZoneCreated) => ServiceResponse(Created)
-        case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict)
+        case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict,"Zone already exists")
       }
 
     case DeleteZone(zoneName) =>

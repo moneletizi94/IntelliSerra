@@ -1,17 +1,9 @@
-package it.unibo.intelliserrademo.gui
+package it.unibo.intelliserrademo.gui.util
 
 import scala.swing.{Button, TextArea}
 
 // scalastyle:off magic.number
 object GuiUtility {
-
-  def createButton(name: String): Button = {
-    new Button(name)
-  }
-
-  def createButtons(names: String*): List[Button] = {
-    names.map { name => createButton(name) }.toList
-  }
 
   def createTextArea: TextArea = {
     new TextArea {
