@@ -17,7 +17,9 @@ import scala.concurrent.duration.{FiniteDuration, _}
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               override val rate : FiniteDuration,
                               val computeActionsRate : FiniteDuration)
-                              extends Actor with RepeatedAction[ComputeState] with ActorLogging{
+                              extends Actor
+                              with RepeatedAction[ComputeState]
+                              with ActorLogging{
 
   context.actorOf(Props(RuleCheckerActor(computeActionsRate)))
 

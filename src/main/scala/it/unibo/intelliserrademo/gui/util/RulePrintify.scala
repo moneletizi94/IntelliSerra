@@ -14,16 +14,12 @@ object RulePrintify {
 
   private def conditionPrintify(condition: ConditionStatement): String = condition match {
     case AtomicConditionStatement(left, operator, right) => left + " " +  operatorPrintify(operator) + " " + valueTypePrintify(right)
-    case compound : AndConditionStatement => {
-      var result = ""
-      //TODO c'è un && di troppo alla fine.
-      toAtomicStatements(compound).foreach(statement => result += conditionPrintify(statement) + " && ")
-      result.dropRight(3)
-    }
+    case compound : AndConditionStatement =>
+      toAtomicStatements(compound).map(conditionPrintify).mkString(" && ")
   }
 
   private def actionPrintify(actions: Set[Action]): String = {
-    null
+    actions.map(identity).mkString(", ")
   }
 
   private def operatorPrintify(operator: ConditionOperator): String = operator match {
