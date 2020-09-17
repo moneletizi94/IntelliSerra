@@ -1,19 +1,12 @@
-package it.unibo.intelliserrademo
+package it.unibo.intelliserrademo.customdevice
 
-import java.util.TimerTask
-
-import com.sun.tools.javac.code.TypeTag
-import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState, TimedAction, TimedTask}
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
-import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.entity.Capability.ActingCapability
+import it.unibo.intelliserra.core.actuator.{TimedAction, TimedTask}
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{Dehumidifies, Fan, Heat, Water}
 import it.unibo.intelliserrademo.customdevice.SimulatedDevice.CustomActuator
-import it.unibo.intelliserrademo.CategoriesAndActions.{Dehumidifies, Fan, Heat, Water}
-import it.unibo.intelliserrademo.customsensor.SimulatedDevice.CustomActuator
 
-import scala.reflect._
-import scala.concurrent.duration._
+import scala.concurrent.duration.FiniteDuration
+import scala.reflect.ClassTag
+
 object TomatoActuators {
 
   object WaterActuator extends FakeTimedActuator[Water]

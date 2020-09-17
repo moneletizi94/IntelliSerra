@@ -30,15 +30,9 @@ object ISerraGui {
 
   val Hostname = "localhost"
   val Port = 8080
-  val GreenhouseName = "mySerra"
-  val defaultServerConfig: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port)
-  val actionSet: Set[Action] = Set(Water, Fan)
-  val rule: Rule = Temperature > 20 && Humidity < 10.0 executeMany actionSet
-  val defaultConfigWithRule: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port, rules = List(rule))
+  val GreenhouseName = "SerraDiPomodori"
 
   def main(args: Array[String]): Unit = {
-    val server = GreenHouseServer(defaultConfigWithRule)
-    server.start()
     val client = GreenHouseClient(GreenhouseName, Hostname, Port)
     val gui = ISerraGui(client)
     gui.visible = true
