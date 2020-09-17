@@ -1,9 +1,10 @@
 package it.unibo.intelliserra.device.core.sensor
 
 import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props, Timers}
-import it.unibo.intelliserra.core.sensor.{Measure, Sensor}
+import it.unibo.intelliserra.common.communication.Messages.SensorMeasureUpdated
+import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.core.DeviceActor
-import it.unibo.intelliserra.device.core.sensor.SensorActor.{SensorMeasureUpdated, SensorPollingTime}
+import it.unibo.intelliserra.device.core.sensor.SensorActor.SensorPollingTime
 
 class SensorActor(override val device: Sensor) extends DeviceActor with Timers with ActorLogging {
 
@@ -29,8 +30,6 @@ class SensorActor(override val device: Sensor) extends DeviceActor with Timers w
 }
 
 object SensorActor {
-  case class SensorMeasureUpdated(measure: Measure) // TODO: merge with right message
-
   private case object SensorPollingTime
 
   def apply(sensor: Sensor)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(sensor)

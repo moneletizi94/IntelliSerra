@@ -5,6 +5,7 @@ import it.unibo.intelliserra.core.Device
 import it.unibo.intelliserra.core.actuator.Actuator
 import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserrademo.common.DefaultAppConfig
 import it.unibo.intelliserrademo.customdevice.TomatoActuators.{Dehumidifiers, FanActuator, HeatActuator, WaterActuator}
 import it.unibo.intelliserrademo.customdevice.TomatoSensors.{AirHumiditySensor, AirTemperatureSensor, DayNightSensor, SoilMoistureSensor, WeatherSensor}
 
@@ -16,11 +17,7 @@ object TomatoDeviceApp extends App {
 
   implicit val ec: ExecutionContextExecutor = ExecutionContexts.global()
 
-  val Hostname = "localhost"
-  val Port = 8080
-  val GreenhouseName = "SerraDiPomodori"
-
-  val deviceClient = DeviceDeploy(GreenhouseName, Hostname, Port)
+  val deviceClient = DeviceDeploy(DefaultAppConfig.GreenhouseName, DefaultAppConfig.Hostname, DefaultAppConfig.Port)
 
   createSensors(List(
     Device.generateWithName("weather")(WeatherSensor.apply) -> 10,

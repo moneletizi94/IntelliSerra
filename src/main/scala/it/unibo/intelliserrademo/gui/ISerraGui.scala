@@ -7,6 +7,7 @@ import it.unibo.intelliserra.examples.RuleDslExample._
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.core.rule.dsl._
+import it.unibo.intelliserrademo.common.DefaultAppConfig
 
 import scala.swing._
 
@@ -28,12 +29,8 @@ class ISerraGui(implicit client: GreenHouseClient) extends MainFrame {
 
 object ISerraGui {
 
-  val Hostname = "localhost"
-  val Port = 8080
-  val GreenhouseName = "SerraDiPomodori"
-
   def main(args: Array[String]): Unit = {
-    val client = GreenHouseClient(GreenhouseName, Hostname, Port)
+    val client = GreenHouseClient(DefaultAppConfig.GreenhouseName, DefaultAppConfig.Hostname, DefaultAppConfig.Port)
     val gui = ISerraGui(client)
     gui.visible = true
   }

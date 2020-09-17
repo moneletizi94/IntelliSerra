@@ -11,6 +11,7 @@ import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 import it.unibo.intelliserra.common.utils.Utils._
+import it.unibo.intelliserra.server.rule.RuleEngineService
 
 import scala.concurrent.duration.{FiniteDuration, _}
 
@@ -21,7 +22,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               with RepeatedAction[ComputeState]
                               with ActorLogging{
 
-  context.actorOf(Props(RuleCheckerActor(computeActionsRate)))
+  context.actorOf(Props(RuleCheckerActor(computeActionsRate, s"../../${RuleEngineService.name}")))
 
   override val repeatedMessage: ComputeState = ComputeState()
 
@@ -55,7 +56,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case SensorMeasureUpdated(measure) =>
       sensorsValue += sender -> measure
       log.info(s"zone update value for sensor ${sender.path.name}; new value: $measure")
-    case ComputeState =>
+    case ComputeState() =>
       state = Option(computeState())
       sensorsValue = Map()
       log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")

@@ -8,6 +8,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{AirTemperature, DayNight, Dehumidifies, Fan, Heat, Humidity, SoilMoisture, Water}
+import it.unibo.intelliserrademo.common.DefaultAppConfig
 
 import scala.concurrent.duration._
 
@@ -34,7 +35,7 @@ object ServerMain extends App {
   )
 
   val config = ServerConfig(
-    AppConfig("SerraDiPomodori", "localhost", 8080),
+    DefaultAppConfig.appConfig,
     ZoneConfig(5 seconds, 4 seconds, aggregators),
     RuleConfig(rules)
   )
