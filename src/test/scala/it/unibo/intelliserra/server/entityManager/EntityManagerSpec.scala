@@ -26,7 +26,7 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   private val mockSensorID = "sensorID"
   private val mockSensorCapability = Capability.sensing(Temperature)
   private val mockActuatorID = "actuatorID"
-  private val mockActuatorCapability = Capability.acting(Set[Action]())
+  private val mockActuatorCapability = Capability.acting()
 
   before{
     mockZoneManager = TestProbe()

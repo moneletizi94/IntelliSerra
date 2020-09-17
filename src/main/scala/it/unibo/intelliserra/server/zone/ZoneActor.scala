@@ -35,7 +35,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     // TODO: the best solution? I think no
     case DoActions(actions) => associatedEntities.flatMap{
                                   case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-                                      Set((actuatorRef, actions.intersect(actingCapabilities)))
+                                      Set((actuatorRef, actions.filter(action => actingCapabilities contains action.getClass)))
                                   case _ =>  None
                                 }.filter(_._2.nonEmpty)
                                 .foreach({ case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) })

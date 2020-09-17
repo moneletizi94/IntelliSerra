@@ -149,9 +149,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " should {
     "send action to its actuator according to theirs capabilities" in {
       val sensor1 = addEntity(registeredSensor)
-      val actuator1 = addEntity(RegisteredActuator("act1", ActingCapability(Set(Water, Fan))))
-      val actuator2 = addEntity(RegisteredActuator("act2", ActingCapability(Set(Water))))
-      val actuator3 = addEntity(RegisteredActuator("act3", ActingCapability(Set(Light))))
+      val actuator1 = addEntity(RegisteredActuator("act1", ActingCapability(Set(Water.getClass, Fan.getClass))))
+      val actuator2 = addEntity(RegisteredActuator("act2", ActingCapability(Set(Water.getClass))))
+      val actuator3 = addEntity(RegisteredActuator("act3", ActingCapability(Set(Light.getClass))))
       zone ! DoActions(Set(Water,Fan))
       sensor1.expectNoMessage(1 seconds)
       actuator3.expectNoMessage(1 seconds)
