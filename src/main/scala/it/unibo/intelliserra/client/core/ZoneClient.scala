@@ -50,5 +50,5 @@ trait ZoneClient {
    * @param zone, name of zone
    * @return if success, the state of zone, a failure otherwise
    */
-  def getState(zone: Zone): Future[Option[State]]
+  def getState(zone: Zone): Future[State]
 }

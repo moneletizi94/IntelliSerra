@@ -9,7 +9,7 @@ import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
-import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
 import it.unibo.intelliserra.common.utils.Utils._
 import it.unibo.intelliserra.server.rule.RuleEngineService
 
@@ -19,14 +19,14 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               override val rate : FiniteDuration,
                               val computeActionsRate : FiniteDuration)
                               extends Actor
-                              with RepeatedAction[ComputeState]
+                              with RepeatedAction[ComputeMeasuresAggregation]
                               with ActorLogging{
 
   context.actorOf(Props(RuleCheckerActor(computeActionsRate, s"../../${RuleEngineService.name}")))
 
-  override val repeatedMessage: ComputeState = ComputeState()
+  override val repeatedMessage: ComputeMeasuresAggregation = ComputeMeasuresAggregation()
 
-  private[zone] var state : Option[State] = None
+  private[zone] var state : State = State.empty
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
   private[zone] var associatedEntities: Set[EntityChannel] = Set()
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
@@ -39,7 +39,6 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
       associatedEntities -= entityChannel
       log.info(s"entity ${entityChannel.entity.identifier} removed to zone ${self.path.name}")
     case GetState => sender ! MyState(state)
-    // TODO: the best solution? I think no
     case DoActions(actions) =>
       log.info(s"inferred actions: $actions")
       associatedEntities.flatMap{
@@ -56,12 +55,11 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case SensorMeasureUpdated(measure) =>
       sensorsValue += sender -> measure
       log.info(s"zone update value for sensor ${sender.path.name}; new value: $measure")
-    case ComputeState() =>
-      state = Option(computeState())
-      sensorsValue = Map()
-      log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
+    case ComputeMeasuresAggregation() => state = computeState(); sensorsValue = Map()
+      //log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
     case ActuatorStateChanged(operationalState) =>
       actuatorsState += sender -> operationalState
+      state = State(state.perceptions, computeActuatorsState())
       log.info(s"zone update state for actuator ${sender.path.name}; new actuator state: $operationalState")
   }
 
@@ -73,19 +71,19 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
-  private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
+  private[zone] def computeActuatorsState() : List[Action] = actuatorsState.values.flatMap({
     case DoingActions(actions) => actions
     case Idle => Nil
   }).toList.distinct
 
   private[zone] def computeState() : State = {
-    State(computeAggregatedPerceptions(), computeActuatorState())
+    State(computeAggregatedPerceptions(), computeActuatorsState())
   }
 
 }
 
 object ZoneActor {
-  case class ComputeState()
+  case class ComputeMeasuresAggregation()
   private val defaultStateEvaluationRate = 10 seconds
   private val defaultActionsEvaluationRate = 10 seconds
 

@@ -39,9 +39,8 @@ class RuleCheckerActorSpec extends TestKit(ActorSystem("MySpec"))
 
   "A ruleCheckerActor " should {
     " ask to infer actions to Rule Engine Service after receiving State from zone" in {
-      val state = Option(State.empty)
-      mockRuleCheckerRef ! MyState(state)
-      test.expectMsg(InferActions(state.get))
+      mockRuleCheckerRef ! MyState(State.empty)
+      test.expectMsg(InferActions(State.empty))
     }
   }
 

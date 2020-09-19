@@ -3,7 +3,7 @@ package it.unibo.intelliserra.core.state
 import it.unibo.intelliserra.core.actuator.{Action}
 import it.unibo.intelliserra.core.sensor.Measure
 
-trait State {
+trait State extends Serializable {
   def timestamp : Long
   def perceptions : List[Measure]
   def activeActions : List[Action]
