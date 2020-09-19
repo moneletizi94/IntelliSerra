@@ -1,13 +1,7 @@
 package it.unibo.intelliserrademo.gui
 
 import it.unibo.intelliserra.client.core.GreenHouseClient
-import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.examples.RuleDslExample._
-import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.server.core.GreenHouseServer
-import it.unibo.intelliserra.core.rule.dsl._
-import it.unibo.intelliserrademo.common.DefaultAppConfig
+import it.unibo.intelliserrademo.common.DefaultAppConfig._
 
 import scala.swing._
 
@@ -30,7 +24,7 @@ class ISerraGui(implicit client: GreenHouseClient) extends MainFrame {
 object ISerraGui {
 
   def main(args: Array[String]): Unit = {
-    val client = GreenHouseClient(DefaultAppConfig.GreenhouseName, DefaultAppConfig.Hostname, DefaultAppConfig.Port)
+    val client = GreenHouseClient(GreenhouseName, Hostname, Port)
     val gui = ISerraGui(client)
     gui.visible = true
   }
