@@ -6,16 +6,19 @@ import it.unibo.intelliserra.core.state.State
 
 object StatePrintify {
 
-  private[gui] def statePrintify(state: Option[State]): String = {
-    state.fold("No computed state ")(full => perceptionsPrintify(full.perceptions) + " -> " + activeActionsPrintify(full.activeActions))
+  private[gui] def statePrintify(state: State): String = {
+    perceptionsPrintify(state.perceptions) +
+      " -> " +
+      activeActionsPrintify(state.activeActions) +
+    "\n __________________________"
   }
 
   private def perceptionsPrintify(perceptions: List[Measure]): String = {
-    perceptions.map(perception => perception.category + ": " + perception.value).mkString(",")
+    "(" + perceptions.map(perception => perception.category + ": " + perception.value).mkString(",") + ")"
   }
 
   private def activeActionsPrintify(activeActions: List[Action]): String = {
-    activeActions.mkString(", ")
+    "(" + activeActions.mkString(",") + ")"
   }
 
 }

@@ -97,7 +97,7 @@ class ClientSpec extends WordSpecLike
     /* --- START TESTING ASSIGN ---*/
     "be able to assign an entity to an existing zone" in {
       awaitReady(client.createZone(zoneName))
-      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
+      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe sensor1.identifier + "-> " + zoneName
     }
 
     "fail to assign an entity to a nonexistent zone" in {

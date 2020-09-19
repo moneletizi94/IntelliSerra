@@ -75,7 +75,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
         case Success(Messages.ZoneNotFound) => ServiceResponse(NotFound, "Zone not found")
-        case Success(Messages.AlreadyAssigned(zone)) => ServiceResponse(Conflict, zone)
+        case Success(Messages.AlreadyAssigned(zone)) => ServiceResponse(Conflict, "Entity already assigned to " + zone)
         case Success(Messages.AssignOk) => ServiceResponse(Ok)
         case Success(Messages.AssignError(error)) => ServiceResponse(Error, error)
       }
