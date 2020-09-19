@@ -18,8 +18,8 @@ import scala.concurrent.{ExecutionContext, Future}
  *
  */
 trait DeviceDeploy {
-  def deploySensor(sensor: Sensor): Future[Unit]
-  def deployActuator(actuator: Actuator): Future[Unit]
+  def join(sensor: Sensor): Future[String]
+  def join(actuator: Actuator): Future[String]
 }
 
 /**
@@ -46,10 +46,10 @@ trait DeviceDeploy {
      * @param sensor the sensor to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message
      */
-    override def deploySensor(sensor: Sensor): Future[Unit] = {
+    override def join(sensor: Sensor): Future[String] = {
       val sensorActor = SensorActor(sensor)(actorSystem)
       entityManagerActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap {
-        case JoinOK => Future.successful(():Unit)
+        case JoinOK => Future.successful(sensor.identifier)
         case JoinError(error) => terminate(error, sensorActor)
       }
     }
@@ -60,10 +60,10 @@ trait DeviceDeploy {
      * @param actuator the actuator to be inserted into the system
      * @return a Future[Unit] that is completed or failed following a message
      */
-    override def deployActuator(actuator: Actuator): Future[Unit] = {
+    override def join(actuator: Actuator): Future[String] = {
       val actuatorActor = ActuatorActor(actuator)(actorSystem)
       entityManagerActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap {
-        case JoinOK => Future.successful(():Unit)
+        case JoinOK => Future.successful(actuator.identifier)
         case JoinError(error) => terminate(error, actuatorActor)
       }
     }
@@ -73,7 +73,7 @@ trait DeviceDeploy {
      *
      * @return a Future[Unit]
      */
-    private def terminate(error : String, entity: ActorRef): Future[Unit] = {
+    private def terminate[T](error : String, entity: ActorRef): Future[T] = {
       actorSystem.stop(entity)
       Future.failed(new IllegalArgumentException(error))
     }

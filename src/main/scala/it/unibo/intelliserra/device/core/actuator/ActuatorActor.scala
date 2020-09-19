@@ -1,12 +1,12 @@
 package it.unibo.intelliserra.device.core.actuator
 
 import akka.actor.{ActorRef, ActorSystem, Props, Timers}
-import it.unibo.intelliserra.common.communication.Messages.DoActions
+import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, DoActions}
 import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.actuator._
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.device.core.DeviceActor
-import it.unibo.intelliserra.device.core.actuator.ActuatorActor.{ActuatorStateChanged, OnCompleteAction}
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -56,9 +56,6 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
 }
 
 object ActuatorActor {
-
-  case class ActuatorStateChanged(operationalState: OperationalState)
-
   private[actuator] case class OnCompleteAction(action: Action, task: TimedTask)
 
   def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(actuator)

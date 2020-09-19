@@ -1,9 +1,9 @@
 package it.unibo.intelliserra.server.zone
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.{DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.actuator.{Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor}
 import it.unibo.intelliserra.core.sensor.Measure
@@ -12,12 +12,13 @@ import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
+import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
-import it.unibo.intelliserra.utils.{Generator, Sample, TestUtility}
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
+
 import scala.concurrent.duration._
 
 // scalastyle:off magic.number
@@ -95,16 +96,6 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
-  private def sendMessageAndCheckReplace[T](map : Map[ActorRef,T])(implicit sample : Sample[T], system: ActorSystem) = {
-    val sender = TestProbe()
-    val sendingValue1 = Generator.generate(sample)
-    zone tell(sendingValue1, sender.ref)
-    val sensingValue2 = Generator.generate
-    zone tell(sensingValue2, sender.ref)
-    map(sender.ref) shouldBe sensingValue2
-    map(sender.ref) should not be sendingValue1
-  }
-
   "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
       sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(Measure(Temperature)(1)))
@@ -141,7 +132,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     "compute its state after receiving computeState" in {
       val probe = TestProbe()
       zone.tell(SensorMeasureUpdated(Measure(Temperature)(10)),probe.ref)
-      zone ! ComputeState
+      zone ! ComputeState()
       zone.underlyingActor.state shouldBe Option(State(List(Measure(Temperature)(10)),List()))
     }
   }

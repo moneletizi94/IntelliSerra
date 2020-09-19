@@ -33,8 +33,8 @@ class ClientSpec extends WordSpecLike
     this.client = GreenHouseClient(GreenhouseName, Hostname, Port)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(server.start())
-    awaitReady(deviceDeploy.deploySensor(sensor1))
-    awaitReady(deviceDeploy.deploySensor(sensor2))
+    awaitReady(deviceDeploy.join(sensor1))
+    awaitReady(deviceDeploy.join(sensor2))
   }
 
   after {

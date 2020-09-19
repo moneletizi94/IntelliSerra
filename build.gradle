@@ -19,6 +19,7 @@ ext {
 
 dependencies {
     implementation 'org.scala-lang:scala-library:2.12.8'
+    implementation 'org.scala-lang.modules:scala-swing_2.12:2.1.1'
     implementation "com.typesafe.akka:akka-actor_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-remote_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-cluster_${scalaBinary}:${akkaVersion}"
@@ -39,5 +40,5 @@ dependencies {
 }
 
 scoverage {
-    excludedPackages = [".*examples.*"]
+    excludedPackages = [".*examples.*", "it.unibo.intelliserrademo.*"]
 }

@@ -19,3 +19,8 @@ trait Device {
 
   def onDissociateZone(zoneName: String): Unit
 }
+
+object Device {
+  def generateWithName[T <: Device](seedName: String)(factory: String => T): Stream[T] =
+    Stream.from(0).map(counter => factory(s"$seedName$counter"))
+}

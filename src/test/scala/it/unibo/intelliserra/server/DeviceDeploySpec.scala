@@ -39,7 +39,7 @@ private class DeviceDeploySpec extends AsyncWordSpecLike
 
   "A deviceDeploy " must {
     "ask for a sensor assignment" in {
-      deviceDeploy.deploySensor(sensor).transform {
+      deviceDeploy.join(sensor).transform {
         case Success(_) => Success(succeed)
         case Failure(exception) => fail(exception)
       }
@@ -48,8 +48,8 @@ private class DeviceDeploySpec extends AsyncWordSpecLike
 
   "A deviceDeploy" must {
     "ask for a sensor assignment with an identify that already exists" in {
-      awaitReady(deviceDeploy.deploySensor(sensor2))
-      deviceDeploy.deploySensor(sensor2).transform {
+      awaitReady(deviceDeploy.join(sensor2))
+      deviceDeploy.join(sensor2).transform {
         case Success(_) => Failure(fail())
         case Failure(_) => Success(succeed)
       }
@@ -58,7 +58,7 @@ private class DeviceDeploySpec extends AsyncWordSpecLike
 
   "A deviceDeploy " must {
     "ask for an actuator assignment" in {
-      deviceDeploy.deployActuator(actuator).transform {
+      deviceDeploy.join(actuator).transform {
         case Success(_) => Success(succeed)
         case Failure(exception) => fail(exception)
       }
@@ -67,8 +67,8 @@ private class DeviceDeploySpec extends AsyncWordSpecLike
 
   "A deviceDeploy " must {
     "ask for an actuator assignment with an identify that already exists" in {
-      awaitReady(deviceDeploy.deployActuator(actuator2))
-      deviceDeploy.deployActuator(actuator2).transform {
+      awaitReady(deviceDeploy.join(actuator2))
+      deviceDeploy.join(actuator2).transform {
         case Success(_) => Failure(fail())
         case Failure(_) => Success(succeed)
       }

@@ -71,7 +71,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
       greenHouseController ! CreateZone(mockZoneID)
-      expectMsg(ServiceResponse(Conflict))
+      expectMsg(ServiceResponse(Conflict, "Zone already exists"))
     }
   }
 
