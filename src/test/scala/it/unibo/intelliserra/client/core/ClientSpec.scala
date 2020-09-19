@@ -14,7 +14,7 @@ class ClientSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with TestUtility{
+  with TestUtility {
 
   private val zoneName = "zone1"
   private val zoneName2 = "zone2"
@@ -72,7 +72,7 @@ class ClientSpec extends WordSpecLike
       }
     }
 
-    "fail to remove a non existing zone" in {
+    "fail to remove a nonexistent zone" in {
       assertThrows[IllegalArgumentException] {
         awaitResult(client.removeZone(zoneName))
       }
@@ -128,6 +128,7 @@ class ClientSpec extends WordSpecLike
       awaitReady(client.associateEntity(sensor1.identifier, zoneName))
       awaitResult(client.removeEntity(sensor1.identifier)) shouldBe sensor1.identifier
     }
+
     "fail to remove a nonexistent entity" in {
       assertThrows[IllegalArgumentException] {
         awaitResult(client.removeEntity(notAddedSensor))
@@ -141,11 +142,13 @@ class ClientSpec extends WordSpecLike
       awaitReady(client.associateEntity(sensor1.identifier, zoneName))
       awaitResult(client.dissociateEntity(sensor1.identifier)) shouldBe sensor1.identifier
     }
+
     "fail to dissociate a non-associated entity" in {
       assertThrows[IllegalArgumentException] {
         awaitResult(client.dissociateEntity(sensor1.identifier))
       }
     }
+
     "fail to dissociate a nonexistent entity" in {
       assertThrows[IllegalArgumentException] {
         awaitResult(client.dissociateEntity(notAddedSensor))
@@ -166,7 +169,7 @@ class ClientSpec extends WordSpecLike
 
     /*--- START TEST RULES ---*/
     "get all rules" in {
-     awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
+      awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
     }
 
     "disable an existing rule" in {
