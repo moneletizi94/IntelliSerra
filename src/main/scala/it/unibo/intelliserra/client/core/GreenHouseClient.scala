@@ -53,7 +53,7 @@ object GreenHouseClient {
 
     override def dissociateEntity(entity: Entity): Future[Entity] = (client ? DissociateEntity(entity)).mapTo[Entity]
 
-    override def getState(zone: Zone): Future[Option[State]] = (client ? GetState(zone)).mapTo[Option[State]]
+    override def getState(zone: Zone): Future[State] = (client ? GetState(zone)).mapTo[State]
 
     override def removeEntity(entity: Entity): Future[Entity] = (client ? RemoveEntity(entity)).mapTo[Entity]
 
