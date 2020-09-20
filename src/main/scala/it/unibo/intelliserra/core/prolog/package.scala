@@ -1,8 +1,6 @@
 package it.unibo.intelliserra.core
 
 import alice.tuprolog.{Prolog, Struct, Term, Theory}
-import it.unibo.intelliserra.core.rule.Rule
-
 import scala.collection.JavaConverters._
 
 package object prolog {
@@ -14,14 +12,14 @@ package object prolog {
 
   implicit class RichProlog(engine: Prolog){
 
-     def assert(ruleClause: Term) : Boolean = {
-       Theory.fromPrologList(ruleClause.castTo(classOf[Struct])).getClauses.asScala
+     def assertTermClauses(structClause: Struct) : Boolean = {
+       Theory.fromPrologList(structClause).getClauses.asScala
          .foreach(rule => engine.solve(s"assert($rule)"))
        true
      }
 
-    def retract(ruleClause: Term) : Boolean = {
-      Theory.fromPrologList(ruleClause.castTo(classOf[Struct])).getClauses.asScala
+    def retractTermClauses(structClause: Struct) : Boolean = {
+      Theory.fromPrologList(structClause).getClauses.asScala
         .foreach(rule => engine.solve(s"retract($rule)"))
       true
     }

@@ -67,11 +67,11 @@ object RuleEngine {
         .map(_.get).toSet
 
     override def enableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, !_).fold(false)(ruleClause => engine.assert(ruleClause.toTerm))
+      ruleChecker(ruleID, !_).fold(false)(ruleClause => engine.assertTermClauses(ruleClause.toTerm.castTo(classOf[Struct])))
     }
 
     override def disableRule(ruleID: String): Boolean = {
-      ruleChecker(ruleID, identity).fold(false)(ruleClause => engine.retract(ruleClause.toTerm))
+      ruleChecker(ruleID, identity).fold(false)(ruleClause => engine.retractTermClauses(ruleClause.toTerm.castTo(classOf[Struct])))
     }
 
     private def ruleChecker(ruleID: String, p: Boolean => Boolean): Option[Rule] = {
@@ -84,7 +84,7 @@ object RuleEngine {
      * This method initializes the prolog engine.
      * Loads the whole theory from file and set of all rules.
      */
-    private def initializeProlog(): Prolog = {
+    private def initializeProlog: Prolog = {
       val engine = new Prolog()
       val file = scala.io.Source.fromResource("greenhouse-theory.pl")
       val lines = file.mkString
@@ -92,8 +92,7 @@ object RuleEngine {
       engine.setTheory(new Theory(lines))
       rules.map { ruleInfo => ruleInfo.rule.toTerm }
         .filter(_.isList)
-        .flatMap { rule => Theory.fromPrologList(rule.castTo(classOf[Struct])).getClauses.asScala }
-        .foreach(ruleClause => engine.solve(s"assert($ruleClause)"))
+        .map{rule => engine.assertTermClauses(rule.castTo(classOf[Struct]))}
       engine
     }
   }
