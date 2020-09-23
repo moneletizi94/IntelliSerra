@@ -1,9 +1,9 @@
 package it.unibo.intelliserra.utils
 
-import it.unibo.intelliserra.core.actuator.Actuator
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Measure, Sensor}
+import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.device.core.Actuator.ActionHandler
+import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 
 import scala.concurrent.duration.FiniteDuration
 

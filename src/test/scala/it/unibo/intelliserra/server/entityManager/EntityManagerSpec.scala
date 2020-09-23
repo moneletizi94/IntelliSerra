@@ -83,13 +83,13 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
     expectMsg(JoinOK)
     joinRequestMessage match {
       case JoinSensor(identifier, sensingCapability, sensorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef)))
+        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, sensingCapability), sensorRef)))
       case JoinActuator(identifier, actingCapability, actuatorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef)))
+        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, actingCapability), actuatorRef)))
     }
   }
 
-  private def entitiesInEMShouldBe(result: List[EntityChannel]) = {
+  private def entitiesInEMShouldBe(result: List[DeviceChannel]) = {
     entityManager.underlyingActor.entities shouldBe result
   }
 

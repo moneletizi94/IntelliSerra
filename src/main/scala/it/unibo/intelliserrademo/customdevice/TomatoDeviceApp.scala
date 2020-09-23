@@ -1,13 +1,12 @@
 package it.unibo.intelliserrademo.customdevice
 
 import akka.dispatch.ExecutionContexts
-import it.unibo.intelliserra.core.Device
-import it.unibo.intelliserra.core.actuator.Actuator
-import it.unibo.intelliserra.core.sensor.Sensor
+import it.unibo.intelliserra.core.entity.Device
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 import it.unibo.intelliserrademo.common.DefaultAppConfig
 import it.unibo.intelliserrademo.customdevice.TomatoActuators.{Dehumidifiers, FanActuator, HeatActuator, WaterActuator}
-import it.unibo.intelliserrademo.customdevice.TomatoSensors.{AirHumiditySensor, AirTemperatureSensor, DayNightSensor, SoilMoistureSensor, WeatherSensor}
+import it.unibo.intelliserrademo.customdevice.TomatoSensors._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
@@ -20,18 +19,18 @@ object TomatoDeviceApp extends App {
   val deviceClient = DeviceDeploy(DefaultAppConfig.GreenhouseName, DefaultAppConfig.Hostname, DefaultAppConfig.Port)
 
   createSensors(List(
-    Device.generateWithName("weather")(WeatherSensor.apply) -> 10,
-    Device.generateWithName("airtemp")(AirTemperatureSensor.apply) -> 10,
-    Device.generateWithName("airhum")(AirHumiditySensor.apply) -> 10,
-    Device.generateWithName("soilmoisture")(SoilMoistureSensor.apply) -> 5,
-    Device.generateWithName("daynight")(DayNightSensor.apply) -> 5
+    generateDeviceWithName("weather")(WeatherSensor.apply) -> 10,
+    generateDeviceWithName("airtemp")(AirTemperatureSensor.apply) -> 10,
+    generateDeviceWithName("airhum")(AirHumiditySensor.apply) -> 10,
+    generateDeviceWithName("soilmoisture")(SoilMoistureSensor.apply) -> 5,
+    generateDeviceWithName("daynight")(DayNightSensor.apply) -> 5
   ))
 
   createActuators(List(
-    Device.generateWithName("wateractuator")(WaterActuator.apply) -> 1,
-    Device.generateWithName("dehum")(Dehumidifiers.apply) -> 3,
-    Device.generateWithName("heatactuator")(HeatActuator.apply) -> 3,
-    Device.generateWithName("fanactuator")(FanActuator.apply) -> 3
+    generateDeviceWithName("wateractuator")(WaterActuator.apply) -> 1,
+    generateDeviceWithName("dehum")(Dehumidifiers.apply) -> 3,
+    generateDeviceWithName("heatactuator")(HeatActuator.apply) -> 3,
+    generateDeviceWithName("fanactuator")(FanActuator.apply) -> 3
   ))
 
 
@@ -55,5 +54,9 @@ object TomatoDeviceApp extends App {
       case Failure(exception) => println(exception)
       case Success(value) => println(s"Success join $value")
     }
+  }
+
+  private def generateDeviceWithName[D <: Device](seedName: String)(deviceFactory: String => D): Stream[D] = {
+    Stream.from(0).map(counter => deviceFactory(s"$seedName$counter"))
   }
 }

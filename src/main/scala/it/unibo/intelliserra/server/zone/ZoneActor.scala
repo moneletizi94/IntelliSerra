@@ -2,16 +2,16 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages._
+import it.unibo.intelliserra.common.utils.Utils._
 import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.Capability.ActingCapability
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator}
+import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
-import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
-import it.unibo.intelliserra.common.utils.Utils._
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.rule.RuleEngineService
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
 
 import scala.concurrent.duration.{FiniteDuration, _}
 
@@ -28,30 +28,26 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 
   private[zone] var state : Option[State] = None
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities: Set[EntityChannel] = Set()
+  private[zone] var associatedEntities: Set[DeviceChannel] = Set()
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
 
   override def receive: Receive = {
     case AddEntity(entityChannel) =>
       associatedEntities += entityChannel
-      log.info(s"entity ${entityChannel.entity.identifier} added to zone ${self.path.name}")
+      log.info(s"entity ${entityChannel.device.identifier} added to zone ${self.path.name}")
     case DeleteEntity(entityChannel) =>
       associatedEntities -= entityChannel
-      log.info(s"entity ${entityChannel.entity.identifier} removed to zone ${self.path.name}")
+      log.info(s"entity ${entityChannel.device.identifier} removed to zone ${self.path.name}")
     case GetState => sender ! MyState(state)
     // TODO: the best solution? I think no
     case DoActions(actions) =>
       log.info(s"inferred actions: $actions")
-      associatedEntities.flatMap{
-        case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-          Set((actuatorRef, actions.filter(action => actingCapabilities contains action.getClass)))
-        case _ =>  Nil
-      }
-      .filter(_._2.nonEmpty)
-      .foreach({ case (actuatorRef, actionsToDo) =>
-        log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
-        actuatorRef ! DoActions(actionsToDo)
-      })
+      associatedEntities.map { c => (c.channel, actions.filter(actionToDo => c.device.capability.includes(Capability.acting(actionToDo.getClass))))}
+        .filter(_._2.nonEmpty)
+        .foreach { case (actuatorRef, actionsToDo) =>
+          log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
+          actuatorRef ! DoActions(actionsToDo)
+        }
 
     case SensorMeasureUpdated(measure) =>
       sensorsValue += sender -> measure

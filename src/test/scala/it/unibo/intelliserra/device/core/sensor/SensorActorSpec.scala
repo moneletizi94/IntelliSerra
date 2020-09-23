@@ -4,7 +4,8 @@ import akka.actor.{ActorSystem, PoisonPill}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.sensor.{Measure, Sensor}
+import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.device.core.Sensor
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature}
 import org.junit.runner.RunWith

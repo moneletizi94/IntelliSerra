@@ -2,15 +2,17 @@ package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
-import it.unibo.intelliserra.core.actuator.{Action, Actuator, TimedTask}
+import it.unibo.intelliserra.core.actuator.{Action, TimedTask}
+import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.entity.{Capability, EntityChannel, RegisteredSensor}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
-import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType}
+import it.unibo.intelliserra.device.core.Actuator.ActionHandler
+import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
+import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}
 import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 
 import scala.concurrent.{Await, Awaitable}
@@ -76,8 +78,8 @@ trait TestUtility extends StatementTestUtils {
    * @param entityRef actorRef of the entityChannel
    * @return
    */
-  def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
-    EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
+  def sensorEntityChannelFromRef(entityRef: ActorRef): DeviceChannel = {
+    DeviceChannel(RegisteredDevice("sensor", SensingCapability(Temperature)), entityRef)
   }
 
   implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
