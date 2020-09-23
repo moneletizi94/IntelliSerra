@@ -1,8 +1,8 @@
 package it.unibo.intelliserrademo.customdevice
 
-import it.unibo.intelliserra.core.sensor.{DoubleType, StringType}
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{AirTemperature, DayNight, Humidity, SoilMoisture, Weather}
 import SimulatedDevice.CustomSensor
+import it.unibo.intelliserra.core.perception.{DoubleType, StringType}
 import it.unibo.intelliserrademo.common.Generator
 import it.unibo.intelliserrademo.common.Simulation.{DoubleSinSample, StringSample}
 

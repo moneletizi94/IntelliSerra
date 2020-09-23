@@ -1,12 +1,12 @@
 package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
-import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
+import it.unibo.intelliserra.core.action.{Action, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.RuleInfo
-import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 
 /**
  * Object to describe all the messages exchanged on server-side with
@@ -71,7 +71,7 @@ object Messages {
    * Message used to return entity info.
    * @param entity it contains info of an entity
    */
-  case class EntityResult(entity: EntityChannel) extends EntityManagerResponse
+  case class EntityResult(entity: DeviceChannel) extends EntityManagerResponse
 
   /**
    * Message used to say that an entity doesn't exist in this entity manager
@@ -115,13 +115,13 @@ object Messages {
    * @param zoneName identifier of the zone to whom assign the entity
    * @param entityChannel registered entity to assign
    */
-  case class AssignEntityToZone(zoneName: String, entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class AssignEntityToZone(zoneName: String, entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to dissociate a registered entity from a zone, if the entity is associated to any
    * @param entityChannel registered entity to dissociate
    */
-  case class DissociateEntityFromZone(entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class DissociateEntityFromZone(entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to ask for the state of a zone, whether it exists
@@ -196,12 +196,12 @@ object Messages {
    * Message sent to add the specified entity to the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class AddEntity(entityChannel: EntityChannel) extends ZoneRequest
+  case class AddEntity(entityChannel: DeviceChannel) extends ZoneRequest
   /**
    * Message sent to remove the specified entity from the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
+  case class DeleteEntity(entityChannel: DeviceChannel) extends ZoneRequest
 
   /**
    * Message sent to get the state of the zone

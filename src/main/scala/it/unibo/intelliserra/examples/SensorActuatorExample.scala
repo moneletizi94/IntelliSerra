@@ -1,7 +1,8 @@
 package it.unibo.intelliserra.examples
 
 import it.unibo.intelliserra.core.entity.Capability.SensingCapability
-import it.unibo.intelliserra.core.sensor.{Measure, Sensor}
+import it.unibo.intelliserra.core.perception.Measure
+import it.unibo.intelliserra.device.core.Sensor
 
 import scala.concurrent.duration._
 

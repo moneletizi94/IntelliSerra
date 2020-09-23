@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.core.rule.dsl
 
+import it.unibo.intelliserra.core.perception.{Category, ValueType}
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
-import it.unibo.intelliserra.core.sensor.{Category, ValueType}
 
 object ConditionCategory {
 

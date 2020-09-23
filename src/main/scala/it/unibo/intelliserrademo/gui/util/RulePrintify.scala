@@ -1,10 +1,10 @@
 package it.unibo.intelliserrademo.gui.util
 
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{BooleanType, CharType, DoubleType, IntType, StringType, ValueType}
 import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.{AndConditionStatement, AtomicConditionStatement, toAtomicStatements}
 import it.unibo.intelliserra.core.rule.dsl._
-import it.unibo.intelliserra.core.sensor._
 
 object RulePrintify {
 

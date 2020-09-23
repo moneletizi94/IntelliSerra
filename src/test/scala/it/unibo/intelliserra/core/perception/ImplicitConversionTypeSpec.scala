@@ -1,12 +1,9 @@
-package it.unibo.intelliserra.client.core.sensor
+package it.unibo.intelliserra.core.perception
 
-import it.unibo.intelliserra.core.sensor.{BooleanType, CharType, DoubleType, IntType, StringType}
 import it.unibo.intelliserra.utils.TestImplicitConversionUtility
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatestplus.junit.JUnitRunner
-
-import scala.util.Success
 
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])

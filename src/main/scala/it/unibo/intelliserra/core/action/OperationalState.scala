@@ -1,4 +1,4 @@
-package it.unibo.intelliserra.core.actuator
+package it.unibo.intelliserra.core.action
 
 sealed trait OperationalState {
   def isDoing(action: Action): Boolean = this match {

@@ -5,9 +5,9 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
 import it.unibo.intelliserra.common.communication.Protocol._
-import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
-import it.unibo.intelliserra.core.sensor._
+import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.entityManager.EntityManagerActor
