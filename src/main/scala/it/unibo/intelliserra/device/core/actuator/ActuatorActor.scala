@@ -2,11 +2,11 @@ package it.unibo.intelliserra.device.core.actuator
 
 import akka.actor.{ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, DoActions}
-import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.device.core.Actuator.ActionHandler
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
-import it.unibo.intelliserra.device.core.{Actuator, DeviceActor}
+import it.unibo.intelliserra.device.core.{Actuator, DeviceActor, TimedTask}
 
 import scala.concurrent.ExecutionContextExecutor
 

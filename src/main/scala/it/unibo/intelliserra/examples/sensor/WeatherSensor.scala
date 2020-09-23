@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.examples.sensor
 
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.sensor.{Category, Measure, StringType}
+import it.unibo.intelliserra.core.perception.{Category, Measure, StringType}
 import it.unibo.intelliserra.device.core.Sensor
 import it.unibo.intelliserra.examples.sensor.OpenWeatherService.Location.LocationRequest
 import it.unibo.intelliserra.examples.sensor.WeatherSensor.Weather

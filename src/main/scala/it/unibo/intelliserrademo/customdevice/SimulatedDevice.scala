@@ -2,7 +2,7 @@ package it.unibo.intelliserrademo.customdevice
 
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, ActionTag, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, Measure, ValueType}
+import it.unibo.intelliserra.core.perception.{Category, Measure, ValueType}
 import it.unibo.intelliserra.device.core.Actuator.ActionHandler
 import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 

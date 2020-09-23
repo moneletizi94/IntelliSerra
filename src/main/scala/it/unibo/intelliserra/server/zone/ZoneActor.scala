@@ -3,9 +3,9 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.common.utils.Utils._
-import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.action.{Action, DoingActions, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator

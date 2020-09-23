@@ -2,14 +2,14 @@ package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import it.unibo.intelliserra.core.actuator.{Action, TimedTask}
+import it.unibo.intelliserra.core.action.Action
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.perception.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
-import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType}
 import it.unibo.intelliserra.device.core.Actuator.ActionHandler
-import it.unibo.intelliserra.device.core.{Actuator, Sensor}
+import it.unibo.intelliserra.device.core.{Actuator, Sensor, TimedTask}
 import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}

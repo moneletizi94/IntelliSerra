@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.device.core
 
-import it.unibo.intelliserra.core.actuator.{Action, OperationalState, TimedTask}
+import it.unibo.intelliserra.core.action.{Action, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability.ActingCapability
 import it.unibo.intelliserra.core.entity.Device
 import it.unibo.intelliserra.device.core.Actuator.ActionHandler

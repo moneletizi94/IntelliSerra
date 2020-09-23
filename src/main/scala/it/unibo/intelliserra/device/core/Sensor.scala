@@ -2,7 +2,7 @@ package it.unibo.intelliserra.device.core
 
 import it.unibo.intelliserra.core.entity.Capability.SensingCapability
 import it.unibo.intelliserra.core.entity.Device
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.perception.Measure
 
 import scala.concurrent.duration.FiniteDuration
 

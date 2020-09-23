@@ -4,7 +4,8 @@ import akka.actor.{ActorSystem, PoisonPill}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.device.core.Sensor
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature}
@@ -30,7 +31,7 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
   private val SensorPeriod = 2 seconds
   private val SensorCapability = Capability.sensing(Temperature)
   private val NotSupportedCategory = Humidity
-  private val MeasureStream = Stream.continually(Measure(Temperature)(Random.nextInt(100)))
+  private val MeasureStream = Stream.continually(perception.Measure(Temperature)(Random.nextInt(100)))
   private var sensor: Sensor = _
 
   private var sensorActor: TestActorRef[SensorActor] = _
@@ -73,7 +74,7 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
     }
 
     "send only measure with category declared in capability" in {
-      when(sensor.read()).thenReturn(Option(Measure(NotSupportedCategory)(0)))
+      when(sensor.read()).thenReturn(Option(perception.Measure(NotSupportedCategory)(0)))
       sensorActor.tell(AssociateTo(testActor, testActorName), testActor)
       expectMsg(Ack)
       expectNoMessage(SensorPeriod * 2)

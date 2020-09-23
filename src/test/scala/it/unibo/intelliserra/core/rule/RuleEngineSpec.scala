@@ -1,8 +1,9 @@
 package it.unibo.intelliserra.core.rule
 
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.dsl.MajorOperator
-import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, OpenWindow, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature}
@@ -22,8 +23,8 @@ class RuleEngineSpec extends WordSpecLike with Matchers with BeforeAndAfter with
 
   private val rule1ID = "rule1"
   private val rule2ID = "rule2"
-  private val measure = Measure(Temperature)(temperatureValue + 1)
-  private val measure2 = Measure(Humidity)(humidityValue + 1)
+  private val measure = perception.Measure(Temperature)(temperatureValue + 1)
+  private val measure2 = perception.Measure(Humidity)(humidityValue + 1)
   private val state = State(List(measure, measure2), List())
 
   before{

@@ -3,10 +3,11 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.{Idle, OperationalState}
+import it.unibo.intelliserra.core.action.{Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.entity._
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
@@ -75,9 +76,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" should {
     "preserve only last measure sent by the same sensor" in {
       val sensor = TestProbe()
-      val measure1 = Measure(Temperature)(27)
+      val measure1 = perception.Measure(Temperature)(27)
       zone tell(SensorMeasureUpdated(measure1), sensor.ref)
-      val measure2 = Measure(Temperature)(20)
+      val measure2 = perception.Measure(Temperature)(20)
       zone tell(SensorMeasureUpdated(measure2), sensor.ref)
       zone.underlyingActor.sensorsValue(sensor.ref) shouldBe measure2
       zone.underlyingActor.sensorsValue(sensor.ref) should not be measure1
@@ -99,8 +100,8 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
-      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(Measure(Temperature)(1)))
-      zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(Measure(Temperature)(10))
+      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(perception.Measure(Temperature)(1)))
+      zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(perception.Measure(Temperature)(10))
     }
   }
 
@@ -132,9 +133,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " should  {
     "compute its state after receiving computeState" in {
       val probe = TestProbe()
-      zone.tell(SensorMeasureUpdated(Measure(Temperature)(10)),probe.ref)
+      zone.tell(SensorMeasureUpdated(perception.Measure(Temperature)(10)),probe.ref)
       zone ! ComputeState()
-      zone.underlyingActor.state shouldBe Option(State(List(Measure(Temperature)(10)),List()))
+      zone.underlyingActor.state shouldBe Option(State(List(perception.Measure(Temperature)(10)),List()))
     }
   }
 

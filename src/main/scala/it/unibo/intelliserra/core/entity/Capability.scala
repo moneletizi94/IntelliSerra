@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.core.entity
 
-import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.sensor.{Category, ValueType}
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{Category, ValueType}
 
 sealed trait Capability {
   def includes(capability: Capability): Boolean
