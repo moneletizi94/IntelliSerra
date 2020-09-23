@@ -1,4 +1,4 @@
-package it.unibo.intelliserra.core.sensor
+package it.unibo.intelliserra.core.perception
 
 //TODO scaladoc
 sealed trait Measure {

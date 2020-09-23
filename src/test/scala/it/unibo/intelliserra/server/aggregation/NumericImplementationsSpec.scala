@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.server.aggregation
 
-import it.unibo.intelliserra.core.sensor.{IntType, _}
+import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatestplus.junit.JUnitRunner

@@ -1,4 +1,4 @@
-package it.unibo.intelliserra.core.actuator
+package it.unibo.intelliserra.core.action
 
 import scala.concurrent.duration.FiniteDuration
 

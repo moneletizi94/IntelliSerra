@@ -1,11 +1,10 @@
 package it.unibo.intelliserra.core.rule
 
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{Category, ValueType}
 import it.unibo.intelliserra.core.rule.dsl.ConditionCategory.ConditionCategoryOps
 
 package object dsl {
-
-  import it.unibo.intelliserra.core.sensor._
 
   /**
    * Implicit conversion from Category to CategoryOps for enable the statement operations

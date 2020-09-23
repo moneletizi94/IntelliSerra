@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.server
 
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NumberType
-import it.unibo.intelliserra.core.sensor.{DoubleType, IntType}
+import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 
 package object aggregation {
 

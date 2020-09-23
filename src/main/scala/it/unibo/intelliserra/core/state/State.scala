@@ -1,7 +1,7 @@
 package it.unibo.intelliserra.core.state
 
-import it.unibo.intelliserra.core.actuator.{Action}
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.Measure
 
 trait State {
   def timestamp : Long

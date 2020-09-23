@@ -3,9 +3,10 @@ package it.unibo.intelliserra.server.rule
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
-import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility.Actions.{OpenWindow, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
@@ -25,7 +26,7 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
   private var ruleEngineService: TestActorRef[RuleEngineService] = _
   private var rule: Rule = _
   private val actionSet: Set[Action] = Set(Water, OpenWindow)
-  private val measure = Measure(Temperature)(temperatureValue + 1)
+  private val measure = perception.Measure(Temperature)(temperatureValue + 1)
   private val state = State(List(measure), List())
   private val ruleID = "rule0"
   private val rule1ID = "rule1"

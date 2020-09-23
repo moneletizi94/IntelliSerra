@@ -1,6 +1,7 @@
 package it.unibo.intelliserrademo.common
 
-import it.unibo.intelliserra.core.sensor.NumericType
+
+import it.unibo.intelliserra.core.perception.NumericType
 
 import scala.util.Random
 
