@@ -2,27 +2,26 @@ package it.unibo.intelliserra.server.entityManager
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor}
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 
 private[server] class EntityManagerActor() extends Actor
   with ActorLogging {
 
-  private[server] var entities : List[EntityChannel] = List()
+  private[server] var entities : List[DeviceChannel] = List()
 
   override def receive: Receive = {
 
     case JoinSensor(identifier, capabilities, sensorRef) =>
-      addEntityAndSendResponse(RegisteredSensor(identifier, capabilities), sensorRef, sender)
+      addEntityAndSendResponse(RegisteredDevice(identifier, capabilities), sensorRef, sender)
 
     case JoinActuator(identifier, capabilities, actuatorRef) =>
-      addEntityAndSendResponse(RegisteredActuator(identifier, capabilities), actuatorRef, sender)
+      addEntityAndSendResponse(RegisteredDevice(identifier, capabilities), actuatorRef, sender)
 
     case GetEntity(identifier) =>
-      sender ! entities.find(e => e.entity.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)
+      sender ! entities.find(e => e.device.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)
 
     case RemoveEntity(identifier) =>
-      sender ! entities.find(e => e.entity.identifier == identifier)
+      sender ! entities.find(e => e.device.identifier == identifier)
         .fold[EntityManagerResponse](EntityNotFound)(entityChannel => {
           entities = entities.filter(_ != entityChannel)
           EMEventBus.publish(EMEventBus.topic, PublishedOnRemoveEntity(entityChannel))
@@ -31,12 +30,12 @@ private[server] class EntityManagerActor() extends Actor
 
   }
 
-  private def addEntityIfNotExists(registeredEntity: RegisteredEntity, actorRef: ActorRef) : Option[List[EntityChannel]] = {
-    entities.find(elem => elem.entity.identifier == registeredEntity.identifier)
-            .fold(Option(EntityChannel(registeredEntity, actorRef) :: entities))(_ => None)
+  private def addEntityIfNotExists(registeredEntity: RegisteredDevice, actorRef: ActorRef) : Option[List[DeviceChannel]] = {
+    entities.find(elem => elem.device.identifier == registeredEntity.identifier)
+            .fold(Option(DeviceChannel(registeredEntity, actorRef) :: entities))(_ => None)
   }
 
-  private def addEntityAndSendResponse(registeredEntity: RegisteredEntity, entityRef : ActorRef, replyTo: ActorRef): Unit = {
+  private def addEntityAndSendResponse(registeredEntity: RegisteredDevice, entityRef : ActorRef, replyTo: ActorRef): Unit = {
       replyTo ! addEntityIfNotExists(registeredEntity,entityRef)
                                   .map(newMap => {entities = newMap; JoinOK})
                                   .getOrElse(JoinError("identifier already exists"))

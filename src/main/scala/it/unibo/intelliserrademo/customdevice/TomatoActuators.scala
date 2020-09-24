@@ -1,6 +1,7 @@
 package it.unibo.intelliserrademo.customdevice
 
-import it.unibo.intelliserra.core.actuator.{TimedAction, TimedTask}
+import it.unibo.intelliserra.core.action.TimedAction
+import it.unibo.intelliserra.device.core.TimedTask
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{Dehumidifies, Fan, Heat, Water}
 import it.unibo.intelliserrademo.customdevice.SimulatedDevice.CustomActuator
 

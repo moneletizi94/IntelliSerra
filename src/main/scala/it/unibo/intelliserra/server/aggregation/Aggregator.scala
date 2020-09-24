@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.server.aggregation
-import it.unibo.intelliserra.core.sensor.{Category, Measure, NumericType, ValueType}
+
+import it.unibo.intelliserra.core.perception.{Category, Measure, NumericType, ValueType}
 
 import scala.util.Try
 

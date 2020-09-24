@@ -22,6 +22,8 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
     vGap = 30
   }
 
+  init()
+
   zonesWrapperPanel.peer.setBorder(BorderFactory.createTitledBorder("Zones: "))
 
   deleteBox.peer.setBorder(BorderFactory.createTitledBorder("Delete a zone"))
@@ -72,6 +74,10 @@ private[gui] class ZonesComponent(implicit client: GreenHouseClient) extends Bor
         updateComboBox(zones.keySet.toSeq)
         zonesWrapperPanel.repaint()
     }
+  }
+  private[gui] def init(): Unit = {
+    client.zones().safeSwingOnComplete {tried =>
+      tried.foreach(list =>  list.filter(_.nonEmpty).foreach(zone => addZonePanel(zone)))}
   }
 }
 

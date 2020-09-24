@@ -2,13 +2,14 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.Capability.ActingCapability
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator}
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.core.action.{Action, DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
 import it.unibo.intelliserra.common.utils.Utils._
 import it.unibo.intelliserra.server.rule.RuleEngineService
@@ -25,7 +26,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 
   private[zone] var state : State = State.empty
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities: Set[EntityChannel] = Set()
+  private[zone] var associatedEntities: Set[DeviceChannel] = Set()
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
   override val repeatedMessage: ComputeMeasuresAggregation = ComputeMeasuresAggregation()
 
@@ -36,13 +37,16 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
     case DoActions(actions) =>
-      //getCapableOf(actions).foreach(_ ! DoActions(actions)) // TODO: send all actions; the filter is done in the actuator
-      associatedEntities.foreach {
-        case EntityChannel(actuator @ RegisteredActuator(_,_),actuatorRef) =>
-          actuatorRef ! DoActions(actuator.filterCapability(actions))
-      }
-    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure // TODO: filter su associated?
+      associatedEntities.map { c => (c.channel, actions.filter(actionToDo => c.device.capability.includes(Capability.acting(actionToDo.getClass))))}
+        .filter(_._2.nonEmpty)
+        .foreach { case (actuatorRef, actionsToDo) =>
+          log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
+          actuatorRef ! DoActions(actionsToDo)
+        }
+
+    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
     case ComputeMeasuresAggregation() => state = computeState(); sensorsValue = Map()
+      //log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
     case ActuatorStateChanged(operationalState) =>
       actuatorsState += sender -> operationalState
       state = State(state.perceptions, computeActuatorsState());

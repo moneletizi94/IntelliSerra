@@ -1,9 +1,9 @@
 package it.unibo.intelliserra.client.core
 
 import it.unibo.intelliserra.core.rule.RuleInfo
-import it.unibo.intelliserra.core.sensor.Sensor
-import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.device.core.Sensor
+import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -97,7 +97,7 @@ class ClientSpec extends WordSpecLike
     /* --- START TESTING ASSIGN ---*/
     "be able to assign an entity to an existing zone" in {
       awaitReady(client.createZone(zoneName))
-      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
+      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe sensor1.identifier + "-> " + zoneName
     }
 
     "fail to assign an entity to a nonexistent zone" in {

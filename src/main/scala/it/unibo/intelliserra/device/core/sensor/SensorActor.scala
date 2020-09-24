@@ -2,8 +2,7 @@ package it.unibo.intelliserra.device.core.sensor
 
 import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.SensorMeasureUpdated
-import it.unibo.intelliserra.core.sensor.Sensor
-import it.unibo.intelliserra.device.core.DeviceActor
+import it.unibo.intelliserra.device.core.{DeviceActor, Sensor}
 import it.unibo.intelliserra.device.core.sensor.SensorActor.SensorPollingTime
 
 class SensorActor(override val device: Sensor) extends DeviceActor with Timers with ActorLogging {

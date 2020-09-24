@@ -1,6 +1,7 @@
 package it.unibo.intelliserra.core
+
 //TODO scaladoc
-package object sensor {
+package object perception {
 
   implicit def int2IntType(value: Int) : IntType =  IntType(value)
   implicit def long2DoubleType(value: Long) : DoubleType =  DoubleType(value.toDouble)

@@ -2,11 +2,11 @@ package it.unibo.intelliserra.device.core.actuator
 
 import akka.actor.{ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, DoActions}
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
-import it.unibo.intelliserra.core.actuator._
+import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.device.core.DeviceActor
+import it.unibo.intelliserra.device.core.Actuator.ActionHandler
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
+import it.unibo.intelliserra.device.core.{Actuator, DeviceActor, TimedTask}
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -20,7 +20,7 @@ class ActuatorActor(override val device: Actuator) extends DeviceActor with Time
 
   override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
     case DoActions(actions) =>
-      val actionAllowed = actions.filter(action => Capability.canDo(device.capability, action.getClass) && !operationalState.isDoing(action))
+      val actionAllowed = actions.filter(action => device.capability.includes(Capability.acting(action.getClass)) && !operationalState.isDoing(action))
       operationalState = dispatchActionsIfDefined(actionAllowed, operationalState, device.actionHandler)
       zoneRef ! ActuatorStateChanged(operationalState)
 

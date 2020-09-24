@@ -3,7 +3,6 @@ package it.unibo.intelliserra.server.entityManager
 import akka.actor.ActorRef
 import akka.event.{EventBus, SubchannelClassification}
 import akka.util.Subclassification
-import it.unibo.intelliserra.core.entity.EntityChannel
 
 /**
  * This object represents the pubSub channel
@@ -45,5 +44,5 @@ object EMEventBus extends EventBus with SubchannelClassification {
    * Event published by the event bus. It is a message received by the subscribers (i.e. zoneManager)
    * @param entityChannel it is the entityChannel removed
    */
-  case class PublishedOnRemoveEntity(entityChannel: EntityChannel)
+  case class PublishedOnRemoveEntity(entityChannel: DeviceChannel)
 }

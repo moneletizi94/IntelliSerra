@@ -1,27 +1,30 @@
 package it.unibo.intelliserra.core.entity
 
-import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.sensor.{Category, ValueType}
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{Category, ValueType}
 
-sealed trait Capability
+sealed trait Capability {
+  def includes(capability: Capability): Boolean
+}
 
 object Capability {
   type ActionTag = Class[_ <: Action]
 
-  final case class SensingCapability(category: Category[ValueType]) extends Capability
-  final case class ActingCapability(actions: Set[ActionTag]) extends Capability
+  final case class SensingCapability(category: Category[ValueType]) extends Capability {
+    override def includes(capability: Capability): Boolean = capability match {
+      case SensingCapability(`category`) => true
+      case _ => false
+    }
+  }
+
+  final case class ActingCapability(actions: Set[ActionTag]) extends Capability {
+    override def includes(capability: Capability): Boolean = capability match {
+      case ActingCapability(includedActions) => includedActions.forall(actions contains)
+      case _ => false
+    }
+  }
 
   def sensing(category: Category[ValueType]): SensingCapability = SensingCapability(category)
-  def acting(actions: Set[ActionTag] = Set()): ActingCapability = ActingCapability(actions)
   def acting(action: ActionTag, actions: ActionTag*): ActingCapability = ActingCapability(actions :+ action toSet)
-
-  def canDo(capability: Capability, action: ActionTag): Boolean = capability match {
-    case ActingCapability(actions) => actions.contains(action)
-    case _ => false
-  }
-
-  def canSense(capability: Capability, category: Category[ValueType]): Boolean = capability match {
-    case SensingCapability(`category`) => true
-    case _ => false
-  }
+  def acting(actions: Set[ActionTag] = Set()): ActingCapability = ActingCapability(actions)
 }

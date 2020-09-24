@@ -3,15 +3,18 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.{Idle, OperationalState}
+import it.unibo.intelliserra.core.action.{Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredActuator, RegisteredEntity, RegisteredSensor}
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.entity._
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
+import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}
+
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
@@ -31,7 +34,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   with BeforeAndAfterAll {
 
   private var zone: TestActorRef[ZoneActor] = _
-  private val registeredSensor = RegisteredSensor("sensorId", SensingCapability(Temperature))
+  private val registeredSensor = RegisteredDevice("sensorId", SensingCapability(Temperature))
   private val aggregators = List(createAggregator(Temperature)(sum),
                                   createAggregator(Weather)(moreFrequent))
 
@@ -48,14 +51,14 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" must {
     "allow you to associate entities that have not been associated with it" in {
       val addedEntity = addEntity(registeredSensor)
-      zone.underlyingActor.associatedEntities.contains(EntityChannel(registeredSensor, addedEntity)) shouldBe true
+      zone.underlyingActor.associatedEntities.contains(DeviceChannel(registeredSensor, addedEntity)) shouldBe true
     }
   }
 
   "A zoneActor" must {
     "allow you to remove entities that have been associated with it" in {
       val sensorProbe = TestProbe()
-      val entityChannel = EntityChannel(registeredSensor, sensorProbe.ref)
+      val entityChannel = DeviceChannel(registeredSensor, sensorProbe.ref)
       zone ! DeleteEntity(entityChannel)
       zone.underlyingActor.associatedEntities.contains(entityChannel) shouldBe false
     }
@@ -72,9 +75,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zoneActor" should {
     "preserve only last measure sent by the same sensor" in {
       val sensor = TestProbe()
-      val measure1 = Measure(Temperature)(27)
+      val measure1 = perception.Measure(Temperature)(27)
       zone tell(SensorMeasureUpdated(measure1), sensor.ref)
-      val measure2 = Measure(Temperature)(20)
+      val measure2 = perception.Measure(Temperature)(20)
       zone tell(SensorMeasureUpdated(measure2), sensor.ref)
       zone.underlyingActor.sensorsValue(sensor.ref) shouldBe measure2
       zone.underlyingActor.sensorsValue(sensor.ref) should not be measure1
@@ -95,8 +98,8 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
 
   "A zoneActor" should {
     "compute sensor value aggregation correctly" in {
-      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(Measure(Temperature)(1)))
-      zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(Measure(Temperature)(10))
+      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(perception.Measure(Temperature)(1)))
+      zone.underlyingActor.computeAggregatedPerceptions() shouldBe List(perception.Measure(Temperature)(10))
     }
   }
 
@@ -134,7 +137,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " should  {
     "update aggregated measures and compute its state after receiving ComputeMeasuresAggregation" in {
       val probe = TestProbe()
-      val newSensorMeasure = Measure(Temperature)(10)
+      val newSensorMeasure = perception.Measure(Temperature)(10)
       zone.tell(SensorMeasureUpdated(newSensorMeasure),probe.ref)
       zone ! ComputeMeasuresAggregation()
       zone.underlyingActor.state shouldBe State(List(newSensorMeasure),List())
@@ -151,9 +154,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " should {
     "send actions to its actuator according to theirs capabilities" in {
       val sensor1 = addEntity(registeredSensor)
-      val actuator1 = addEntity(RegisteredActuator("act1", ActingCapability(Set(Water.getClass, Fan.getClass))))
-      val actuator2 = addEntity(RegisteredActuator("act2", ActingCapability(Set(Water.getClass))))
-      val actuator3 = addEntity(RegisteredActuator("act3", ActingCapability(Set(Light.getClass))))
+      val actuator1 = addEntity(RegisteredDevice("act1", ActingCapability(Set(Water.getClass, Fan.getClass))))
+      val actuator2 = addEntity(RegisteredDevice("act2", ActingCapability(Set(Water.getClass))))
+      val actuator3 = addEntity(RegisteredDevice("act3", ActingCapability(Set(Light.getClass))))
       zone ! DoActions(Set(Water,Fan))
       sensor1.expectNoMessage(1 seconds)
       actuator3.expectNoMessage(1 seconds)
@@ -162,9 +165,9 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
-  private def addEntity(entity : RegisteredEntity): TestProbe = {
+  private def addEntity(entity : Device): TestProbe = {
     val entityProbe = TestProbe()
-    val entityChannel = EntityChannel(entity, entityProbe)
+    val entityChannel = DeviceChannel(entity, entityProbe)
     zone ! AddEntity(entityChannel)
     entityProbe
   }

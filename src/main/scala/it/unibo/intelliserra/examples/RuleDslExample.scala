@@ -1,8 +1,8 @@
 package it.unibo.intelliserra.examples
 
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{Category, DoubleType, IntType}
 import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.core.sensor.{Category, DoubleType, IntType}
 
 // An example of rule dsl
 object RuleDslExample extends App {
