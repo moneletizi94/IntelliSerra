@@ -2,7 +2,7 @@ package it.unibo.intelliserra.core.rule.dsl
 
 import it.unibo.intelliserra.core.rule.StatementTestUtils
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement.AtomicConditionStatement
-import it.unibo.intelliserra.core.sensor.{Category, IntType}
+import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner

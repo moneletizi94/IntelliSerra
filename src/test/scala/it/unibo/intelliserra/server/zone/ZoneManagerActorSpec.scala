@@ -3,11 +3,9 @@ package it.unibo.intelliserra.server.zone
 import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor, SensingCapability}
-import it.unibo.intelliserra.server.entityManager.EMEventBus
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
-import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
@@ -253,7 +251,7 @@ class ZoneManagerActorSpec extends TestKit(ActorSystem("MyTest"))
     }
   }
 
-  private def informAndExpectMsgOnAssign(zoneManager: TestActorRef[ZoneManagerActor], entityProbe: TestProbe, zone: String): EntityChannel = {
+  private def informAndExpectMsgOnAssign(zoneManager: TestActorRef[ZoneManagerActor], entityProbe: TestProbe, zone: String): DeviceChannel = {
     val entityChannel =  sensorEntityChannelFromRef(entityProbe.ref)
     zoneManager ! AssignEntityToZone(zone, entityChannel)
     entityProbe.expectMsgType[AssociateTo]

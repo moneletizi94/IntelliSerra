@@ -1,7 +1,9 @@
 package it.unibo.intelliserra.client.core
 
-import it.unibo.intelliserra.core.sensor.Sensor
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.device.core.Sensor
+import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -13,7 +15,7 @@ class ClientSpec extends WordSpecLike
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with TestUtility {
+  with TestUtility{
 
   private val zoneName = "zone1"
   private val zoneName2 = "zone2"
@@ -21,17 +23,19 @@ class ClientSpec extends WordSpecLike
   private var client: GreenHouseClient = _
   private var server: GreenHouseServer = _
   private var deviceDeploy: DeviceDeploy = _
+  private val ruleID = "rule0"
+  private val rule1ID = "rule1"
   private val notAddedSensor: String = "notAddedSensor"
   private val sensor1: Sensor = mockSensor("sensor1")
   private val sensor2: Sensor = mockSensor("sensor2")
 
   before {
-    server = GreenHouseServer(defaultServerConfig)
-    client = GreenHouseClient(GreenhouseName, Hostname, Port)
-    deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
+    this.server = GreenHouseServer(defaultConfigWithRule)
+    this.client = GreenHouseClient(GreenhouseName, Hostname, Port)
+    this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(server.start())
-    awaitReady(deviceDeploy.deploySensor(sensor1))
-    awaitReady(deviceDeploy.deploySensor(sensor2))
+    awaitReady(deviceDeploy.join(sensor1))
+    awaitReady(deviceDeploy.join(sensor2))
   }
 
   after {
@@ -93,7 +97,7 @@ class ClientSpec extends WordSpecLike
     /* --- START TESTING ASSIGN ---*/
     "be able to assign an entity to an existing zone" in {
       awaitReady(client.createZone(zoneName))
-      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe zoneName
+      awaitResult(client.associateEntity(sensor1.identifier, zoneName)) shouldBe sensor1.identifier + "-> " + zoneName
     }
 
     "fail to assign an entity to a nonexistent zone" in {
@@ -158,7 +162,36 @@ class ClientSpec extends WordSpecLike
 
     "get state from existing zone" in {
       awaitReady(client.createZone(zoneName))
-      awaitResult(client.getState(zoneName)) shouldBe None
+      awaitResult(client.getState(zoneName)) shouldBe State.empty
     }
+
+    /*--- START TEST RULES ---*/
+    "get all rules" in {
+     awaitResult(client.getRules) shouldBe List(RuleInfo(ruleID, rule))
+    }
+
+    "disable an existing rule" in {
+      awaitResult(client.disableRule(ruleID)) shouldBe "Rule disabled"
+    }
+
+    "enable an enabled rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.enableRule(ruleID))
+      }
+    }
+
+    "not enable a nonexistent rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.enableRule(rule1ID))
+      }
+    }
+
+    "not disable a nonexistent rule" in {
+      assertThrows[Exception] {
+        awaitResult(client.disableRule(rule1ID))
+      }
+    }
+    /*--- END TEST RULES ---*/
+
   }
 }

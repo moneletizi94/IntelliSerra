@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import it.unibo.intelliserra.common.communication.{Messages, Protocol}
+import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Protocol._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -17,7 +17,7 @@ import scala.util.{Failure, Success, Try}
  * @param entityManagerActor , actorRef
  */
 //noinspection ScalaStyle
-private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityManagerActor: ActorRef) extends Actor with ActorLogging {
+private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityManagerActor: ActorRef, ruleEngineServiceActor: ActorRef) extends Actor with ActorLogging {
   type ResponseMap[T] = PartialFunction[Try[T], ServiceResponse]
 
   private implicit val system: ActorSystem = context.system
@@ -45,7 +45,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
     case CreateZone(zoneName) =>
       sendResponseWithFallback(zoneManagerActor ? Messages.CreateZone(zoneName), sender()) {
         case Success(Messages.ZoneCreated) => ServiceResponse(Created)
-        case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict)
+        case Success(Messages.ZoneAlreadyExists) => ServiceResponse(Conflict,"Zone already exists")
       }
 
     case DeleteZone(zoneName) =>
@@ -75,7 +75,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
       sendResponseWithFallback(association, sender()) {
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
         case Success(Messages.ZoneNotFound) => ServiceResponse(NotFound, "Zone not found")
-        case Success(Messages.AlreadyAssigned(zone)) => ServiceResponse(Conflict, zone)
+        case Success(Messages.AlreadyAssigned(zone)) => ServiceResponse(Conflict, "Entity already assigned to " + zone)
         case Success(Messages.AssignOk) => ServiceResponse(Ok)
         case Success(Messages.AssignError(error)) => ServiceResponse(Error, error)
       }
@@ -93,19 +93,34 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
       }
 
-    case Protocol.RemoveEntity(entityId) =>
+    case RemoveEntity(entityId) =>
       sendResponseWithFallback(entityManagerActor ? Messages.RemoveEntity(entityId), sender()) {
         case Success(Messages.EntityNotFound) => ServiceResponse(NotFound, "Entity not found")
         case Success(Messages.EntityRemoved) => ServiceResponse(Deleted)
       }
+
+    case GetRules =>
+      sendResponseWithFallback(ruleEngineServiceActor ? Messages.GetRules, sender()) {
+        case Success(Messages.Rules(rules)) => ServiceResponse(Ok, rules)
+      }
+
+    case EnableRule(ruleID) => sendResponseWithFallback(ruleEngineServiceActor ? Messages.EnableRule(ruleID), sender()) {
+      case Success(Messages.Ok) => ServiceResponse(Ok, "Rule enabled")
+      case Success(Messages.Error) => ServiceResponse(Error, "not possible")
+    }
+
+    case DisableRule(ruleID) => sendResponseWithFallback(ruleEngineServiceActor ? Messages.DisableRule(ruleID), sender()) {
+      case Success(Messages.Ok) => ServiceResponse(Ok, "Rule disabled")
+      case Success(Messages.Error) => ServiceResponse(Error, "not possible")
+    }
   }
 }
 
 object GreenHouseController {
   val name = "GreenHouseController"
 
-  def apply(zoneManagerActor: ActorRef, entityManagerActor: ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
-    actorSystem actorOf(Props(new GreenHouseController(zoneManagerActor, entityManagerActor)), name)
+  def apply(zoneManagerActor: ActorRef, entityManagerActor: ActorRef, ruleEngineServiceActor: ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
+    actorSystem actorOf(Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)), name)
 }
 
 

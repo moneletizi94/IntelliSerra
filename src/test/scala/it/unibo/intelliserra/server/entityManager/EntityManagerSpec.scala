@@ -3,6 +3,7 @@ package it.unibo.intelliserra.server.entityManager
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
+import it.unibo.intelliserra.core.action.Action
 import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
@@ -23,9 +24,9 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
   private var entityManager : TestActorRef[EntityManagerActor] = _
   private var mockZoneManager: TestProbe = _
   private val mockSensorID = "sensorID"
-  private val mockSensorCapability = SensingCapability(Temperature)
+  private val mockSensorCapability = Capability.sensing(Temperature)
   private val mockActuatorID = "actuatorID"
-  private val mockActuatorCapability = ActingCapability(Set())
+  private val mockActuatorCapability = Capability.acting()
 
   before{
     mockZoneManager = TestProbe()
@@ -82,13 +83,13 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
     expectMsg(JoinOK)
     joinRequestMessage match {
       case JoinSensor(identifier, sensingCapability, sensorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef)))
+        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, sensingCapability), sensorRef)))
       case JoinActuator(identifier, actingCapability, actuatorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef)))
+        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, actingCapability), actuatorRef)))
     }
   }
 
-  private def entitiesInEMShouldBe(result: List[EntityChannel]) = {
+  private def entitiesInEMShouldBe(result: List[DeviceChannel]) = {
     entityManager.underlyingActor.entities shouldBe result
   }
 

@@ -16,9 +16,11 @@ import scala.concurrent.duration.FiniteDuration
 final case class ServerConfig private(appConfig: AppConfig, zoneConfig: ZoneConfig, ruleConfig: RuleConfig)
 
 object ServerConfig {
+
+  // scalastyle:off magic.number
   def apply(name: String,
             host: String = "localhost",
-            port: Int = 8080, // scalastyle:off magic.number
+            port: Int = 8080,
             actionsEvaluationPeriod: FiniteDuration = 10 seconds,
             stateEvaluationPeriod: FiniteDuration = 5 seconds,
             aggregators: List[Aggregator] = List(),
@@ -27,7 +29,7 @@ object ServerConfig {
     val appConfig = AppConfig(name, host, port)
     val ruleConfig = RuleConfig(rules)
     val zoneConfig = ZoneConfig(actionsEvaluationPeriod, stateEvaluationPeriod,aggregators)
-    
+
     ServerConfig(appConfig, zoneConfig, ruleConfig)
   }
 

@@ -53,6 +53,9 @@ object Protocol {
    * @param zoneName name of the zone
    */
   final case class GetState(zoneName: String) extends ClientRequest
+  final case class EnableRule(ruleID: String) extends ClientRequest
+  final case class DisableRule(ruleID: String) extends ClientRequest
+  final case object GetRules extends ClientRequest
 
   /**
    * Trait to represent all the responses delivered to the client

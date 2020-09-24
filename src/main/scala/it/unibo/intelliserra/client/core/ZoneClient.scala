@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.client.core
 
+import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
 
 import scala.concurrent.Future
@@ -14,7 +15,6 @@ trait ZoneClient {
    * @return if success, the name of zone, otherwise a failure
    */
   def createZone(zone: Zone): Future[Zone]
-
 
   /**
    * Remove an existing zone with specified name
@@ -35,12 +35,13 @@ trait ZoneClient {
     * @param zone, name of the zone
     * @return if success, the name of the entity, a failure otherwise
   */
-  def associateEntity(entity: Entity, zone: Zone): Future[Zone]
+  def associateEntity(entity: Entity, zone: Zone): Future[String]
 
   /**
    * Dissociate the specified entity, whether it is associated or in pending
+   *
    * @param entity the entity to remove
-   * @return
+   * @return the dissociated entity
    */
   def dissociateEntity(entity: Entity): Future[Entity]
 
@@ -49,6 +50,5 @@ trait ZoneClient {
    * @param zone, name of zone
    * @return if success, the state of zone, a failure otherwise
    */
-  def getState(zone: Zone): Future[Option[State]]
-
+  def getState(zone: Zone): Future[State]
 }

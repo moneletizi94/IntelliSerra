@@ -2,22 +2,22 @@ package it.unibo.intelliserra.utils
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.TestProbe
-import it.unibo.intelliserra.core.actuator.Actuator.ActionHandler
-import it.unibo.intelliserra.core.actuator.{Action, Actuator, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.{EntityChannel, RegisteredSensor}
-import it.unibo.intelliserra.core.entity.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.sensor.{Category, IntType, Measure, Sensor, StringType}
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.entity.Capability
+import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
+import it.unibo.intelliserra.core.perception.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType}
+import it.unibo.intelliserra.core.rule.dsl._
+import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
+import it.unibo.intelliserra.device.core.Actuator.ActionHandler
+import it.unibo.intelliserra.device.core.{Actuator, Sensor, TimedTask}
+import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.utils.TestUtility.Actions._
-import it.unibo.intelliserra.utils.TestUtility.Categories._
-import it.unibo.intelliserra.utils.TestUtility.Actions.Water
-import it.unibo.intelliserra.utils.TestUtility.Categories.Temperature
-import monix.reactive.Observable
+import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}
+import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 
-import scala.concurrent.{Await, Awaitable, Future}
-import scala.util.Random
+import scala.concurrent.{Await, Awaitable}
 
-trait TestUtility {
+trait TestUtility extends StatementTestUtils {
 
   import akka.util.Timeout
 
@@ -26,7 +26,10 @@ trait TestUtility {
   val Hostname = "localhost"
   val Port = 8080
   val GreenhouseName = "mySerra"
+  val actionSet: Set[Action] = Set(Water)
+  val rule: Rule = Temperature >20 executeMany actionSet
   val defaultServerConfig: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port)
+  val defaultConfigWithRule: ServerConfig = ServerConfig(GreenhouseName, Hostname, Port, rules = List(rule))
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val duration: FiniteDuration = 5 seconds
@@ -49,34 +52,19 @@ trait TestUtility {
    * @param sensorID the identifier of the sensor
    * @return Sensor
    */
-  def mockSensor(sensorID: String): Sensor = {
-    new Sensor {
-      override def identifier: String = sensorID
-
-      override def capability: SensingCapability = SensingCapability(Temperature)
-
-      override def measures: Observable[Measure] = Observable()
-    }
-  }
+  def mockSensor(sensorID: String): Sensor =
+    mockSensor(sensorID, Capability.sensing(Temperature), 5 seconds, Stream.continually(Measure(Temperature)(10)))
+  def mockSensor(sensorID: String, sensorCapability: SensingCapability, period: FiniteDuration, measures: Stream[Measure]): Sensor =
+    TestSensor(sensorID, sensorCapability, period, measures)
 
   /**
    * This is an utility method used in tests. It mocks an Actuator given the actuatorID
    * @param actuatorID the identifier of the actuator
    * @return Actuator
    */
-  def mockActuator(actuatorID: String): Actuator = {
-    new Actuator {
-      override def identifier: String = actuatorID
-
-      override def capability: ActingCapability = ActingCapability(Set(Water))
-
-      override def state: Observable[OperationalState] = Observable()
-
-      override def actionHandler: ActionHandler = {
-        case _ => Future.successful(Idle)
-      }
-    }
-  }
+  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water.getClass)){ case _ => TimedTask.now() }
+  def mockActuator(actuatorID: String, actingCapability: ActingCapability)(handler: ActionHandler): Actuator =
+    TestActuator(actuatorID, actingCapability)(handler)
 
   def sendNMessageFromNProbe[T](messagesNumber: Int, sendTo : ActorRef, message : T)(implicit system: ActorSystem): Unit = {
     for {
@@ -90,8 +78,8 @@ trait TestUtility {
    * @param entityRef actorRef of the entityChannel
    * @return
    */
-  def sensorEntityChannelFromRef(entityRef: ActorRef): EntityChannel = {
-    EntityChannel(RegisteredSensor("sensor", SensingCapability(Temperature)), entityRef)
+  def sensorEntityChannelFromRef(entityRef: ActorRef): DeviceChannel = {
+    DeviceChannel(RegisteredDevice("sensor", SensingCapability(Temperature)), entityRef)
   }
 
   implicit def fromProbeToRef(testProbe: TestProbe) : ActorRef = testProbe.ref
@@ -102,13 +90,15 @@ object TestUtility{
     case object Temperature extends Category[IntType]
     case object Humidity extends Category[IntType]
     case object Weather extends Category[StringType]
+    case object LightToggle extends Category[BooleanType]
+    case object Pressure extends Category[DoubleType]
+    case object CharCategory extends Category[CharType]
   }
 
   object Actions{
     case object Water extends Action
     case object Light extends Action
     case object Fan extends Action
+    case object OpenWindow extends Action
   }
-
 }
-

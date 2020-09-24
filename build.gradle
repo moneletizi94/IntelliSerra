@@ -19,6 +19,7 @@ ext {
 
 dependencies {
     implementation 'org.scala-lang:scala-library:2.12.8'
+    implementation 'org.scala-lang.modules:scala-swing_2.12:2.1.1'
     implementation "com.typesafe.akka:akka-actor_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-remote_${scalaBinary}:${akkaVersion}"
     implementation "com.typesafe.akka:akka-cluster_${scalaBinary}:${akkaVersion}"
@@ -26,14 +27,18 @@ dependencies {
     implementation "io.netty:netty:3.10.6.Final"
 
     implementation "io.monix:monix_${scalaBinary}:3.2.2"
+    implementation 'it.unibo.alice.tuprolog:2p-core:4.1.1'
+    implementation 'it.unibo.alice.tuprolog:2p-parser:4.1.1'
+    implementation "io.spray:spray-json_${scalaBinary}:1.3.5"
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.scalatest:scalatest_2.12:3.0.8'
     testImplementation "com.typesafe.akka:akka-testkit_${scalaBinary}:${akkaVersion}"
+    testImplementation "org.mockito:mockito-scala-scalatest_${scalaBinary}:1.5.0"
 
     testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.12:1.2.0'
 }
 
 scoverage {
-    excludedPackages = [".*examples.*"]
+    excludedPackages = [".*examples.*", "it.unibo.intelliserrademo.*"]
 }

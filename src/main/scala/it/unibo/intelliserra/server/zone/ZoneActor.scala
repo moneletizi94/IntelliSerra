@@ -1,52 +1,64 @@
 package it.unibo.intelliserra.server.zone
 
-import java.sql.Date
-import java.time.{LocalDateTime, ZoneId}
-
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Timers}
-import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, AddEntity, DeleteEntity, DoActions, GetState, MyState, SensorMeasureUpdated}
-import it.unibo.intelliserra.core.actuator.{Action, DoingActions, Idle, OperationalState}
-import it.unibo.intelliserra.core.entity.{ActingCapability, EntityChannel, RegisteredActuator}
-import it.unibo.intelliserra.core.sensor.{Category, Measure}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import it.unibo.intelliserra.common.communication.Messages._
+import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.core.action.{Action, DoingActions, Idle, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.server.RepeatedAction
 import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
 import it.unibo.intelliserra.common.utils.Utils._
-import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
+import it.unibo.intelliserra.server.rule.RuleEngineService
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
+import scala.concurrent.duration.{FiniteDuration, _}
 
-// TODO: default in constructor or only in apply
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
                               override val rate : FiniteDuration,
                               val computeActionsRate : FiniteDuration)
-                              extends Actor with RepeatedAction[ComputeState] with ActorLogging{
+                              extends Actor
+                              with RepeatedAction[ComputeMeasuresAggregation]
+                              with ActorLogging{
 
-  context.actorOf(Props(RuleCheckerActor(computeActionsRate)))
+  context.actorOf(Props(RuleCheckerActor(computeActionsRate, s"../../${RuleEngineService.name}")))
 
-  override val repeatedMessage: ComputeState = ComputeState()
+  override val repeatedMessage: ComputeMeasuresAggregation = ComputeMeasuresAggregation()
 
-  private[zone] var state : Option[State] = None
+  private[zone] var state : State = State.empty
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
-  private[zone] var associatedEntities: Set[EntityChannel] = Set()
+  private[zone] var associatedEntities: Set[DeviceChannel] = Set()
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
 
   override def receive: Receive = {
-    case AddEntity(entityChannel) => associatedEntities += entityChannel
-    case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
+    case AddEntity(entityChannel) =>
+      associatedEntities += entityChannel
+      log.info(s"entity ${entityChannel.device.identifier} added to zone ${self.path.name}")
+    case DeleteEntity(entityChannel) =>
+      associatedEntities -= entityChannel
+      log.info(s"entity ${entityChannel.device.identifier} removed to zone ${self.path.name}")
     case GetState => sender ! MyState(state)
     // TODO: the best solution? I think no
-    case DoActions(actions) => associatedEntities.flatMap{
-                                  case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-                                      Set((actuatorRef, actions.intersect(actingCapabilities)))
-                                  case _ =>  None
-                                }.filter(_._2.nonEmpty)
-                                .foreach({ case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) })
+    case DoActions(actions) =>
+      log.info(s"inferred actions: $actions")
+      associatedEntities.map { c => (c.channel, actions.filter(actionToDo => c.device.capability.includes(Capability.acting(actionToDo.getClass))))}
+        .filter(_._2.nonEmpty)
+        .foreach { case (actuatorRef, actionsToDo) =>
+          log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
+          actuatorRef ! DoActions(actionsToDo)
+        }
 
-    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
-    case ComputeState => state = Option(computeState()) ; sensorsValue = Map()
-    case ActuatorStateChanged(operationalState) => actuatorsState += sender -> operationalState
+    case SensorMeasureUpdated(measure) =>
+      sensorsValue += sender -> measure
+      log.info(s"zone update value for sensor ${sender.path.name}; new value: $measure")
+    case ComputeMeasuresAggregation() => state = computeState(); sensorsValue = Map()
+      //log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
+    case ActuatorStateChanged(operationalState) =>
+      actuatorsState += sender -> operationalState
+      state = State(state.perceptions, computeActuatorsState())
+      log.info(s"zone update state for actuator ${sender.path.name}; new actuator state: $operationalState")
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
@@ -57,20 +69,19 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenIterableTry(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
-  private[zone] def computeActuatorState() : List[Action] = actuatorsState.values.flatMap({
-    case DoingActions(action) => action
+  private[zone] def computeActuatorsState() : List[Action] = actuatorsState.values.flatMap({
+    case DoingActions(actions) => actions
     case Idle => Nil
   }).toList.distinct
 
   private[zone] def computeState() : State = {
-    State(computeAggregatedPerceptions(), computeActuatorState())
+    State(computeAggregatedPerceptions(), computeActuatorsState())
   }
-
 
 }
 
 object ZoneActor {
-  case class ComputeState()
+  case class ComputeMeasuresAggregation()
   private val defaultStateEvaluationRate = 10 seconds
   private val defaultActionsEvaluationRate = 10 seconds
 
