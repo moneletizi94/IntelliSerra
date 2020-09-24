@@ -2,8 +2,10 @@ package it.unibo.intelliserrademo.gui
 
 import it.unibo.intelliserra.client.core.GreenHouseClient
 import it.unibo.intelliserrademo.gui.util.GuiUtility.createTextArea
+import it.unibo.intelliserrademo.gui.util.StatePrintify
 import it.unibo.intelliserrademo.gui.util.SwingFuture._
 import javax.swing.BorderFactory
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -44,7 +46,9 @@ private[gui] class ZonePanel(zoneName: String)(implicit client: GreenHouseClient
   }
 
   private def exposeState(): Unit = {
-    client.getState(zoneName).safeSwingOnCompleteValue(value => textArea.append(value + "\n"))
+    client.getState(zoneName)
+      .safeSwingOnComplete(tried => tried
+        .foreach(state => textArea.append(StatePrintify.statePrintify(state) + "\n")))
   }
 }
 

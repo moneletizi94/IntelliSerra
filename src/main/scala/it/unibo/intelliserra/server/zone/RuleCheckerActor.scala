@@ -15,7 +15,7 @@ class RuleCheckerActor(override val rate: FiniteDuration, ruleEnginePath : Strin
 
   override def receive: Receive = {
     case EvaluateActions() => context.parent ! GetState ; log.info("get zone’s state to evaluate action to do based on rules")
-    case MyState(stateOpt) => stateOpt.foreach(state => ruleEngineService.tell(InferActions(state), context.parent))
+    case MyState(state) => ruleEngineService.tell(InferActions(state), context.parent)
   }
 
   override val repeatedMessage: EvaluateActions = EvaluateActions()

@@ -147,7 +147,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       greenHouseController ! CreateZone("zona8")
       expectMsg(ServiceResponse(Created))
       greenHouseController ! AssignEntity("zona8", actuator.identifier)
-      expectMsg(ServiceResponse(Conflict, mockZoneID))
+      expectMsg(ServiceResponse(Conflict, "Entity already assigned to " + mockZoneID))
     }
   }
 

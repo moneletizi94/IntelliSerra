@@ -216,9 +216,9 @@ object Messages {
 
   /**
    * Message sent by [[it.unibo.intelliserra.server.zone.ZoneActor]] to communicate its state
-   * @param state optional state of the zone
+   * @param state state of the zone
    */
-  case class MyState(state : Option[State])
+  case class MyState(state : State)
 
   /**
    * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]

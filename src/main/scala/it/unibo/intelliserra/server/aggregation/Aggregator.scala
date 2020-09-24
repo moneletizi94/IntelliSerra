@@ -24,4 +24,6 @@ object AggregateFunctions{
   def min[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.min(ordering)
   def max[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.max(ordering)
   def moreFrequent[A <: ValueType] : List[A] => A = list => list.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
+
+  // TODO: lessFrequent? 
 }
