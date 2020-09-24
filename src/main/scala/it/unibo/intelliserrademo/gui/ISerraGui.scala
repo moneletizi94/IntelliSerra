@@ -1,7 +1,7 @@
 package it.unibo.intelliserrademo.gui
 
 import it.unibo.intelliserra.client.core.GreenHouseClient
-import it.unibo.intelliserrademo.common.DefaultAppConfig._
+import it.unibo.intelliserrademo.common.DefaultAppConfig
 
 import scala.swing._
 

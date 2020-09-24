@@ -1,7 +1,7 @@
 package it.unibo.intelliserrademo.gui.util
 
-import it.unibo.intelliserra.core.actuator.Action
-import it.unibo.intelliserra.core.sensor.Measure
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
 
 object StatePrintify {
