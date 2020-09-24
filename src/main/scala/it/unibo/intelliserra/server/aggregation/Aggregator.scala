@@ -9,7 +9,7 @@ trait Aggregator {
 }
 
 object Aggregator{
-  def createAggregator[V <: ValueType](category: Category[V])(implicit aggregateFunction : List[V] => V) : Aggregator =
+  def createAggregator[V <: ValueType](category: Category[V])(aggregateFunction : List[V] => V) : Aggregator =
     new BaseAggregator(category)(aggregateFunction)
 
   class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
@@ -22,7 +22,6 @@ object AggregateFunctions{
   def sum[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.sum(fractional)
   def min[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.min(ordering)
   def max[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.max(ordering)
-  def moreFrequent[A <: ValueType] : List[A] => A = list => list.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
-
-  // TODO: lessFrequent? 
+  def moreFrequent[A <: ValueType] : List[A] => A = list => list.computeFrequency.maxBy(_._2)._1
+  def lessFrequent[A <: ValueType] : List[A] => A = list => list.computeFrequency.minBy(_._2)._1
 }

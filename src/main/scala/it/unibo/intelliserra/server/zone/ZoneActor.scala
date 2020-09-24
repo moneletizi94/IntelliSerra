@@ -16,51 +16,36 @@ import it.unibo.intelliserra.server.rule.RuleEngineService
 import scala.concurrent.duration.{FiniteDuration, _}
 
 private[zone] class ZoneActor(private val aggregators: List[Aggregator],
-                              override val rate : FiniteDuration,
+                              override val repeatedActionRate : FiniteDuration,
                               val computeActionsRate : FiniteDuration)
                               extends Actor
                               with RepeatedAction[ComputeMeasuresAggregation]
-                              with ActorLogging{
-
-  context.actorOf(Props(RuleCheckerActor(computeActionsRate, s"../../${RuleEngineService.name}")))
-
-  override val repeatedMessage: ComputeMeasuresAggregation = ComputeMeasuresAggregation()
+                              with ActorLogging
+                              with MessageReceivingLog {
 
   private[zone] var state : State = State.empty
   private[zone] var sensorsValue: Map[ActorRef, Measure] = Map()
   private[zone] var associatedEntities: Set[EntityChannel] = Set()
   private[zone] var actuatorsState: Map[ActorRef, OperationalState] = Map()
+  override val repeatedMessage: ComputeMeasuresAggregation = ComputeMeasuresAggregation()
+
+  spawnRuleCheckerActor()
 
   override def receive: Receive = {
-    case AddEntity(entityChannel) =>
-      associatedEntities += entityChannel
-      log.info(s"entity ${entityChannel.entity.identifier} added to zone ${self.path.name}")
-    case DeleteEntity(entityChannel) =>
-      associatedEntities -= entityChannel
-      log.info(s"entity ${entityChannel.entity.identifier} removed to zone ${self.path.name}")
+    case AddEntity(entityChannel) => associatedEntities += entityChannel
+    case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
     case DoActions(actions) =>
-      log.info(s"inferred actions: $actions")
-      associatedEntities.flatMap{
-        case EntityChannel(RegisteredActuator(_,ActingCapability(actingCapabilities)),actuatorRef) =>
-          Set((actuatorRef, actions.filter(action => actingCapabilities contains action.getClass)))
-        case _ =>  Nil
+      //getCapableOf(actions).foreach(_ ! DoActions(actions)) // TODO: send all actions; the filter is done in the actuator
+      associatedEntities.foreach {
+        case EntityChannel(actuator @ RegisteredActuator(_,_),actuatorRef) =>
+          actuatorRef ! DoActions(actuator.filterCapability(actions))
       }
-      .filter(_._2.nonEmpty)
-      .foreach({ case (actuatorRef, actionsToDo) =>
-        log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
-        actuatorRef ! DoActions(actionsToDo)
-      })
-
-    case SensorMeasureUpdated(measure) =>
-      sensorsValue += sender -> measure
-      log.info(s"zone update value for sensor ${sender.path.name}; new value: $measure")
+    case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure // TODO: filter su associated?
     case ComputeMeasuresAggregation() => state = computeState(); sensorsValue = Map()
-      //log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
     case ActuatorStateChanged(operationalState) =>
       actuatorsState += sender -> operationalState
-      state = State(state.perceptions, computeActuatorsState())
-      log.info(s"zone update state for actuator ${sender.path.name}; new actuator state: $operationalState")
+      state = State(state.perceptions, computeActuatorsState());
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {
@@ -68,7 +53,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
       (category, measures) <- sensorsValue.values.groupBy(_.category)
       aggregator <- aggregators.find(_.category == category)
     } yield aggregator.aggregate(measures.toList)
-    flattenIterableTry(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
+    flattenTryIterable(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
   private[zone] def computeActuatorsState() : List[Action] = actuatorsState.values.flatMap({
@@ -78,6 +63,10 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
 
   private[zone] def computeState() : State = {
     State(computeAggregatedPerceptions(), computeActuatorsState())
+  }
+
+  private def spawnRuleCheckerActor() : ActorRef = {
+    context.actorOf(Props(RuleCheckerActor(computeActionsRate, s"../../${RuleEngineService.name}")))
   }
 
 }
@@ -98,7 +87,7 @@ object ZoneActor {
   def props(aggregators: List[Aggregator],
             computeStateRate : FiniteDuration = defaultStateEvaluationRate,
             computeActionsRate : FiniteDuration = defaultActionsEvaluationRate): Props = {
-    require(atMostOne(aggregators)(_.category), "only one aggregator must be assigned for each category")
+    require(aggregators hasUniqueValueForProperty (_.category), "only one aggregator must be assigned for each category")
     Props(new ZoneActor(aggregators, computeStateRate, computeActionsRate))
   }
 

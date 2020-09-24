@@ -7,7 +7,7 @@ import it.unibo.intelliserra.server.zone.RuleCheckerActor.EvaluateActions
 
 import scala.concurrent.duration.FiniteDuration
 
-class RuleCheckerActor(override val rate: FiniteDuration, ruleEnginePath : String) extends Actor
+class RuleCheckerActor(override val repeatedActionRate: FiniteDuration, ruleEnginePath : String) extends Actor
                                                                                     with RepeatedAction[EvaluateActions]
                                                                                     with ActorLogging{
 
