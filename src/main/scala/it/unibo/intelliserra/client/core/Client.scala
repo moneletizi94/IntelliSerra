@@ -53,7 +53,7 @@ private[core] object Client {
     private def handleEntitiesRequests: Receive = {
 
       case AssignEntity(zoneID, entityID) => makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
-        case ServiceResponse(Ok,_) => Success(zoneID)
+        case ServiceResponse(Ok,_) => Success(entityID + "-> " + zoneID)
         case ServiceResponse(NotFound, ex) => Failure(new IllegalArgumentException(ex.toString))
         case ServiceResponse(Conflict,ex) => Failure(new IllegalArgumentException(ex.toString))
         case ServiceResponse(Error, ex) => Failure(new IllegalArgumentException(ex.toString))

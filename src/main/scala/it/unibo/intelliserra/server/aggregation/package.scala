@@ -5,9 +5,10 @@ import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 
 package object aggregation {
 
-  // TODO: context bound
   implicit class RichList[T](list: List[T]){
     def avg(implicit fractional: Fractional[T]) : T = fractional.mkNumericOps(list.sum(fractional)) / fractional.fromInt(list.size)
+    def computeFrequency : Map[T,Int] = list.groupBy(identity).mapValues(_.size)
+    def hasUniqueValueForProperty[B](property : T => B) : Boolean = list.groupBy(property(_)).forall(_._2.lengthCompare(1) == 0)
   }
 
   implicit val numericInt: Fractional[IntType] = new Fractional[IntType] {

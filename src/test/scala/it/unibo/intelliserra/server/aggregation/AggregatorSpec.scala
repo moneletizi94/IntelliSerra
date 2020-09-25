@@ -2,14 +2,13 @@ package it.unibo.intelliserra.server.aggregation
 
 import it.unibo.intelliserra.core.perception
 import it.unibo.intelliserra.core.perception.Measure
-import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
-import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
+import it.unibo.intelliserra.server.aggregation.AggregationFunctions._
+import it.unibo.intelliserra.server.aggregation.Aggregator._
 import org.junit.runner.RunWith
 import org.scalatest.{FlatSpec, Matchers}
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 import org.scalatestplus.junit.JUnitRunner
-
 import scala.util.Success
 
 // scalastyle:off magic.number

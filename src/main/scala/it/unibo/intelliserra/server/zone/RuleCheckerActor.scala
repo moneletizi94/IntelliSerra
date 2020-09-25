@@ -7,7 +7,7 @@ import it.unibo.intelliserra.server.zone.RuleCheckerActor.EvaluateActions
 
 import scala.concurrent.duration.FiniteDuration
 
-class RuleCheckerActor(override val rate: FiniteDuration, ruleEnginePath : String) extends Actor
+class RuleCheckerActor(override val repeatedActionRate: FiniteDuration, ruleEnginePath : String) extends Actor
                                                                                     with RepeatedAction[EvaluateActions]
                                                                                     with ActorLogging{
 
@@ -15,7 +15,7 @@ class RuleCheckerActor(override val rate: FiniteDuration, ruleEnginePath : Strin
 
   override def receive: Receive = {
     case EvaluateActions() => context.parent ! GetState ; log.info("get zone’s state to evaluate action to do based on rules")
-    case MyState(stateOpt) => stateOpt.foreach(state => ruleEngineService.tell(InferActions(state), context.parent))
+    case MyState(state) => ruleEngineService.tell(InferActions(state), context.parent)
   }
 
   override val repeatedMessage: EvaluateActions = EvaluateActions()

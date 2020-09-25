@@ -9,11 +9,12 @@ import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.perception
 import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
+import it.unibo.intelliserra.server.aggregation.AggregationFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation._
+import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
 import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}
-import it.unibo.intelliserra.server.zone.ZoneActor.ComputeState
+
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, Light, Water}
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Temperature, Weather}
@@ -36,8 +37,6 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   private val registeredSensor = RegisteredDevice("sensorId", SensingCapability(Temperature))
   private val aggregators = List(createAggregator(Temperature)(sum),
                                   createAggregator(Weather)(moreFrequent))
-
-
 
   before{
     zone = TestActorRef.create(system, ZoneActor.props(aggregators,1 seconds))
@@ -94,7 +93,6 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
       zone tell(ActuatorStateChanged(operationalState2), actuator.ref)
       zone.underlyingActor.actuatorsState(actuator.ref) shouldBe operationalState2
       zone.underlyingActor.actuatorsState(actuator.ref) should not be operationalState
-      //checkReplace(zone.underlyingActor.actuatorsState)
     }
   }
 
@@ -110,7 +108,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
       sendNMessageFromNProbe(5, zone, ActuatorStateChanged(Idle))
       sendNMessageFromNProbe(3, zone, ActuatorStateChanged(OperationalState(Water)))
       sendNMessageFromNProbe(2, zone, ActuatorStateChanged(OperationalState(Fan)))
-      zone.underlyingActor.computeActuatorState().diff(List(Fan,Water)) shouldBe List()
+      zone.underlyingActor.computeActuatorsState() should contain theSameElementsAs List(Fan,Water)
     }
   }
 
@@ -122,25 +120,39 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
     }
   }
 
-  "A zone with period of 1 seconds" should  {
-    "have no state in 1 seconds after creation" in {
+  "A zone " should  {
+    "have empty state after it creation" in {
       zone ! GetState
-      expectMsg(MyState(None))
+      expectMsg(MyState(State.empty))
     }
   }
 
+  "A zone " should  {
+    "not consider the sensors measures in its state until it receives ComputeMeasuresAggregation" in {
+      sendNMessageFromNProbe(10, zone, SensorMeasureUpdated(Measure(Temperature)(10)))
+      zone.underlyingActor.state shouldBe State.empty
+    }
+  }
 
   "A zone " should  {
-    "compute its state after receiving computeState" in {
+    "update aggregated measures and compute its state after receiving ComputeMeasuresAggregation" in {
       val probe = TestProbe()
-      zone.tell(SensorMeasureUpdated(perception.Measure(Temperature)(10)),probe.ref)
-      zone ! ComputeState()
-      zone.underlyingActor.state shouldBe Option(State(List(perception.Measure(Temperature)(10)),List()))
+      val newSensorMeasure = perception.Measure(Temperature)(10)
+      zone.tell(SensorMeasureUpdated(newSensorMeasure),probe.ref)
+      zone ! ComputeMeasuresAggregation()
+      zone.underlyingActor.state shouldBe State(List(newSensorMeasure),List())
+    }
+  }
+
+  " A zone " should {
+    "update its state in real time according to actuators state update" in{
+      sendNMessageFromNProbe(3, zone, ActuatorStateChanged(OperationalState(Water)))
+      zone.underlyingActor.state shouldBe State(List(), List(Water))
     }
   }
 
   "A zone " should {
-    "send action to its actuator according to theirs capabilities" in {
+    "send actions to its actuator according to theirs capabilities" in {
       val sensor1 = addEntity(registeredSensor)
       val actuator1 = addEntity(RegisteredDevice("act1", ActingCapability(Set(Water.getClass, Fan.getClass))))
       val actuator2 = addEntity(RegisteredDevice("act2", ActingCapability(Set(Water.getClass))))

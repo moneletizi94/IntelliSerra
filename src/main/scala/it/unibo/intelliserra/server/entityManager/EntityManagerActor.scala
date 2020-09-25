@@ -11,11 +11,8 @@ private[server] class EntityManagerActor() extends Actor
 
   override def receive: Receive = {
 
-    case JoinSensor(identifier, capabilities, sensorRef) =>
-      addEntityAndSendResponse(RegisteredDevice(identifier, capabilities), sensorRef, sender)
-
-    case JoinActuator(identifier, capabilities, actuatorRef) =>
-      addEntityAndSendResponse(RegisteredDevice(identifier, capabilities), actuatorRef, sender)
+    case JoinDevice(identifier, capabilities, deviceRef) =>
+      addEntityAndSendResponse(RegisteredDevice(identifier, capabilities), deviceRef, sender)
 
     case GetEntity(identifier) =>
       sender ! entities.find(e => e.device.identifier == identifier).map(e => EntityResult(e)).getOrElse(EntityNotFound)

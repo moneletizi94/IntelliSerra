@@ -24,7 +24,9 @@ object Capability {
     }
   }
 
+
+
   def sensing(category: Category[ValueType]): SensingCapability = SensingCapability(category)
   def acting(action: ActionTag, actions: ActionTag*): ActingCapability = ActingCapability(actions :+ action toSet)
-  def acting(actions: Set[ActionTag] = Set()): ActingCapability = ActingCapability(actions)
+  def acting(actionsTag: Set[ActionTag] = Set()): ActingCapability = ActingCapability(actionsTag)
 }
