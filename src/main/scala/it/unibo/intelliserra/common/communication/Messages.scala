@@ -3,7 +3,6 @@ package it.unibo.intelliserra.common.communication
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.action.{Action, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
