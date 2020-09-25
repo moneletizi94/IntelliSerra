@@ -238,21 +238,49 @@ object Messages {
    */
   case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
 
-
   /**
    * Message sent to inform that an [[it.unibo.intelliserra.common.communication.Messages.AssociateTo]] message is received
    */
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
 
-  //RuleEngineService Protocol (From ?? to RuleEngineService)
+  /**
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.rule.RuleEngineService]]
+   */
   sealed trait RuleEntityManagerRequest
+
+  /**
+   * Message sent to enable an existing rule
+   * @param ruleID rule identifier
+   */
   case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to disable an existing rule
+   * @param ruleID rule identifier
+   */
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to infer actions from the state of a zone
+   * @param state represent the state of zone
+   */
   case class InferActions(state: State) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to get all rules
+   */
   case object GetRules extends  RuleEntityManagerRequest
 
+  /**
+   * Trait to represent answers obtained from [[it.unibo.intelliserra.server.rule.RuleEngineService]]
+   */
   sealed trait RuleEntityResponse
+
+  /**
+   * Message obtained, containing all the rules
+   * @param ruleInfo list of all rules.
+   */
   case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
   case object Ok
