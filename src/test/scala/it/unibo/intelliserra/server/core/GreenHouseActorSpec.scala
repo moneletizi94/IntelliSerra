@@ -8,7 +8,7 @@ import it.unibo.intelliserra.common.communication.Protocol.{GetZones, ServiceRes
 import it.unibo.intelliserra.server.core.GreenHouseActor._
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatest.{Args, BeforeAndAfter, BeforeAndAfterAll, Matchers, Status, TestSuite, TestSuiteMixin, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -27,8 +27,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   }
 
   after {
-    serverActor ! Stop
-    expectMsg(Stopped)
+    awaitReady(serverActor ? Stop)
   }
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
