@@ -5,7 +5,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.akka.RemotePath
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
-import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinError, JoinOK, JoinSensor}
+import it.unibo.intelliserra.common.communication.Messages.{ JoinError, JoinOK, JoinDevice}
 import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
@@ -47,7 +47,7 @@ trait DeviceDeploy {
      */
     override def join(sensor: Sensor): Future[String] = {
       val sensorActor = SensorActor(sensor)(actorSystem)
-      entityManagerActor ? JoinSensor(sensor.identifier, sensor.capability, sensorActor) flatMap {
+      entityManagerActor ? JoinDevice(sensor.identifier, sensor.capability, sensorActor) flatMap {
         case JoinOK => Future.successful(sensor.identifier)
         case JoinError(error) => terminate(error, sensorActor)
       }
@@ -61,7 +61,7 @@ trait DeviceDeploy {
      */
     override def join(actuator: Actuator): Future[String] = {
       val actuatorActor = ActuatorActor(actuator)(actorSystem)
-      entityManagerActor ? JoinActuator(actuator.identifier, actuator.capability, actuatorActor) flatMap {
+      entityManagerActor ? JoinDevice(actuator.identifier, actuator.capability, actuatorActor) flatMap {
         case JoinOK => Future.successful(actuator.identifier)
         case JoinError(error) => terminate(error, actuatorActor)
       }

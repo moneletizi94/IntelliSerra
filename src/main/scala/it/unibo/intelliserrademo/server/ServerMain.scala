@@ -3,7 +3,7 @@ package it.unibo.intelliserrademo.server
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.ServerConfig.{AppConfig, RuleConfig, ZoneConfig}
-import it.unibo.intelliserra.server.aggregation.AggregateFunctions.{avg, max, moreFrequent}
+import it.unibo.intelliserra.server.aggregation.AggregationFunctions.{avg, max, moreFrequent}
 import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.core.GreenHouseServer

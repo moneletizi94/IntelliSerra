@@ -37,19 +37,17 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     case DeleteEntity(entityChannel) => associatedEntities -= entityChannel
     case GetState => sender ! MyState(state)
     case DoActions(actions) =>
-      associatedEntities.map { c => (c.channel, actions.filter(actionToDo => c.device.capability.includes(Capability.acting(actionToDo.getClass))))}
-        .filter(_._2.nonEmpty)
-        .foreach { case (actuatorRef, actionsToDo) =>
-          log.info(s"the zone asks the actuator ${actuatorRef.path.name} to perform the following action:${actionsToDo}")
-          actuatorRef ! DoActions(actionsToDo)
-        }
-
+      associatedEntities.map(deviceChannel => (deviceChannel.channel, capableOf(deviceChannel, actions))).filter(_._2.nonEmpty)
+                        .foreach { case (actuatorRef, actionsToDo) => actuatorRef ! DoActions(actionsToDo) }
     case SensorMeasureUpdated(measure) => sensorsValue += sender -> measure
     case ComputeMeasuresAggregation() => state = computeState(); sensorsValue = Map()
-      //log.info(s"state updated for zone ${sender.path.name}; new zone state: ${state.get}")
     case ActuatorStateChanged(operationalState) =>
       actuatorsState += sender -> operationalState
       state = State(state.perceptions, computeActuatorsState());
+  }
+
+  private[zone] def capableOf(deviceChannel: DeviceChannel, actionToDo : Set[Action]) : Set[Action] = {
+    actionToDo.filter(actionToDo => deviceChannel.device.capability.includes(Capability.acting(actionToDo.getClass)))
   }
 
   private[zone] def computeAggregatedPerceptions() : List[Measure] = {

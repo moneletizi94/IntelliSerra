@@ -18,7 +18,7 @@ object Aggregator{
   }
 }
 
-object AggregateFunctions{
+object AggregationFunctions{
   def avg[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.avg(fractional)
   def sum[A <: NumericType](implicit fractional : Fractional[A]) : List[A] => A = list => list.sum(fractional)
   def min[A <: NumericType](implicit ordering: Ordering[A]) : List[A] => A = list => list.min(ordering)

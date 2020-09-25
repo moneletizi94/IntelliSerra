@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages
-import it.unibo.intelliserra.common.communication.Messages.{JoinActuator, JoinOK, JoinSensor}
+import it.unibo.intelliserra.common.communication.Messages.{ JoinOK, JoinDevice}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
@@ -116,7 +116,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       mockZoneID = "zone5"
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
-      entityManagerActor ! JoinSensor(sensor.identifier, sensor.capability, SensorActor(sensor))
+      entityManagerActor ! JoinDevice(sensor.identifier, sensor.capability, SensorActor(sensor))
       expectMsg(JoinOK)
       greenHouseController ! AssignEntity(mockZoneID, sensor.identifier)
       expectMsg(ServiceResponse(Ok))
@@ -126,7 +126,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   "A greenHouseController " must {
     "ask to assign entity in un-existing zone" in {
       mockZoneID = "zone6"
-      entityManagerActor ! JoinSensor(sensor2.identifier, sensor2.capability, SensorActor(sensor2))
+      entityManagerActor ! JoinDevice(sensor2.identifier, sensor2.capability, SensorActor(sensor2))
       expectMsg(JoinOK)
       greenHouseController ! AssignEntity(mockZoneID, sensor2.identifier)
       expectMsg(ServiceResponse(NotFound, "Zone not found"))
@@ -139,7 +139,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       entityRef = ActuatorActor(actuator)
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
-      entityManagerActor ! JoinActuator(actuator.identifier, actuator.capability, entityRef)
+      entityManagerActor ! JoinDevice(actuator.identifier, actuator.capability, entityRef)
       expectMsg(JoinOK)
       greenHouseController ! AssignEntity(mockZoneID, actuator.identifier)
       expectMsg(ServiceResponse(Ok))
@@ -166,7 +166,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       mockZoneID = "zone10"
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
-      entityManagerActor ! JoinActuator(actuator.identifier, actuator.capability, entityRef)
+      entityManagerActor ! JoinDevice(actuator.identifier, actuator.capability, entityRef)
       expectMsg(JoinOK)
       greenHouseController ! AssignEntity(mockZoneID, actuator.identifier)
       expectMsg(ServiceResponse(Ok))
@@ -180,7 +180,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
       mockZoneID = "zone11"
       greenHouseController ! CreateZone(mockZoneID)
       expectMsg(ServiceResponse(Created))
-      entityManagerActor ! JoinActuator(actuator2.identifier, actuator2.capability, entityRef)
+      entityManagerActor ! JoinDevice(actuator2.identifier, actuator2.capability, entityRef)
       expectMsg(JoinOK)
       greenHouseController ! AssignEntity(mockZoneID, actuator2.identifier)
       expectMsg(ServiceResponse(Ok))
@@ -203,7 +203,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
 
   "A greenHouseController " must {
     "ask to remove entity" in {
-      entityManagerActor ! JoinSensor(sensor.identifier, sensor.capability, entityRef)
+      entityManagerActor ! JoinDevice(sensor.identifier, sensor.capability, entityRef)
       expectMsg(JoinOK)
       greenHouseController ! RemoveEntity(sensor.identifier)
       expectMsg(ServiceResponse(Deleted))

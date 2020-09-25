@@ -2,6 +2,7 @@ package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
 import it.unibo.intelliserra.core.action.{Action, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
 import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.RuleInfo
@@ -26,19 +27,14 @@ object Messages {
   sealed trait JoinRequest extends EntityManagerRequest
 
   /**
-   * Message to join a sensor to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
-   * @param sensingCapability the capability of the specified sensor
-   * @param sensorRef the actor ref of the specified sensor
-   */
-
-  final case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
-  /**
    * Message to join an actuator to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
-   * @param actingCapability the capability of the specified actuator
-   * @param actuatorRef the actor ref of the specified actuator
+   * @param capability the capability of the specified device
+   * @param deviceRef the actor ref of the specified device
    */
 
-  final case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
+  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef) extends JoinRequest
+
+
 
   /**
    * Message sent to get an entity, if exists. It is used by the controller

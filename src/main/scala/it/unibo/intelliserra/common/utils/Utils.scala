@@ -21,13 +21,5 @@ object Utils {
         log.info(s"(${context.self.path.name}): Received message $message from ${context.sender.path.name}")
       }
   }
-  /*
-    ALTERNATIVELY:
-    akka.remote.artery {
-      # If this is "on", Akka will log all inbound messages at DEBUG level,
-      # if off then they are not logged
-      log-received-messages = on
-    }
-   */
 
 }

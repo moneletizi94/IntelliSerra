@@ -29,6 +29,11 @@ object GreenHouseConfig {
       |    allow-java-serialization = true
       |    warn-about-java-serializer-usage = false
       |  }
+      |  akka.remote.artery {
+      |      # If this is "on", Akka will log all inbound messages at DEBUG level,
+      |      # if off then they are not logged
+      |      log-received-messages = on
+    |    }
       |  remote.artery.enabled = false
       |  remote.classic {
       |    enabled-transports = ["akka.remote.classic.netty.tcp"]
