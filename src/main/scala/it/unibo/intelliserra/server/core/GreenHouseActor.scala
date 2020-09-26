@@ -8,7 +8,7 @@ import it.unibo.intelliserra.server.ServerConfig.{RuleConfig, ZoneConfig}
 import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, Start, Started, _}
 import it.unibo.intelliserra.server.entityManager.{EMEventBus, EntityManagerActor}
 import it.unibo.intelliserra.server.rule.RuleEngineService
-import it.unibo.intelliserra.server.zone.ZoneManagerActor
+import it.unibo.intelliserra.server.zone.{ZoneActor, ZoneManagerActor}
 
 private[core] object GreenHouseActor {
 
@@ -67,7 +67,7 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
   private def idle: Receive = {
     case Start =>
       log.info("GreenHouse started")
-      zoneManagerActor = ZoneManagerActor(zoneConfig)
+      zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, zoneConfig))
       entityManagerActor = EntityManagerActor()
       ruleEngineServiceActor = RuleEngineService(ruleConfig.rules)
       EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity

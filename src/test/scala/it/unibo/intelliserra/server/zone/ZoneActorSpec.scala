@@ -115,7 +115,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " must {
     " have at most one aggregator for each category when created" in {
       assertThrows[IllegalArgumentException] {
-        ZoneActor("zoneName", aggregators.+:(createAggregator(Temperature)(min)))
+        ZoneActor.props(aggregators.+:(createAggregator(Temperature)(min)))
       }
     }
   }
