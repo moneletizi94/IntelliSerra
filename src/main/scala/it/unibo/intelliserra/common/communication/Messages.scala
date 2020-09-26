@@ -127,7 +127,7 @@ object Messages {
    * Message sent to ask for the state of a zone, whether it exists
    * @param zoneName identifier of the interested zone
    */
-  case class GetStateOfZone(zoneName: String) extends ZoneManagerRequest
+  case class GetZoneState(zoneName: String) extends ZoneManagerRequest
 
   /**
    * Trait to represent responses given by [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]

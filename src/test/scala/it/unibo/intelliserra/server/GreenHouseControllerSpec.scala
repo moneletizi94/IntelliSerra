@@ -12,7 +12,7 @@ import it.unibo.intelliserra.device.core.actuator.ActuatorActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor
 import it.unibo.intelliserra.server.entityManager.EntityManagerActor
 import it.unibo.intelliserra.server.rule.RuleEngineService
-import it.unibo.intelliserra.server.zone.ZoneManagerActor
+import it.unibo.intelliserra.server.zone.{ZoneActor, ZoneManagerActor}
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpecLike}
@@ -38,7 +38,7 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
   private val rule1ID = "rule1"
 
   before {
-    this.zoneManagerActor = ZoneManagerActor(defaultServerConfig.zoneConfig)
+    this.zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, defaultServerConfig.zoneConfig))
     this.entityManagerActor = EntityManagerActor()
     this.ruleEngineServiceActor = RuleEngineService(List(rule))
     this.greenHouseController = TestActorRef.create(system, Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)))

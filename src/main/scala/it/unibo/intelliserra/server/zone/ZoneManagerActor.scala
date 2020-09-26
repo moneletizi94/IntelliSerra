@@ -13,7 +13,7 @@ import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEn
  * It manages link between entities (sensors and actuators) and zones.
  */
 
-private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends Actor with ActorLogging {
+private[zone] class ZoneManagerActor(private val zoneStrategy: String => ActorRef) extends Actor with ActorLogging {
 
   implicit val system: ActorSystem = context.system
   /* It keeps links between zones names and zones ActorRefs */
@@ -40,7 +40,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
 
     case PublishedOnRemoveEntity(entityChannel) => onDissociateEntity(entityChannel)
 
-    case GetStateOfZone(zoneID) => getState(zoneID)
+    case GetZoneState(zoneID) => onGetZoneState(zoneID)
   }
 
   /* --- ON RECEIVE ACTIONS --- */
@@ -48,7 +48,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     zones.get(zoneID) match {
       case Some(_) => ZoneAlreadyExists
       case None =>
-        zones += zoneID -> createZoneActor(zoneID)
+        zones += zoneID -> zoneStrategy(zoneID)
         assignedEntities += zoneID -> Set()
         ZoneCreated
     }
@@ -100,7 +100,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     })
   }
 
-  private def getState(zoneID: String): Unit = {
+  private def onGetZoneState(zoneID: String): Unit = {
     zones.find(zone => zone._1 == zoneID).fold(sender ! ZoneNotFound)(zone => {
       zone._2.tell(GetState, sender())
     })
@@ -109,8 +109,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
   /* --- UTILITY METHODS ---*/
 
   //This is done to override the creation of an actor to test it
-  //TODO add others fields from zoneConfig
-  private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)
+  //private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)
 
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
@@ -142,5 +141,6 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
 
 object ZoneManagerActor {
   val name = "ZoneManager"
-  def apply(zoneConfig: ZoneConfig)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf (Props(new ZoneManagerActor(zoneConfig)), name)
+  def apply(zoneStrategy: String => ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
+    actorSystem actorOf (Props(new ZoneManagerActor(zoneStrategy)), name)
 }

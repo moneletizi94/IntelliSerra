@@ -1,9 +1,5 @@
 package it.unibo.intelliserra.common.utils
 
-import java.util
-
-import it.unibo.intelliserra.server.aggregation.Aggregator
-
 import scala.util.Try
 
 object Utils {

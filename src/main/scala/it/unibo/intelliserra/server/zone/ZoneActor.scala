@@ -12,6 +12,7 @@ import it.unibo.intelliserra.server.aggregation.Aggregator
 import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
 import it.unibo.intelliserra.common.utils.Utils._
+import it.unibo.intelliserra.server.ServerConfig.ZoneConfig
 import it.unibo.intelliserra.server.rule.RuleEngineService
 
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -86,11 +87,9 @@ object ZoneActor {
   private val defaultActionsEvaluationRate = 10 seconds
 
   def apply(name: String,
-            aggregators: List[Aggregator],
-            computeStateRate : FiniteDuration = defaultStateEvaluationRate,
-            computeActionsRate : FiniteDuration = defaultActionsEvaluationRate)
+            config: ZoneConfig)
            (implicit system: ActorSystem): ActorRef = {
-    system actorOf (props(aggregators, computeStateRate, computeActionsRate), name)
+    system actorOf (props(config.aggregators, config.stateEvaluationPeriod, config.actionsEvaluationPeriod), name)
   }
 
   def props(aggregators: List[Aggregator],
