@@ -49,7 +49,7 @@ private[core] object Client {
     private def handleEntitiesRequests: Receive = {
 
       case AssignEntity(zoneID, entityID) => makeRequestWithFallback(AssignEntity(zoneID, entityID)) {
-        case ServiceResponse(Ok,_) => Success(zoneID)
+        case ServiceResponse(Ok,_) => Success(entityID + "-> " + zoneID)
       }
 
       case DissociateEntity(entityID) => makeRequestWithFallback(DissociateEntity(entityID)) {
