@@ -1,11 +1,11 @@
 package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
+import it.unibo.intelliserra.core.perception.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType, ValueType}
 import it.unibo.intelliserra.core.rule.Rule
 import it.unibo.intelliserra.core.rule.dsl.ConditionStatement._
 import it.unibo.intelliserra.core.rule.dsl._
-import it.unibo.intelliserra.core.sensor.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType, ValueType}
 import it.unibo.intelliserra.core.state.State
 
 object Representations {

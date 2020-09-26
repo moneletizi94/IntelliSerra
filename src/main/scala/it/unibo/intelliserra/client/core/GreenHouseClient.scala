@@ -49,11 +49,11 @@ object GreenHouseClient {
 
     override def zones(): Future[List[Zone]] = (client ? GetZones()).mapTo[List[Zone]]
 
-    override def associateEntity(entity: Entity, zone: Zone): Future[Zone] = (client ? AssignEntity(zone, entity)).mapTo[Zone]
+    override def associateEntity(entity: Entity, zone: Zone): Future[String] = (client ? AssignEntity(zone, entity)).mapTo[String]
 
     override def dissociateEntity(entity: Entity): Future[Entity] = (client ? DissociateEntity(entity)).mapTo[Entity]
 
-    override def getState(zone: Zone): Future[Option[State]] = (client ? GetState(zone)).mapTo[Option[State]]
+    override def getState(zone: Zone): Future[State] = (client ? GetState(zone)).mapTo[State]
 
     override def removeEntity(entity: Entity): Future[Entity] = (client ? RemoveEntity(entity)).mapTo[Entity]
 

@@ -1,12 +1,12 @@
 package it.unibo.intelliserra.common.communication
 
 import akka.actor.ActorRef
-import it.unibo.intelliserra.core.actuator.{Action, OperationalState}
-import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.entity.EntityChannel
+import it.unibo.intelliserra.core.action.{Action, OperationalState}
+import it.unibo.intelliserra.core.entity.Capability
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.rule.RuleInfo
-import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 
 /**
  * Object to describe all the messages exchanged on server-side with
@@ -26,19 +26,14 @@ object Messages {
   sealed trait JoinRequest extends EntityManagerRequest
 
   /**
-   * Message to join a sensor to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
-   * @param sensingCapability the capability of the specified sensor
-   * @param sensorRef the actor ref of the specified sensor
-   */
-
-  final case class JoinSensor(identifier: String, sensingCapability: SensingCapability, sensorRef: ActorRef) extends JoinRequest
-  /**
    * Message to join an actuator to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
-   * @param actingCapability the capability of the specified actuator
-   * @param actuatorRef the actor ref of the specified actuator
+   * @param capability the capability of the specified device
+   * @param deviceRef the actor ref of the specified device
    */
 
-  final case class JoinActuator(identifier: String, actingCapability: ActingCapability, actuatorRef : ActorRef) extends JoinRequest
+  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef) extends JoinRequest
+
+
 
   /**
    * Message sent to get an entity, if exists. It is used by the controller
@@ -71,7 +66,7 @@ object Messages {
    * Message used to return entity info.
    * @param entity it contains info of an entity
    */
-  case class EntityResult(entity: EntityChannel) extends EntityManagerResponse
+  case class EntityResult(entity: DeviceChannel) extends EntityManagerResponse
 
   /**
    * Message used to say that an entity doesn't exist in this entity manager
@@ -115,13 +110,13 @@ object Messages {
    * @param zoneName identifier of the zone to whom assign the entity
    * @param entityChannel registered entity to assign
    */
-  case class AssignEntityToZone(zoneName: String, entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class AssignEntityToZone(zoneName: String, entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to dissociate a registered entity from a zone, if the entity is associated to any
    * @param entityChannel registered entity to dissociate
    */
-  case class DissociateEntityFromZone(entityChannel: EntityChannel) extends ZoneManagerRequest
+  case class DissociateEntityFromZone(entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to ask for the state of a zone, whether it exists
@@ -196,12 +191,12 @@ object Messages {
    * Message sent to add the specified entity to the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class AddEntity(entityChannel: EntityChannel) extends ZoneRequest
+  case class AddEntity(entityChannel: DeviceChannel) extends ZoneRequest
   /**
    * Message sent to remove the specified entity from the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class DeleteEntity(entityChannel: EntityChannel) extends ZoneRequest
+  case class DeleteEntity(entityChannel: DeviceChannel) extends ZoneRequest
 
   /**
    * Message sent to get the state of the zone
@@ -216,9 +211,9 @@ object Messages {
 
   /**
    * Message sent by [[it.unibo.intelliserra.server.zone.ZoneActor]] to communicate its state
-   * @param state optional state of the zone
+   * @param state state of the zone
    */
-  case class MyState(state : Option[State])
+  case class MyState(state : State)
 
   /**
    * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
@@ -238,21 +233,49 @@ object Messages {
    */
   case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
 
-
   /**
    * Message sent to inform that an [[it.unibo.intelliserra.common.communication.Messages.AssociateTo]] message is received
    */
   /* --- From Sensor/Actuator to ZoneManager --- */
   case object Ack
 
-  //RuleEngineService Protocol (From ?? to RuleEngineService)
+  /**
+   * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.rule.RuleEngineService]]
+   */
   sealed trait RuleEntityManagerRequest
+
+  /**
+   * Message sent to enable an existing rule
+   * @param ruleID rule identifier
+   */
   case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to disable an existing rule
+   * @param ruleID rule identifier
+   */
   case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to infer actions from the state of a zone
+   * @param state represent the state of zone
+   */
   case class InferActions(state: State) extends RuleEntityManagerRequest
+
+  /**
+   * Message sent to get all rules
+   */
   case object GetRules extends  RuleEntityManagerRequest
 
+  /**
+   * Trait to represent answers obtained from [[it.unibo.intelliserra.server.rule.RuleEngineService]]
+   */
   sealed trait RuleEntityResponse
+
+  /**
+   * Message obtained, containing all the rules
+   * @param ruleInfo list of all rules.
+   */
   case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
   case object Ok

@@ -1,8 +1,9 @@
 package it.unibo.intelliserra.core.prolog
 
 import alice.tuprolog.{Struct, Term}
+import it.unibo.intelliserra.core.perception
+import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.prolog.Representations._
-import it.unibo.intelliserra.core.sensor.Measure
 import it.unibo.intelliserra.core.state.State
 import it.unibo.intelliserra.utils.TestUtility.Categories._
 import org.junit.runner.RunWith
@@ -16,11 +17,11 @@ class StateToPrologSpec extends WordSpecLike with Matchers with BeforeAndAfter {
 
   before {
     measures = List[(Measure, String)](
-      Measure(Temperature)(10) -> "measure(10, temperature).",
-      Measure(Weather)("sun") -> "measure(string(sun), weather).",
-      Measure(LightToggle)(true) -> "measure(1, lighttoggle).",
-      Measure(Pressure)(1056.2) -> "measure(1056.2, pressure).",
-      Measure(CharCategory)('a')-> s"measure(${'a'.toInt}, charcategory)."
+      perception.Measure(Temperature)(10) -> "measure(10, temperature).",
+      perception.Measure(Weather)("sun") -> "measure(string(sun), weather).",
+      perception.Measure(LightToggle)(true) -> "measure(1, lighttoggle).",
+      perception.Measure(Pressure)(1056.2) -> "measure(1056.2, pressure).",
+      perception.Measure(CharCategory)('a')-> s"measure(${'a'.toInt}, charcategory)."
     )
   }
 

@@ -7,7 +7,7 @@ package it.unibo.intelliserra.common.communication
 object Protocol {
 
   /**
-   * Trait to represent all the requests delivered to Client Actor
+   * Trait to represent all the requests delivered to [[it.unibo.intelliserra.client.core.GreenHouseClient]]
    */
   sealed trait ClientRequest
 
@@ -53,8 +53,22 @@ object Protocol {
    * @param zoneName name of the zone
    */
   final case class GetState(zoneName: String) extends ClientRequest
+
+  /**
+   * Message sent to enable an existing rule
+   * @param ruleID rule identifier
+   */
   final case class EnableRule(ruleID: String) extends ClientRequest
+
+  /**
+   * Message sent to disable an existing rule
+   * @param ruleID rule identifier
+   */
   final case class DisableRule(ruleID: String) extends ClientRequest
+
+  /**
+   * Message sent to obtain all rules
+   */
   final case object GetRules extends ClientRequest
 
   /**

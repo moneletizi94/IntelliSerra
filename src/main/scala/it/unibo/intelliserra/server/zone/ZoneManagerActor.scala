@@ -2,9 +2,8 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.entity.EntityChannel
 import it.unibo.intelliserra.server.ServerConfig.ZoneConfig
-import it.unibo.intelliserra.server.aggregation.Aggregator
+import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 
 /**
@@ -20,11 +19,11 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
   /* It keeps links between zones names and zones ActorRefs */
   var zones: Map[String, ActorRef] = Map()
   /* It keeps assigned Entities, there are all the zones kept in zones structure, but only the non-pending entities */
-  var assignedEntities: Map[String, Set[EntityChannel]] = Map() //zone, entityChannel
+  var assignedEntities: Map[String, Set[DeviceChannel]] = Map() //zone, entityChannel
   /* It keeps pending entities: a request for assignment has come but entity hasn't responded yet.
   * It only keeps zones for which there are pending requests.
   * */
-  var pending: Map[String, Set[EntityChannel]] = Map()
+  var pending: Map[String, Set[DeviceChannel]] = Map()
 
   override def receive : Receive = {
     case CreateZone(zoneID) => sender() ! onCreateZone(zoneID)
@@ -63,7 +62,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     })
   }
 
-  private def onAssignEntity(zoneID: String, entityChannel: EntityChannel): ZoneManagerResponse = {
+  private def onAssignEntity(zoneID: String, entityChannel: DeviceChannel): ZoneManagerResponse = {
     zones.get(zoneID).fold[ZoneManagerResponse](ZoneNotFound)(_ => {
       assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
         case Some((zone, _)) => AlreadyAssigned(zone)
@@ -76,7 +75,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     })
   }
 
-  private def onDissociateEntity(entityChannel: EntityChannel): ZoneManagerResponse = {
+  private def onDissociateEntity(entityChannel: DeviceChannel): ZoneManagerResponse = {
     assignedEntities.find({case (_, set) => set.contains(entityChannel)}) match {
       case Some((zoneID, entities)) =>
         zones(zoneID) ! DeleteEntity(entityChannel) //if the zone exists in zones, it will exists also in assignedEntities
@@ -123,7 +122,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     assignedEntities -= zoneID
   }
 
-  private def informEntitiesToDissociate(entities: Set[EntityChannel], zoneID: String): Unit = {
+  private def informEntitiesToDissociate(entities: Set[DeviceChannel], zoneID: String): Unit = {
     entities.foreach(entityChannel =>
       answerAndInformEntityTo(entityChannel.channel, DissociateOk, DissociateFrom(zones(zoneID),zoneID)))
   }
@@ -133,7 +132,7 @@ private[zone] class ZoneManagerActor(private val zoneConfig: ZoneConfig) extends
     answer
   }
 
-  private def removeFromPending(entityToRemove: EntityChannel, zoneID: String, entities: Set[EntityChannel]): Unit = {
+  private def removeFromPending(entityToRemove: DeviceChannel, zoneID: String, entities: Set[DeviceChannel]): Unit = {
     entities.filter(_ != entityToRemove) match {
       case set if set.isEmpty => pending -= zoneID
       case set => pending += (zoneID -> set)

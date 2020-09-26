@@ -1,13 +1,13 @@
 package it.unibo.intelliserra.server
 
-import it.unibo.intelliserra.core.actuator.Actuator
-import it.unibo.intelliserra.core.sensor.Sensor
 import it.unibo.intelliserra.device.DeviceDeploy
+import it.unibo.intelliserra.device.core.{Actuator, Sensor}
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
 import org.scalatest.{AsyncWordSpecLike, BeforeAndAfter}
 import org.scalatestplus.junit.JUnitRunner
+
 import scala.util.{Failure, Success}
 
 

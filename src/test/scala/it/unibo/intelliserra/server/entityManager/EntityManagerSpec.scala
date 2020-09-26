@@ -3,7 +3,7 @@ package it.unibo.intelliserra.server.entityManager
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.core.actuator.Action
+import it.unibo.intelliserra.core.action.Action
 import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 import it.unibo.intelliserra.utils.TestUtility
@@ -37,22 +37,22 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
     "register a sensor after receiving join" in {
       val sensorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
+      sendJoinEntityMessage(JoinDevice(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
     }
 
     "register an actuator after receiving join" in {
       val actuatorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinActuator(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
+      sendJoinEntityMessage(JoinDevice(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
     }
 
     "not permit adding of sensor with existing identifier" in {
       val sensorActorProbe = TestProbe()
-      checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
+      checkNoDuplicateInsertion(JoinDevice(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
     }
 
     "not permit adding of actuator with existing identifier" in {
       val actuatorActorProbe = TestProbe()
-      checkNoDuplicateInsertion(JoinSensor(mockSensorID, mockSensorCapability, actuatorActorProbe.ref))
+      checkNoDuplicateInsertion(JoinDevice(mockSensorID, mockSensorCapability, actuatorActorProbe.ref))
     }
 
     "have no entities" in {
@@ -67,7 +67,7 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
     "delete an existing entity" in {
       val actuatorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinActuator(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
+      sendJoinEntityMessage(JoinDevice(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
       EMEventBus.subscribe(mockZoneManager.ref, EMEventBus.topic)
       entityManager ! RemoveEntity(mockActuatorID)
       expectMsg(EntityRemoved)
@@ -78,18 +78,16 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
   }
 
-  private def sendJoinEntityMessage(joinRequestMessage: JoinRequest){
+  private def sendJoinEntityMessage(joinRequestMessage: JoinRequest): Unit = {
     entityManager ! joinRequestMessage
     expectMsg(JoinOK)
     joinRequestMessage match {
-      case JoinSensor(identifier, sensingCapability, sensorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredSensor(identifier, sensingCapability), sensorRef)))
-      case JoinActuator(identifier, actingCapability, actuatorRef) =>
-        entitiesInEMShouldBe(List(EntityChannel(RegisteredActuator(identifier, actingCapability), actuatorRef)))
+      case JoinDevice(identifier, sensingCapability, sensorRef) =>
+        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, sensingCapability), sensorRef)))
     }
   }
 
-  private def entitiesInEMShouldBe(result: List[EntityChannel]) = {
+  private def entitiesInEMShouldBe(result: List[DeviceChannel]) = {
     entityManager.underlyingActor.entities shouldBe result
   }
 
