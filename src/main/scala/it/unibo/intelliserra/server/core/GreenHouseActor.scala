@@ -22,14 +22,14 @@ private[core] object GreenHouseActor {
   /**
    * Stop the server
    */
-  case object Stop extends ServerCommand
+  case object Terminate extends ServerCommand
 
   /**
    * Responses to server commands
    */
   sealed trait ServerResponse
   case object Started extends ServerResponse
-  case object Stopped extends ServerResponse
+  case object Terminated extends ServerResponse
   final case class ServerError(throwable: Throwable) extends ServerResponse
 
   /**
@@ -59,22 +59,22 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
 
   private implicit val actorSystem: ActorSystem = context.system
 
-  var greenHouseController: ActorRef = _
-  var zoneManagerActor: ActorRef = _
-  var entityManagerActor: ActorRef = _
-  var ruleEngineServiceActor: ActorRef = _
+  private var greenHouseController: ActorRef = _
+  private var zoneManagerActor: ActorRef = _
+  private var entityManagerActor: ActorRef = _
+  private var ruleEngineServiceActor: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
       log.info("GreenHouse started")
-      zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, zoneConfig))
       entityManagerActor = EntityManagerActor()
+      zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, zoneConfig))
       ruleEngineServiceActor = RuleEngineService(ruleConfig.rules)
-      EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
+      EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic)
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)
       context.become(running)
       sender ! Started
-    case Stop =>
+    case Terminate =>
       log.info("GreenHouse stopped")
       sender ! ServerError(new IllegalStateException("Server is not running"))
   }
@@ -82,17 +82,18 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
   private def running: Receive = {
     case Start => sender ! ServerError(new IllegalStateException("Server is already running"))
     case request: ClientRequest  => greenHouseController.tell(request, sender())
-    case Stop => shutdownActors(sender, List(greenHouseController, ruleEngineServiceActor, zoneManagerActor, entityManagerActor))
+    case Terminate => shutdownActors(sender, List(greenHouseController, ruleEngineServiceActor, zoneManagerActor, entityManagerActor))
   }
 
   private def terminating(actors: List[ActorRef], replyTo: ActorRef): Receive = actors match {
-    case Nil => replyTo ! Stopped; idle
+    case Nil => replyTo ! Terminated; idle
     case _ => {
       case Terminated(actorRef) =>
         context.become(terminating(actors.filterNot(_ == actorRef), replyTo))
     }
   }
 
+  // Shutdown the actors and wait for termination
   private def shutdownActors(replyTo: ActorRef, actors: List[ActorRef]): Unit = {
     actors.map(context.watch).foreach(context stop)
     context.become(terminating(actors, replyTo))

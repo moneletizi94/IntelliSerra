@@ -66,10 +66,10 @@ object GreenHouseServer {
         }
 
     override def terminate(): Future[Unit] = {
-      (serverActor ? Stop)
+      (serverActor ? Terminate)
         .mapTo[ServerResponse]
         .flatMap {
-          case Stopped => actorSystem.terminate().flatMap(_ => Future.unit)
+          case Terminated => actorSystem.terminate().flatMap(_ => Future.unit)
           case ServerError(error) => Future.failed(error)
           case _ => Future.failed(new Exception("unknown error"))
         }

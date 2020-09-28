@@ -4,9 +4,31 @@ import akka.actor.{ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.{ActuatorStateChanged, DoActions}
 import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.device.core.DeviceActor
-import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnOperationCompleted
 
-class ActuatorActor(private val actuator: Actuator) extends DeviceActor with Timers {
+private[device] object ActuatorActor {
+  // self send message when an operation is completed
+  private case class OnOperationCompleted(action: Action)
+
+  /**
+   * Create a ActuatorActor from Actuator.
+   * The actor act as controller of actuator.
+   * @param actuator      the actuator to be controlled by
+   * @param actorSystem   the actor system for create the actor
+   * @return  an actor ref
+   */
+  def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(actuator)
+
+  /**
+   * Create a props configuration for instantiate an ActuatorActor.
+   * The actor act as controller of actuator.
+   * @param actuator  the actuator to be controlled by.
+   * @return the configuration object for instantiate an actor
+   */
+  def props(actuator: Actuator): Props = Props(new ActuatorActor(actuator))
+}
+
+private[device] class ActuatorActor(private val actuator: Actuator) extends DeviceActor with Timers {
 
   override protected def onAssociated(zoneRef: ActorRef, zoneName: String): Unit = {}
   override protected def onDissociate(zoneRef: ActorRef, zoneName: String): Unit = {}
@@ -19,24 +41,17 @@ class ActuatorActor(private val actuator: Actuator) extends DeviceActor with Tim
       } schedule(action, operation)
       zoneRef ! ActuatorStateChanged(actuator.state)
 
-    case OnCompleteAction(action) =>
+    case OnOperationCompleted(action) =>
       zoneRef ! ActuatorStateChanged(actuator.handleCompletedAction(action))
   }
 
   override protected def dissociatedBehaviour(zoneRef: ActorRef, zoneName: String): Receive = {
-    case OnCompleteAction(action) => actuator.handleCompletedAction(action)
+    case OnOperationCompleted(action) => actuator.handleCompletedAction(action)
   }
 
-  override def receive: Receive = handleZoneManagement(None)
+  override def receive: Receive = zoneManagementBehaviour(None)
 
-  private def schedule(action: Action, timedTask: Operation): Unit = {
-    timers.startSingleTimer(action, OnCompleteAction(action), timedTask.delay)
+  private def schedule(action: Action, operation: Operation): Unit = {
+    timers.startSingleTimer(action, OnOperationCompleted(action), operation.timeout)
   }
-}
-
-object ActuatorActor {
-  private[actuator] case class OnCompleteAction(action: Action)
-
-  def apply(actuator: Actuator)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(actuator)
-  def props(actuator: Actuator): Props = Props(new ActuatorActor(actuator))
 }
