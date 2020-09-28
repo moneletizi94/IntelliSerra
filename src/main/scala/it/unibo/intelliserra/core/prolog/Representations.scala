@@ -25,6 +25,7 @@ object Representations {
     override def toTerm(data: Category[ValueType]): Term =
       Term.createTerm(data.getClass.getSimpleName.split('$').head.toLowerCase)
   }
+
   implicit object ActionPrologRepresentation extends PrologRepresentation[Action] {
     override def toTerm(data: Action): Term = Term.createTerm(s"action('${data.toString.toLowerCase}')")
   }

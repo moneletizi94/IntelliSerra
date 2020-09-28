@@ -8,16 +8,15 @@ import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.core.state.State
-
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 trait GreenHouseClient extends ZoneClient with RuleClient {
   /**
-  * Remove an entity, either or not associated to a zone
-  * @param entity the entity to remove
-    * @return
-  */
+   * Remove an entity, either or not associated to a zone
+   * @param entity, the entity to remove
+   * @return if success, removed entity, failure otherwise
+   */
   def removeEntity(entity: Entity): Future[Entity]
 }
 

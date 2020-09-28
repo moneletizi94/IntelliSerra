@@ -9,7 +9,7 @@ import it.unibo.intelliserra.core.entity._
 import it.unibo.intelliserra.core.perception
 import it.unibo.intelliserra.core.perception.Measure
 import it.unibo.intelliserra.core.state.State
-import it.unibo.intelliserra.server.aggregation.AggregationFunctions._
+import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.zone.ZoneActor.ComputeMeasuresAggregation
@@ -115,7 +115,7 @@ class ZoneActorSpec extends TestKit(ActorSystem("MyTest")) with TestUtility
   "A zone " must {
     " have at most one aggregator for each category when created" in {
       assertThrows[IllegalArgumentException] {
-        ZoneActor("zoneName", aggregators.+:(createAggregator(Temperature)(min)))
+        ZoneActor.props(aggregators.+:(createAggregator(Temperature)(min)))
       }
     }
   }

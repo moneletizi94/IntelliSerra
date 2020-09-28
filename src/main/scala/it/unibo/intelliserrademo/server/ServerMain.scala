@@ -1,11 +1,11 @@
 package it.unibo.intelliserrademo.server
 
+import it.unibo.intelliserra.core.perception.{DoubleType, IntType, StringType}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.ServerConfig.{AppConfig, RuleConfig, ZoneConfig}
-import it.unibo.intelliserra.server.aggregation.AggregationFunctions.{avg, max, moreFrequent}
+import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator.createAggregator
-import it.unibo.intelliserra.server.aggregation._
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{AirTemperature, DayNight, Dehumidifies, Fan, Heat, Humidity, SoilMoisture, Water}
 import it.unibo.intelliserrademo.common.DefaultAppConfig
@@ -23,7 +23,7 @@ object ServerMain extends App {
     createAggregator(AirTemperature)(avg),
     createAggregator(SoilMoisture)(avg),
     createAggregator(Humidity)(max),
-    createAggregator(DayNight)(moreFrequent)
+    createAggregator(DayNight)(moreFrequent),
   )
 
   val rules = List(

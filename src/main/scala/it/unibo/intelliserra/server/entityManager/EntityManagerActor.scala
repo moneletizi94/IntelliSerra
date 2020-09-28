@@ -33,9 +33,10 @@ private[server] class EntityManagerActor() extends Actor
   }
 
   private def addEntityAndSendResponse(registeredEntity: RegisteredDevice, entityRef : ActorRef, replyTo: ActorRef): Unit = {
-      replyTo ! addEntityIfNotExists(registeredEntity,entityRef)
-                                  .map(newMap => {entities = newMap; JoinOK})
-                                  .getOrElse(JoinError("identifier already exists"))
+    addEntityIfNotExists(registeredEntity, entityRef) match {
+      case Some(newEntities) => entities = newEntities ; replyTo ! JoinOK
+      case None => replyTo ! JoinError("identifier already exists")
+    }
   }
 
 }

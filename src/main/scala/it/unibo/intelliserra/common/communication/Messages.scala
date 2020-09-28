@@ -20,10 +20,6 @@ object Messages {
    */
   sealed trait EntityManagerRequest
 
-  /**
-   * Trait to represent a join request
-   */
-  sealed trait JoinRequest extends EntityManagerRequest
 
   /**
    * Message to join an actuator to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
@@ -31,8 +27,7 @@ object Messages {
    * @param deviceRef the actor ref of the specified device
    */
 
-  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef) extends JoinRequest
-
+  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef)
 
 
   /**
@@ -122,7 +117,7 @@ object Messages {
    * Message sent to ask for the state of a zone, whether it exists
    * @param zoneName identifier of the interested zone
    */
-  case class GetStateOfZone(zoneName: String) extends ZoneManagerRequest
+  case class GetZoneState(zoneName: String) extends ZoneManagerRequest
 
   /**
    * Trait to represent responses given by [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
