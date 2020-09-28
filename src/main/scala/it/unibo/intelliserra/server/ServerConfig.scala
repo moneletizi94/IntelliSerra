@@ -9,16 +9,27 @@ import scala.concurrent.duration.FiniteDuration
 
 /**
  * This is the server configuration where there are all the configuration info for the server
- * @param appConfig it is to setup the application (host, port, name
+ * @param appConfig it is to setup the application (host, port, name)
  * @param zoneConfig it is for [[it.unibo.intelliserra.server.zone.ZoneActor]]
- * @param ruleConfig it is for RuleEngineService
+ * @param ruleConfig it is for [[it.unibo.intelliserra.server.rule.RuleEngineService]]
  */
 final case class ServerConfig private(appConfig: AppConfig, zoneConfig: ZoneConfig, ruleConfig: RuleConfig)
 
 object ServerConfig {
 
   // scalastyle:off magic.number
-  // TODO: scaladoc 
+  /**
+   * Creates a Server Configuration in which
+   * specify all the needed configuration on server side
+   * @param name, name of the application
+   * @param host, address of the server
+   * @param port, port to contact the server
+   * @param actionsEvaluationPeriod, when to check active actions
+   * @param stateEvaluationPeriod, when to compute state
+   * @param aggregators, how to aggregate same values
+   * @param rules, predefined rules of the application
+   * @return
+   */
   def apply(name: String,
             host: String = "localhost",
             port: Int = 8080,
@@ -56,7 +67,7 @@ object ServerConfig {
                                       aggregators: List[Aggregator])
 
   /**
-   * Represents rule Engine configuration
+   * Represents [[it.unibo.intelliserra.core.rule.RuleEngine]] configuration
    * @param rules list of rules
    */
   final case class RuleConfig private(rules: List[Rule])

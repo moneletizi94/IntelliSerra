@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.core
 
-//TODO scaladoc
+/** Provides implicits for converting primitive type to ValueType wrapped type */
 package object perception {
 
   implicit def int2IntType(value: Int) : IntType =  IntType(value)
