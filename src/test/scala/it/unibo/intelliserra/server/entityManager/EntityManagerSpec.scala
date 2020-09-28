@@ -1,6 +1,6 @@
 package it.unibo.intelliserra.server.entityManager
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
 import it.unibo.intelliserra.common.communication.Messages._
 import it.unibo.intelliserra.core.action.Action
@@ -35,28 +35,18 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
 
   "An Entity Manager" should {
 
-    "register a sensor after receiving join" in {
+    "register a device after receiving join" in {
       val sensorActorProbe = TestProbe()
       sendJoinEntityMessage(JoinDevice(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
     }
 
-    "register an actuator after receiving join" in {
-      val actuatorActorProbe = TestProbe()
-      sendJoinEntityMessage(JoinDevice(mockActuatorID, mockActuatorCapability, actuatorActorProbe.ref))
-    }
-
-    "not permit adding of sensor with existing identifier" in {
-      val sensorActorProbe = TestProbe()
-      checkNoDuplicateInsertion(JoinDevice(mockSensorID, mockSensorCapability, sensorActorProbe.ref))
-    }
-
-    "not permit adding of actuator with existing identifier" in {
+    "not allow the addition of an actuator with an existing identifier" in {
       val actuatorActorProbe = TestProbe()
       checkNoDuplicateInsertion(JoinDevice(mockSensorID, mockSensorCapability, actuatorActorProbe.ref))
     }
 
     "have no entities" in {
-      entitiesInEMShouldBe(List())
+      entityManager.underlyingActor.entities shouldBe List()
     }
 
     /* --- START TESTING REMOVE ENTITY --- */
@@ -72,26 +62,20 @@ private class EntityManagerSpec extends TestKit(ActorSystem("MySpec"))
       entityManager ! RemoveEntity(mockActuatorID)
       expectMsg(EntityRemoved)
       mockZoneManager.expectMsgType[PublishedOnRemoveEntity]
-      entitiesInEMShouldBe(List())
+      entityManager.underlyingActor.entities shouldBe List()
     }
     /* --- END TESTING REMOVE ENTITY --- */
 
   }
 
-  private def sendJoinEntityMessage(joinRequestMessage: JoinRequest): Unit = {
+  private def sendJoinEntityMessage(joinRequestMessage: JoinDevice): Unit = {
     entityManager ! joinRequestMessage
     expectMsg(JoinOK)
-    joinRequestMessage match {
-      case JoinDevice(identifier, sensingCapability, sensorRef) =>
-        entitiesInEMShouldBe(List(DeviceChannel(RegisteredDevice(identifier, sensingCapability), sensorRef)))
-    }
+    val registeredDevice = RegisteredDevice(joinRequestMessage.identifier, joinRequestMessage.capability)
+    entityManager.underlyingActor.entities shouldBe List(DeviceChannel(registeredDevice, joinRequestMessage.deviceRef))
   }
 
-  private def entitiesInEMShouldBe(result: List[DeviceChannel]) = {
-    entityManager.underlyingActor.entities shouldBe result
-  }
-
-  private def checkNoDuplicateInsertion(joinRequest: JoinRequest) = {
+  private def checkNoDuplicateInsertion(joinRequest: JoinDevice) = {
     entityManager ! joinRequest
     expectMsg(JoinOK)
     entityManager.underlyingActor.entities should have size 1

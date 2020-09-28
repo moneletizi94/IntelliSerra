@@ -10,31 +10,31 @@ import org.scalatestplus.junit.JUnitRunner
 class NumericImplementationsSpec extends FlatSpec with Matchers{
 
   "A numeric integer " should " do operations correctly" in {
-    numericInt.plus(3,3) shouldBe IntType(6)
-    numericInt.minus(3,3) shouldBe IntType(0)
-    numericInt.times(3,3) shouldBe IntType(9)
-    numericInt.negate(3) shouldBe IntType(-3)
-    numericInt.fromInt(3) shouldBe IntType(3)
-    numericInt.toInt(3) shouldBe 3
-    numericInt.toLong(3) shouldBe 3L
-    numericInt.toFloat(3) shouldBe 3.0
-    numericInt.toDouble(3) shouldBe 3.0
-    numericInt.compare(3,3) shouldBe 0
-    numericInt.div(3,3) shouldBe IntType(1)
+    intTypeFractional.plus(3,3) shouldBe IntType(6)
+    intTypeFractional.minus(3,3) shouldBe IntType(0)
+    intTypeFractional.times(3,3) shouldBe IntType(9)
+    intTypeFractional.negate(3) shouldBe IntType(-3)
+    intTypeFractional.fromInt(3) shouldBe IntType(3)
+    intTypeFractional.toInt(3) shouldBe 3
+    intTypeFractional.toLong(3) shouldBe 3L
+    intTypeFractional.toFloat(3) shouldBe 3.0
+    intTypeFractional.toDouble(3) shouldBe 3.0
+    intTypeFractional.compare(3,3) shouldBe 0
+    intTypeFractional.div(3,3) shouldBe IntType(1)
   }
 
   "A numeric double " should " do operations correctly" in {
-    numericDouble.plus(3.0,3.0) shouldBe DoubleType(6.0)
-    numericDouble.minus(3.0,3.0) shouldBe DoubleType(0)
-    numericDouble.times(3.0,3.0) shouldBe DoubleType(9)
-    numericDouble.negate(3.0) shouldBe DoubleType(-3)
-    numericDouble.fromInt(3) shouldBe DoubleType(3)
-    numericDouble.toInt(3.0) shouldBe 3
-    numericDouble.toLong(3.0) shouldBe 3L
-    numericDouble.toFloat(3.0) shouldBe 3.0
-    numericDouble.toDouble(3.0) shouldBe 3.0
-    numericDouble.compare(3.0,3) shouldBe 0
-    numericDouble.div(3.0,3) shouldBe DoubleType(1)
+    doubleTypeFractional.plus(3.0,3.0) shouldBe DoubleType(6.0)
+    doubleTypeFractional.minus(3.0,3.0) shouldBe DoubleType(0)
+    doubleTypeFractional.times(3.0,3.0) shouldBe DoubleType(9)
+    doubleTypeFractional.negate(3.0) shouldBe DoubleType(-3)
+    doubleTypeFractional.fromInt(3) shouldBe DoubleType(3)
+    doubleTypeFractional.toInt(3.0) shouldBe 3
+    doubleTypeFractional.toLong(3.0) shouldBe 3L
+    doubleTypeFractional.toFloat(3.0) shouldBe 3.0
+    doubleTypeFractional.toDouble(3.0) shouldBe 3.0
+    doubleTypeFractional.compare(3.0,3) shouldBe 0
+    doubleTypeFractional.div(3.0,3) shouldBe DoubleType(1)
   }
 
 }

@@ -21,10 +21,6 @@ object Messages {
    */
   sealed trait EntityManagerRequest
 
-  /**
-   * Trait to represent a join request
-   */
-  sealed trait JoinRequest extends EntityManagerRequest
 
   /**
    * Message to join an actuator to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
@@ -32,8 +28,7 @@ object Messages {
    * @param deviceRef the actor ref of the specified device
    */
 
-  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef) extends JoinRequest
-
+  final case class JoinDevice(identifier: String, capability: Capability, deviceRef: ActorRef)
 
 
   /**

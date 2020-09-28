@@ -3,15 +3,21 @@ package it.unibo.intelliserra.server
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NumberType
 import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 
+import scala.collection.{LinearSeq}
+
 package object aggregation {
 
-  implicit class RichList[T](list: List[T]){
-    def avg(implicit fractional: Fractional[T]) : T = fractional.mkNumericOps(list.sum(fractional)) / fractional.fromInt(list.size)
-    def computeFrequency : Map[T,Int] = list.groupBy(identity).mapValues(_.size)
-    def hasUniqueValueForProperty[B](property : T => B) : Boolean = list.groupBy(property(_)).forall(_._2.lengthCompare(1) == 0)
+  implicit class RichTraversable[T](traversable: Traversable[T]){
+    def avg(implicit fractional: Fractional[T]) : T = fractional.mkNumericOps(traversable.sum(fractional)) / fractional.fromInt(traversable.size)
+    def computeFrequency : Map[T,Int] = traversable.groupBy(identity).mapValues(_.size)
   }
 
-  implicit val numericInt: Fractional[IntType] = new Fractional[IntType] {
+  implicit class RichSeq[T](seq: LinearSeq[T]){
+    def hasUniqueValueForProperty[B](property : T => B) : Boolean = seq.groupBy(property(_)).forall(_._2.lengthCompare(1) == 0)
+  }
+
+
+  val intTypeFractional: Fractional[IntType] = new Fractional[IntType] {
     override def plus(x: IntType, y: IntType): IntType = x.value + y.value
 
     override def minus(x: IntType, y: IntType): IntType = x.value - y.value
@@ -35,7 +41,7 @@ package object aggregation {
     override def div(x: IntType, y: IntType): IntType = x.value / y.value
   }
 
-  implicit val numericDouble: Fractional[DoubleType] = new Fractional[DoubleType] {
+  val doubleTypeFractional: Fractional[DoubleType] = new Fractional[DoubleType] {
     override def plus(x: DoubleType, y: DoubleType): DoubleType = x.value + y.value
 
     override def minus(x: DoubleType, y: DoubleType): DoubleType = x.value - y.value
