@@ -51,8 +51,8 @@ class AggregatorSpec extends FlatSpec with Matchers with TestUtility {
   }
 
   "An aggregator of textual type" should "aggregate measures correctly using custom aggregate function" in {
-    val aggregatedMeasure =   createAggregator(Temperature)(list => list.fold[IntType](0)((a1, a2) => a1.value + a2.value)).aggregate(intTempMeasures)
-    aggregatedMeasure shouldBe Success(perception.Measure(Temperature)(17))
+    val aggregatedMeasure =  createAggregator(Temperature)(list => list.foldLeft(IntType(0))((a1, a2) => if(a2.value > 4) a1+a2 else a1)).aggregate(intTempMeasures)
+    aggregatedMeasure shouldBe Success(perception.Measure(Temperature)(13))
   }
 
 }

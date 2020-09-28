@@ -3,7 +3,8 @@ package it.unibo.intelliserra.server
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NumberType
 import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 
-import scala.collection.{LinearSeq}
+import scala.collection.LinearSeq
+import scala.math.Fractional
 
 package object aggregation {
 
