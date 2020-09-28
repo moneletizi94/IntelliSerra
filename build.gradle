@@ -3,13 +3,15 @@ plugins {
     id 'scala'
     id "com.github.alisiikh.scalastyle" version "3.4.1"
     id "org.scoverage" version "4.0.2"
+    id 'maven-publish'
     id "com.github.johnrengelman.shadow" version "6.0.0"
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'it.unibo'
+version '1.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -40,6 +42,46 @@ scoverage {
     excludedPackages = [".*examples.*", "it.unibo.intelliserrademo.*"]
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'intelliserra'
+            from components.java
+            pom {
+                name = 'intelliserra'
+            }
+        }
+    }
+}
+
+task serverDemo(type: Jar, dependsOn: shadowJar) {
+    baseName "server"
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.server.ServerMain'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+task clientDemo(type: Jar, dependsOn: shadowJar) {
+    baseName 'client'
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.gui.ISerraGui'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+task deviceDemo(type: Jar, dependsOn: shadowJar) {
+    baseName 'devices'
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.customdevice.TomatoDeviceApp'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 shadowJar {
-    exclude 'it.unibo.intelliserrademo/**'
+    transform(AppendingTransformer) {
+        resource = 'reference.conf'
+    } with jar
 }
