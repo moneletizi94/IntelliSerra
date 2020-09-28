@@ -5,8 +5,9 @@ import akka.pattern.ask
 import akka.util.Timeout
 import it.unibo.intelliserra.common.communication.Messages
 import it.unibo.intelliserra.common.communication.Protocol._
-import scala.concurrent.{ExecutionContext, Future}
+
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -116,10 +117,20 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
   }
 }
 
+/** Factory for [[it.unibo.intelliserra.server.GreenHouseController]] instances. */
 object GreenHouseController {
   val name = "GreenHouseController"
 
-  // TODO: documentation
+  /**
+   * Creates a GreenHouseController actor with a given the actorRef from the other actors.
+   *
+   * @param zoneManagerActor actorRef representing a zoneManager actor,
+   * @param entityManagerActor actorRef representing a entityManager actor,
+   * @param ruleEngineServiceActor actorRef representing a ruleEngineService actor,
+   * @param actorSystem represent the actorSystem,
+   * @return actorRef representing an actor, which is a new GreenHouseController
+   *         that contains the actorRef of the other actors and the specified name.
+   */
   def apply(zoneManagerActor: ActorRef, entityManagerActor: ActorRef, ruleEngineServiceActor: ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
     actorSystem actorOf(Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)), name)
 }

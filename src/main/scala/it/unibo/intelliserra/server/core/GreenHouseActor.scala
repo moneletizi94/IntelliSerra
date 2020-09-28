@@ -59,18 +59,18 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
 
   private implicit val actorSystem: ActorSystem = context.system
 
-  var greenHouseController: ActorRef = _
-  var zoneManagerActor: ActorRef = _
-  var entityManagerActor: ActorRef = _
-  var ruleEngineServiceActor: ActorRef = _
+  private var greenHouseController: ActorRef = _
+  private var zoneManagerActor: ActorRef = _
+  private var entityManagerActor: ActorRef = _
+  private var ruleEngineServiceActor: ActorRef = _
 
   private def idle: Receive = {
     case Start =>
       log.info("GreenHouse started")
-      zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, zoneConfig))
       entityManagerActor = EntityManagerActor()
+      zoneManagerActor = ZoneManagerActor(zoneName => ZoneActor(zoneName, zoneConfig))
       ruleEngineServiceActor = RuleEngineService(ruleConfig.rules)
-      EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic) //it will update zoneManager on removeEntity
+      EMEventBus.subscribe(zoneManagerActor, EMEventBus.topic)
       greenHouseController = GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)
       context.become(running)
       sender ! Started
@@ -93,6 +93,7 @@ private[core] class GreenHouseActor(ruleConfig: RuleConfig, zoneConfig: ZoneConf
     }
   }
 
+  // Shutdown the actors and wait for termination
   private def shutdownActors(replyTo: ActorRef, actors: List[ActorRef]): Unit = {
     actors.map(context.watch).foreach(context stop)
     context.become(terminating(actors, replyTo))

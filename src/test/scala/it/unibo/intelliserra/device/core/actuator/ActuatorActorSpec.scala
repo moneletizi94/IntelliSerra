@@ -5,7 +5,7 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, ActuatorStateChanged, AssociateTo, DissociateFrom, DoActions}
 import it.unibo.intelliserra.core.action.{Action, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
+import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnOperationCompleted
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, OpenWindow, Water}
 import org.junit.runner.RunWith
@@ -63,7 +63,7 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
 
     "send its operational state if an action is completed" in {
       associateToZone(actuatorActor)
-      actuatorActor ! OnCompleteAction(Water)
+      actuatorActor ! OnOperationCompleted(Water)
       expectMsgType[ActuatorStateChanged]
     }
 

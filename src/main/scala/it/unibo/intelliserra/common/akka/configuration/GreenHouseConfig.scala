@@ -2,11 +2,18 @@ package it.unibo.intelliserra.common.akka.configuration
 
 import com.typesafe.config.{Config, ConfigFactory}
 
+/**
+ * Factory for akka actor system configuration
+ */
 object GreenHouseConfig {
 
-  // scalastyle:off magic.number
-  // TODO: documentation
-  def apply(host: String = "localhost", port: Int = 8080): Config = {
+  /**
+   * Create a server configuration for akka remote actor system
+   * @param host  the hostname of server
+   * @param port  the port of server
+   * @return a server configuration
+   */
+  def apply(host: String = "localhost", port: Int = 8080): Config = { // scalastyle:off magic.number
     val properties = Map(
       "akka.remote.classic.netty.tcp.hostname" -> host,
       "akka.remote.classic.netty.tcp.port" -> port
@@ -14,7 +21,12 @@ object GreenHouseConfig {
     createConfigWithFallback(properties)
   }
 
-  // TODO: documentation
+  /**
+   * Create a client configuration for akka remote actor system
+   * @param host  the hostname where server is running
+   * @param port  the port where server is running
+   * @return a client configuration
+   */
   def client(host: String = "localhost", port: Int = 0): Config = GreenHouseConfig(host, port)
 
   private def createConfigWithFallback(properties: Map[String, _]): Config = {
@@ -22,6 +34,7 @@ object GreenHouseConfig {
     ConfigFactory.parseString(config).withFallback(defaultConfig)
   }
 
+  // default akka configuration
   private val defaultConfig = ConfigFactory.parseString(
     """
       |akka {
@@ -31,13 +44,11 @@ object GreenHouseConfig {
       |    allow-java-serialization = true
       |    warn-about-java-serializer-usage = false
       |  }
-      |  akka.remote.classic {
-      |      # If this is "on", Akka will log all inbound messages at DEBUG level,
-      |      # if off then they are not logged
-      |      log-received-messages = on
-      |    }
       |  remote.artery.enabled = false
       |  remote.classic {
+      |    # If this is "on", Akka will log all inbound messages at DEBUG level,
+      |    # if off then they are not logged
+      |    log-received-messages = on
       |    enabled-transports = ["akka.remote.classic.netty.tcp"]
       |    netty.tcp {
       |      hostname = "127.0.0.1"
