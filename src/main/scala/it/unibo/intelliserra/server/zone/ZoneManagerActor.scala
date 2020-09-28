@@ -2,11 +2,10 @@ package it.unibo.intelliserra.server.zone
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import it.unibo.intelliserra.common.communication.Messages._
-import it.unibo.intelliserra.server.ServerConfig.ZoneConfig
 import it.unibo.intelliserra.server.entityManager.DeviceChannel
 import it.unibo.intelliserra.server.entityManager.EMEventBus.PublishedOnRemoveEntity
 
-/**
+/*
  * This is the Zone Manager actor which is in charge to create new zone actors when
  * a client needs them, it keeps link between zone identifier (given by the client)
  * and the actor ref. It also be able to delete zones and check for zone existence.
@@ -108,9 +107,6 @@ private[zone] class ZoneManagerActor(private val zoneStrategy: String => ActorRe
 
   /* --- UTILITY METHODS ---*/
 
-  //This is done to override the creation of an actor to test it
-  //private[zone] def createZoneActor(zoneID: String ): ActorRef = ZoneActor(zoneID, zoneConfig.aggregators)
-
   private def deleteZoneFromStructuresAndInformEntities(zoneID: String): Unit = {
     informEntitiesToDissociate(assignedEntities(zoneID), zoneID) //if the zone exists in zones, it will exists also in assignedEntities
     pending.get(zoneID).foreach(set => {
@@ -142,7 +138,13 @@ private[zone] class ZoneManagerActor(private val zoneStrategy: String => ActorRe
 object ZoneManagerActor {
   val name = "ZoneManager"
 
-  // TODO: scaladoc 
+  /**
+   * Creates a zoneManagerActor responsible for managing zones
+    * @param zoneStrategy, a strategy used to specify how to create a
+   *                    [[it.unibo.intelliserra.server.zone.ZoneActor]] given a name
+   * @param actorSystem, the actor system to create the actor
+   * @return
+   */
   def apply(zoneStrategy: String => ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
     actorSystem actorOf (Props(new ZoneManagerActor(zoneStrategy)), name)
 }
