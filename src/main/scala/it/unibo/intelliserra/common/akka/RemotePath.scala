@@ -4,9 +4,11 @@ import akka.actor.ActorPath
 
 object RemotePath {
 
+  // TODO: documentation
   def entityManager(greenHouseName: String, serverHost: String, serverPort: Int): String =
     buildRemotePath(greenHouseName, serverHost, serverPort, "/user/entityManager").toString
 
+  // TODO: documentation
   def server(greenHouseName: String, serverHost: String, serverPort: Int): String =
     buildRemotePath(greenHouseName, serverHost, serverPort, "/user/serverActor").toString
 

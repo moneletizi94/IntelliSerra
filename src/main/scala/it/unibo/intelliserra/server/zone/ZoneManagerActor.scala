@@ -141,6 +141,8 @@ private[zone] class ZoneManagerActor(private val zoneStrategy: String => ActorRe
 
 object ZoneManagerActor {
   val name = "ZoneManager"
+
+  // TODO: scaladoc 
   def apply(zoneStrategy: String => ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
     actorSystem actorOf (Props(new ZoneManagerActor(zoneStrategy)), name)
 }

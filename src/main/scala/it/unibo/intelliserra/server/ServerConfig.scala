@@ -18,6 +18,7 @@ final case class ServerConfig private(appConfig: AppConfig, zoneConfig: ZoneConf
 object ServerConfig {
 
   // scalastyle:off magic.number
+  // TODO: scaladoc 
   def apply(name: String,
             host: String = "localhost",
             port: Int = 8080,

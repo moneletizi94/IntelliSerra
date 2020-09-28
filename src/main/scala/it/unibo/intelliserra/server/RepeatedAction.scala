@@ -6,6 +6,7 @@ import scala.concurrent.duration._
 
 trait RepeatedAction[M <: Any] extends Timers { this : Actor =>
 
+  // TODO: scaladoc 
   val repeatedActionRate : FiniteDuration
   val repeatedMessage : M
 

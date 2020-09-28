@@ -52,7 +52,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
     flattenTryIterable(measuresTry)(e => log.error(e,"incompatible measures type"))(identity).toList
   }
 
-  private[zone] def getDeviceAndCapableActions(actions : Set[Action]) : Map[DeviceChannel, Traversable[Action]] = {
+  private[zone] def getDevicesAndCapableActions(actions : Set[Action]) : Map[DeviceChannel, Traversable[Action]] = {
     (for {
       associatedEntity <- associatedEntities
       action <- actions
@@ -62,7 +62,7 @@ private[zone] class ZoneActor(private val aggregators: List[Aggregator],
   }
 
   private[zone] def sendToCorrectActuators(actions: Set[Action]): Unit = {
-    getDeviceAndCapableActions(actions).foreach({
+    getDevicesAndCapableActions(actions).foreach({
       case (deviceChannel,capableActions) => deviceChannel.channel ! DoActions(capableActions.toSet)
     })
   }
@@ -90,12 +90,25 @@ object ZoneActor {
   private val defaultStateEvaluationRate = 10 seconds
   private val defaultActionsEvaluationRate = 10 seconds
 
+  /**
+   * Create a zone actor
+   * @param system the actor system for create the actor
+   * @return the zoneActor ActorRef
+   */
   def apply(name: String,
             config: ZoneConfig)
            (implicit system: ActorSystem): ActorRef = {
     system actorOf (props(config.aggregators, config.stateEvaluationPeriod, config.actionsEvaluationPeriod), name)
   }
 
+  /**
+   * Create an entity manager actor
+   *
+   * @param aggregators the list of availableAggregators
+   * @param computeStateRate the periodic state computation time; 10 seconds by default
+   * @param computeActionsRate periodic inference time of the actions to be performed, based on the rules, in order to restore the ideal encoding; 10 seconds by default
+   * @return a Props relates to zoneActor
+   */
   def props(aggregators: List[Aggregator],
             computeStateRate : FiniteDuration = defaultStateEvaluationRate,
             computeActionsRate : FiniteDuration = defaultActionsEvaluationRate): Props = {

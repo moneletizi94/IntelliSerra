@@ -3,6 +3,7 @@ package it.unibo.intelliserra.core.state
 import it.unibo.intelliserra.core.action.Action
 import it.unibo.intelliserra.core.perception.Measure
 
+// TODO: documentation
 trait State extends Serializable {
   def timestamp : Long
   def perceptions : List[Measure]

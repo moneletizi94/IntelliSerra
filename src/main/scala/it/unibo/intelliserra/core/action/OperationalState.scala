@@ -1,5 +1,6 @@
 package it.unibo.intelliserra.core.action
 
+// TODO: documentation
 sealed trait OperationalState {
   def isDoing(action: Action): Boolean = this match {
     case DoingActions(actions) => actions.map(_.getClass).contains(action.getClass)

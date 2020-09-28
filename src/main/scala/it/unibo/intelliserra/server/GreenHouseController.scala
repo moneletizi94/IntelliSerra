@@ -119,6 +119,7 @@ private[server] class GreenHouseController(zoneManagerActor: ActorRef, entityMan
 object GreenHouseController {
   val name = "GreenHouseController"
 
+  // TODO: documentation
   def apply(zoneManagerActor: ActorRef, entityManagerActor: ActorRef, ruleEngineServiceActor: ActorRef)(implicit actorSystem: ActorSystem): ActorRef =
     actorSystem actorOf(Props(new GreenHouseController(zoneManagerActor, entityManagerActor, ruleEngineServiceActor)), name)
 }

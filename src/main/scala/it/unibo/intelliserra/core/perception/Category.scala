@@ -1,4 +1,4 @@
 package it.unibo.intelliserra.core.perception
 
-//TODO scaladoc
+// TODO: scaladoc
 trait Category[+Value <: ValueType]
