@@ -2,35 +2,34 @@ package it.unibo.intelliserra.device.core.sensor
 
 import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props, Timers}
 import it.unibo.intelliserra.common.communication.Messages.SensorMeasureUpdated
-import it.unibo.intelliserra.device.core.{DeviceActor, Sensor}
+import it.unibo.intelliserra.device.core.DeviceActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor.SensorPollingTime
 
-class SensorActor(override val device: Sensor) extends DeviceActor with Timers with ActorLogging {
 
-  override def receive: Receive = zoneManagement orElse fallback
+// It's lazy factory for sensor
+class SensorActor(sensor: Sensor) extends DeviceActor with Timers with ActorLogging {
 
-  override protected def associateBehaviour(zoneRef: ActorRef): Receive = {
-    timers.startTimerAtFixedRate(device.identifier, SensorPollingTime, device.readPeriod)
-    val newBehaviour: PartialFunction[Any, Unit] = {
-      case SensorPollingTime =>
-        device.read().filter(_.category == device.capability.category).foreach {
-          measure =>
-            log.info(s"Sending measure: $measure")
-            zoneRef ! SensorMeasureUpdated(measure)
-        }
-    }
-    newBehaviour
+  override def receive: Receive = handleZoneManagement(None)
+
+  override protected def onAssociated(zoneRef: ActorRef, zoneName: String): Unit = {
+    timers.startTimerAtFixedRate(sensor.identifier, SensorPollingTime, sensor.sensePeriod)
   }
 
-  override protected def dissociateBehaviour(zoneRef: ActorRef): Receive = {
-    case SensorPollingTime =>
-      log.debug(s"${device.identifier} not associated: ignoring polling period")
+  override protected def onDissociate(zoneRef: ActorRef, zoneName: String): Unit = {
+    timers.cancel(sensor.identifier)
+  }
+
+  override protected def associatedBehaviour(zoneRef: ActorRef, zoneName: String): Receive = {
+    case SensorPollingTime => sensor.sense().foreach(zoneRef ! SensorMeasureUpdated(_))
+  }
+
+  override protected def dissociatedBehaviour(zoneRef: ActorRef, zoneName: String): Receive = {
+    case SensorPollingTime => log.info("ignoring polling when dissociated")
   }
 }
 
 object SensorActor {
   private case object SensorPollingTime
-
   def apply(sensor: Sensor)(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf props(sensor)
   def props(sensor: Sensor): Props = Props(new SensorActor(sensor))
 }

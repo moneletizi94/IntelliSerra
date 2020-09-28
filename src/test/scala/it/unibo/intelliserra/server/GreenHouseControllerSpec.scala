@@ -3,13 +3,12 @@ package it.unibo.intelliserra.server
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages
-import it.unibo.intelliserra.common.communication.Messages.{ JoinOK, JoinDevice}
+import it.unibo.intelliserra.common.communication.Messages.{JoinDevice, JoinOK}
 import it.unibo.intelliserra.common.communication.Protocol._
 import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.core.rule.{Rule, RuleInfo, StatementTestUtils}
-import it.unibo.intelliserra.device.core.{Actuator, Sensor}
-import it.unibo.intelliserra.device.core.actuator.ActuatorActor
-import it.unibo.intelliserra.device.core.sensor.SensorActor
+import it.unibo.intelliserra.device.core.actuator.{Actuator, ActuatorActor}
+import it.unibo.intelliserra.device.core.sensor.{Sensor, SensorActor}
 import it.unibo.intelliserra.server.entityManager.EntityManagerActor
 import it.unibo.intelliserra.server.rule.RuleEngineService
 import it.unibo.intelliserra.server.zone.ZoneManagerActor
@@ -52,8 +51,8 @@ private class GreenHouseControllerSpec extends TestKit(ActorSystem("GreenHouseCo
     TestKit.shutdownActorSystem(system)
   }
 
-  private val sensor: Sensor = mockSensor("sensorID")
-  private val sensor2: Sensor = mockSensor("sensor2ID")
+  private val sensor: Sensor = mockTemperatureSensor("sensorID")
+  private val sensor2: Sensor = mockTemperatureSensor("sensor2ID")
   private val actuator: Actuator = mockActuator("actuatorID")
   private val actuator2: Actuator = mockActuator("actuator2ID")
 
