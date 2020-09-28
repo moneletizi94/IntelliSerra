@@ -27,7 +27,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
   }
 
   after {
-    awaitReady(serverActor ? Terminate)
+    awaitReady(serverActor ? Stop)
   }
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
@@ -48,12 +48,12 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
     "send Stopped message when is successfully stopped" in {
       serverActor ! Start
       expectMsg(Started)
-      serverActor ! Terminate
-      expectMsg(Terminated)
+      serverActor ! Stop
+      expectMsg(Stopped)
     }
 
     "send a ServerError if is already stopped" in {
-      serverActor ! Terminate
+      serverActor ! Stop
       expectMsgType[ServerError]
     }
 
@@ -66,7 +66,7 @@ class GreenHouseActorSpec extends TestKit(ActorSystem("test", GreenHouseConfig()
 
     "ignore request if stopped" in {
       awaitReady(serverActor ? Start)
-      awaitReady(serverActor ? Terminate)
+      awaitReady(serverActor ? Stop)
 
       makeTestRequest()
       expectNoMessage()

@@ -5,9 +5,9 @@ import it.unibo.intelliserra.common.communication.Messages.SensorMeasureUpdated
 import it.unibo.intelliserra.device.core.DeviceActor
 import it.unibo.intelliserra.device.core.sensor.SensorActor.SensorPollingTime
 
-private[device] object SensorActor {
+object SensorActor {
   // self send message when is time to read value from sensor
-  private case object SensorPollingTime
+  private[device] case object SensorPollingTime
 
   /**
    * Create a SensorActor from Sensor.

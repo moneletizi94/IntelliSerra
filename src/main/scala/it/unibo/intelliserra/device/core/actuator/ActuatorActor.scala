@@ -6,9 +6,9 @@ import it.unibo.intelliserra.core.action._
 import it.unibo.intelliserra.device.core.DeviceActor
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnOperationCompleted
 
-private[device] object ActuatorActor {
+object ActuatorActor {
   // self send message when an operation is completed
-  private case class OnOperationCompleted(action: Action)
+  private[device] case class OnOperationCompleted(action: Action)
 
   /**
    * Create a ActuatorActor from Actuator.
