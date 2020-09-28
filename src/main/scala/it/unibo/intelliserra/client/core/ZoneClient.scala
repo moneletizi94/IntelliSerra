@@ -25,7 +25,7 @@ trait ZoneClient {
 
   /**
    * Obtain all existing zones
-   * @return if success, a list of alla existing zones, otherwise a failure
+   * @return if success, a list of all existing zones, otherwise a failure
    */
   def zones(): Future[List[Zone]]
 
@@ -41,7 +41,7 @@ trait ZoneClient {
    * Dissociate the specified entity, whether it is associated or in pending
    *
    * @param entity the entity to remove
-   * @return the dissociated entity
+   * @return if success, the dissociated entity, a failure otherwise
    */
   def dissociateEntity(entity: Entity): Future[Entity]
 

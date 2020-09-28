@@ -1,13 +1,11 @@
 package it.unibo.intelliserra.server.core
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import it.unibo.intelliserra.common.akka.actor.{DefaultExecutionContext, DefaultTimeout}
 import it.unibo.intelliserra.common.akka.configuration.GreenHouseConfig
 import it.unibo.intelliserra.server.ServerConfig
-import it.unibo.intelliserra.core.rule.Rule
-import it.unibo.intelliserra.server.core.GreenHouseActor.{ServerError, ServerResponse, Start, Started, Stop, Stopped}
+import it.unibo.intelliserra.server.core.GreenHouseActor._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContextExecutor, Future}
