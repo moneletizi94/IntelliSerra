@@ -4,12 +4,10 @@ import akka.actor.{ActorSystem, PoisonPill}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.core.perception
 import it.unibo.intelliserra.core.perception.{IntType, Measure}
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature}
 import org.junit.runner.RunWith
-import org.mockito.scalatest.MockitoSugar
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 
@@ -23,7 +21,6 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with MockitoSugar
   with TestUtility {
 
   private val SensorName = "MockSensor"
