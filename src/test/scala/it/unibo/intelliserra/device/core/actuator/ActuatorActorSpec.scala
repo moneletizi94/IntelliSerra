@@ -5,7 +5,6 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, ActuatorStateChanged, AssociateTo, DissociateFrom, DoActions}
 import it.unibo.intelliserra.core.action.{Action, Idle, OperationalState}
 import it.unibo.intelliserra.core.entity.Capability
-import it.unibo.intelliserra.device.core.{Actuator, TimedTask}
 import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnCompleteAction
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, OpenWindow, Water}
@@ -24,7 +23,6 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
   with WordSpecLike
   with BeforeAndAfter
   with BeforeAndAfterAll
-  with MockitoSugar
   with TestUtility {
 
   private val ActuatorName = "MockActuator"
@@ -35,9 +33,9 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
   private var actuatorActor: TestActorRef[ActuatorActor] = _
 
   before {
-    actuator = spy(mockActuator(ActuatorName, ActuatorCapability) {
-      case (_, _) => TimedTask(1 seconds)
-    })
+    actuator = mockActuator(ActuatorName, ActuatorCapability) {
+      case (_, _) => Operation.completeAfter(1 seconds)
+    }
     actuatorActor = TestActorRef.create(system, ActuatorActor.props(actuator))
   }
 
@@ -52,29 +50,20 @@ class ActuatorActorSpec extends TestKit(ActorSystem("device"))
 
   "An actuator" must {
 
-    "handle init event when actor start" in {
-      verify(actuator).onInit()
-    }
-
-    "handle association event when is associated to zone from server" in {
+    "send an ack when is associated to zone from server" in {
       associateToZone(actuatorActor)
-      verify(actuator).onAssociateZone(any[String])
-    }
-
-    "handle dissociation event when is dissociated to zone from server" in {
-      associateToZone(actuatorActor)
-      dissociateToZone(actuatorActor)
-      verify(actuator).onDissociateZone(any[String])
     }
 
     "ignore actions if is not associated to zone" in {
+      associateToZone(actuatorActor)
+      dissociateToZone(actuatorActor)
       actuatorActor ! DoActions(ActuatorActions.toSet)
       expectNoMessage()
     }
 
     "send its operational state if an action is completed" in {
       associateToZone(actuatorActor)
-      actuatorActor ! OnCompleteAction(Water, TimedTask.now())
+      actuatorActor ! OnCompleteAction(Water)
       expectMsgType[ActuatorStateChanged]
     }
 

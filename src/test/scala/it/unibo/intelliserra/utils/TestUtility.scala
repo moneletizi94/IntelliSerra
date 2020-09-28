@@ -5,15 +5,15 @@ import akka.testkit.TestProbe
 import it.unibo.intelliserra.core.action.Action
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.entity.Capability.{ActingCapability, SensingCapability}
-import it.unibo.intelliserra.core.perception.{BooleanType, Category, CharType, DoubleType, IntType, Measure, StringType}
+import it.unibo.intelliserra.core.perception.{BooleanType, Category, CharType, DoubleType, IntType, StringType}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.core.rule.{Rule, StatementTestUtils}
-import it.unibo.intelliserra.device.core.Actuator.ActionHandler
-import it.unibo.intelliserra.device.core.{Actuator, Sensor, TimedTask}
+import it.unibo.intelliserra.device.core.actuator.Actuator.ActionHandler
+import it.unibo.intelliserra.device.core.actuator.{Actuator, Operation}
+import it.unibo.intelliserra.device.core.sensor.Sensor
 import it.unibo.intelliserra.examples.RuleDslExample.{Temperature, Water}
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.entityManager.{DeviceChannel, RegisteredDevice}
-import it.unibo.intelliserra.utils.TestDevice.{TestActuator, TestSensor}
 
 import scala.concurrent.{Await, Awaitable}
 
@@ -52,19 +52,17 @@ trait TestUtility extends StatementTestUtils {
    * @param sensorID the identifier of the sensor
    * @return Sensor
    */
-  def mockSensor(sensorID: String): Sensor =
-    mockSensor(sensorID, Capability.sensing(Temperature), 5 seconds, Stream.continually(Measure(Temperature)(10)))
-  def mockSensor(sensorID: String, sensorCapability: SensingCapability, period: FiniteDuration, measures: Stream[Measure]): Sensor =
-    TestSensor(sensorID, sensorCapability, period, measures)
+  def mockTemperatureSensor(sensorID: String): Sensor =
+    Sensor(sensorID, Temperature, 5 seconds)(Stream.continually(10))
 
   /**
    * This is an utility method used in tests. It mocks an Actuator given the actuatorID
    * @param actuatorID the identifier of the actuator
    * @return Actuator
    */
-  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water.getClass)){ case _ => TimedTask.now() }
+  def mockActuator(actuatorID: String): Actuator = mockActuator(actuatorID, Capability.acting(Water.getClass)){ case _ => Operation.completed() }
   def mockActuator(actuatorID: String, actingCapability: ActingCapability)(handler: ActionHandler): Actuator =
-    TestActuator(actuatorID, actingCapability)(handler)
+    Actuator(actuatorID, actingCapability)(handler)
 
   def sendNMessageFromNProbe[T](messagesNumber: Int, sendTo : ActorRef, message : T)(implicit system: ActorSystem): Unit = {
     for {
