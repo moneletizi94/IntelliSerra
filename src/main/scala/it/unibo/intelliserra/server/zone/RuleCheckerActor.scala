@@ -23,6 +23,13 @@ class RuleCheckerActor(override val repeatedActionRate: FiniteDuration, ruleEngi
 
 object RuleCheckerActor{
   case class EvaluateActions()
+
+  /**
+   *
+   * @param rate periodical time for the evaluation of the rules
+   * @param ruleEnginePath the path of the rule engine in order to contact it
+   * @return  an actor ref of rule checker actor
+   */
   def apply(rate: FiniteDuration, ruleEnginePath : String = "../RuleEngineService"): RuleCheckerActor = new RuleCheckerActor(rate,ruleEnginePath)
 }
 

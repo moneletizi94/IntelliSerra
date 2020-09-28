@@ -273,6 +273,7 @@ object Messages {
    */
   case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
+  // TODO: documentation
   case object Ok
   case object NotFound
   case object Error

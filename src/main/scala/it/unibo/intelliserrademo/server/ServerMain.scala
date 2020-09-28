@@ -4,7 +4,7 @@ import it.unibo.intelliserra.core.perception.{DoubleType, IntType, StringType}
 import it.unibo.intelliserra.core.rule.dsl._
 import it.unibo.intelliserra.server.ServerConfig
 import it.unibo.intelliserra.server.ServerConfig.{AppConfig, RuleConfig, ZoneConfig}
-import it.unibo.intelliserra.server.aggregation.AggregateFunctions._
+import it.unibo.intelliserra.server.aggregation.AggregationFunctions._
 import it.unibo.intelliserra.server.aggregation.Aggregator._
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserrademo.common.CategoriesAndActions.{AirTemperature, DayNight, Dehumidifies, Fan, Heat, Humidity, SoilMoisture, Water}

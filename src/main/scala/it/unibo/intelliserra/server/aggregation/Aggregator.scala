@@ -6,7 +6,8 @@ import scala.math.Fractional
 import scala.util.Try
 
 /**
- *
+ * It represents the concept of measure aggregator.
+ * Each aggregator refers to a specific category and defines how measures of the same category should be aggregated.
  */
 trait Aggregator {
   /**
@@ -29,11 +30,10 @@ object Aggregator{
   implicit def ImplicitNumericDoubleTypeToOps(double: DoubleType): doubleTypeFractional.FractionalOps = doubleTypeFractional.mkNumericOps(double)
 
   /**
-   * Create an aggregator of the specified category that uses the defined aggregation function
-   * @param category
-   * @param aggregateFunction
-   * @tparam V
-   * @return
+   * @param category The aggregator category
+   * @param aggregateFunction The aggregation strategy
+   * @tparam V The type of the values of the measures to be aggregate
+   * @return an aggregator of the specified category that uses the defined aggregation strategy to aggreagte measures
    */
   def createAggregator[V <: ValueType](category: Category[V])(aggregateFunction : List[V] => V) : Aggregator =
     new BaseAggregator(category)(aggregateFunction)
@@ -41,9 +41,13 @@ object Aggregator{
   private class BaseAggregator[V <: ValueType](override val category: Category[V])(val f : List[V] => V) extends Aggregator {
     override def aggregate(measures: List[Measure]): Try[Measure] = Try{ Measure(category)(f(measures.map(_.value.asInstanceOf[V]))) }
   }
+
 }
 
-object AggregateFunctions{
+/**
+ * This object provides some common aggregation functions useful to work with a list of ValueType
+ */
+object AggregationFunctions{
   def avg[A <: NumericType : Fractional] : List[A] => A = list => list.avg(implicitly[Fractional[A]])
   def sum[A <: NumericType : Fractional] : List[A] => A = list => list.sum(implicitly[Fractional[A]])
   def min[A <: NumericType : Ordering] : List[A] => A = list => list.min(implicitly[Ordering[A]])

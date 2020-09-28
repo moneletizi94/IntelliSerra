@@ -16,6 +16,7 @@ object Utils {
     successes.flatMap(_.toOption).map(ifSuccess(_))
   }
 
+  // TODO: togliere
   trait MessageReceivingLog { this : Actor with ActorLogging =>
       def logReceiving(message : Any) : Unit = {
         log.info(s"(${context.self.path.name}): Received message $message from ${context.sender.path.name}")

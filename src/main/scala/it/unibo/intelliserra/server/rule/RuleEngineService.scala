@@ -47,6 +47,7 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
 object RuleEngineService {
   val name = "RuleEngineService"
 
+  // TODO: scaladoc 
   def apply(rules: List[Rule])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf(Props(new RuleEngineService(rules)), name)
 
 }
