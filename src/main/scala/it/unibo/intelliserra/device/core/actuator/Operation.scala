@@ -12,7 +12,7 @@ object Operation {
 
   def completed(): Operation = completeAfter(0 millis)
   def completeAfter(delay: FiniteDuration, callback: () => Unit = () => {}): Operation =
-    OperationImpl(() => callback(), delay)
+    OperationImpl(callback, delay)
 
   case class OperationImpl(override val complete: () => Unit,
                            override val delay: FiniteDuration) extends Operation
