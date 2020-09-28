@@ -7,4 +7,4 @@ package it.unibo.intelliserra.core.rule
  * @param identifier rule identifier
  * @param rule represents a specific rule
  */
-case class RuleInfo(identifier: String, rule: Rule)
+final case class RuleInfo(identifier: String, rule: Rule)

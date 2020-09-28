@@ -16,9 +16,9 @@ object CategoriesAndActions {
   case object Pressure extends Category[DoubleType]
   case class Water(override val time: FiniteDuration) extends TimedAction
   case object Light extends Action
-  case class Fan(override val time : FiniteDuration) extends TimedAction
-  case class Heat(override val time : FiniteDuration) extends TimedAction
-  case class OpenWindow(override val time : FiniteDuration) extends TimedAction
-  case class Notification(message : String) extends Action
-  case class Dehumidifies(override val switchStatus: Boolean) extends ToggledAction
+  final case class Fan(override val time : FiniteDuration) extends TimedAction
+  final case class Heat(override val time : FiniteDuration) extends TimedAction
+  final case class OpenWindow(override val time : FiniteDuration) extends TimedAction
+  final case class Notification(message : String) extends Action
+  final case class Dehumidifies(override val switchStatus: Boolean) extends ToggledAction
 }

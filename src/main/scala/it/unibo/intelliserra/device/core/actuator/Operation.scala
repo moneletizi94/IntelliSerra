@@ -14,7 +14,7 @@ object Operation {
   def completeAfter(delay: FiniteDuration, callback: () => Unit = () => {}): Operation =
     OperationImpl(callback, delay)
 
-  case class OperationImpl(override val complete: () => Unit,
+  final case class OperationImpl(override val complete: () => Unit,
                            override val delay: FiniteDuration) extends Operation
 
 }
