@@ -1,7 +1,8 @@
 package it.unibo.intelliserra.server.rule
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import it.unibo.intelliserra.common.communication.Messages.{DisableRule, DoActions, EnableRule, Error, GetRules, InferActions, Ok, Rules}
+import it.unibo.intelliserra.common.communication.Messages.{DisableOk, DisableRule, DoActions, EnableOk, EnableRule, Error}
+import it.unibo.intelliserra.common.communication.Messages.{GetRules, InferActions, RuleEntityResponse, Rules}
 import it.unibo.intelliserra.core.rule.{Rule, RuleEngine}
 
 /**
@@ -21,9 +22,9 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
    */
   override def receive: Receive = {
 
-    case EnableRule(ruleID) => sendResponse(ruleEngine.enableRule(ruleID))
+    case EnableRule(ruleID) => sendResponse(ruleEngine.enableRule(ruleID), EnableOk)
 
-    case DisableRule(ruleID) => sendResponse(ruleEngine.disableRule(ruleID))
+    case DisableRule(ruleID) => sendResponse(ruleEngine.disableRule(ruleID), DisableOk)
 
     case InferActions(state) => sender ! DoActions(ruleEngine.inferActions(state))
 
@@ -35,8 +36,8 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
    *
    * @param ruleChecked boolean who represents if rule exists or not.
    */
-  private def sendResponse(ruleChecked: Boolean): Unit = {
-    if (ruleChecked) sender ! Ok else sender ! Error
+  private def sendResponse(ruleChecked: Boolean, response: RuleEntityResponse): Unit = {
+    if (ruleChecked) sender ! response else sender ! Error
   }
 }
 
