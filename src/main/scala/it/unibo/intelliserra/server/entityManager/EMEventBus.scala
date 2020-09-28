@@ -44,5 +44,5 @@ object EMEventBus extends EventBus with SubchannelClassification {
    * Event published by the event bus. It is a message received by the subscribers (i.e. zoneManager)
    * @param entityChannel it is the entityChannel removed
    */
-  case class PublishedOnRemoveEntity(entityChannel: DeviceChannel)
+  final case class PublishedOnRemoveEntity(entityChannel: DeviceChannel)
 }

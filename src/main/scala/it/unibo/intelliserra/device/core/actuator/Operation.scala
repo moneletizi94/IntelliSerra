@@ -29,7 +29,7 @@ object Operation {
   def completeAfter(timeout: FiniteDuration, callback: () => Unit = () => {}): Operation =
     OperationImpl(callback, timeout)
 
-  private case class OperationImpl(override val complete: () => Unit,
+  private final case class OperationImpl(override val complete: () => Unit,
                                    override val timeout: FiniteDuration) extends Operation
 
 }

@@ -61,7 +61,7 @@ object Messages {
    * Message used to return entity info.
    * @param entity it contains info of an entity
    */
-  case class EntityResult(entity: DeviceChannel) extends EntityManagerResponse
+  final case class EntityResult(entity: DeviceChannel) extends EntityManagerResponse
 
   /**
    * Message used to say that an entity doesn't exist in this entity manager
@@ -75,7 +75,7 @@ object Messages {
   /**
    * Message to represent an error on join
    */
-  case class JoinError(error: String) extends JoinResponse
+  final case class JoinError(error: String) extends JoinResponse
 
   /**
    * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
@@ -86,13 +86,13 @@ object Messages {
    * Message used to create a new zone with the specified name
    * @param zoneName identifier of the zone
    */
-  case class CreateZone(zoneName: String) extends ZoneManagerRequest
+  final case class CreateZone(zoneName: String) extends ZoneManagerRequest
 
   /**
    * Message sent to remove a zone, if exists
    * @param zoneName identifier of the zone to remove
    */
-  case class RemoveZone(zoneName: String) extends ZoneManagerRequest
+  final case class RemoveZone(zoneName: String) extends ZoneManagerRequest
 
   /**
    * Message sent to ask for all the zones in [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
@@ -105,19 +105,19 @@ object Messages {
    * @param zoneName identifier of the zone to whom assign the entity
    * @param entityChannel registered entity to assign
    */
-  case class AssignEntityToZone(zoneName: String, entityChannel: DeviceChannel) extends ZoneManagerRequest
+  final case class AssignEntityToZone(zoneName: String, entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to dissociate a registered entity from a zone, if the entity is associated to any
    * @param entityChannel registered entity to dissociate
    */
-  case class DissociateEntityFromZone(entityChannel: DeviceChannel) extends ZoneManagerRequest
+  final case class DissociateEntityFromZone(entityChannel: DeviceChannel) extends ZoneManagerRequest
 
   /**
    * Message sent to ask for the state of a zone, whether it exists
    * @param zoneName identifier of the interested zone
    */
-  case class GetZoneState(zoneName: String) extends ZoneManagerRequest
+  final case class GetZoneState(zoneName: String) extends ZoneManagerRequest
 
   /**
    * Trait to represent responses given by [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
@@ -148,13 +148,13 @@ object Messages {
    * Message sent to tell which zones there are in [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    * @param zones identifiers of the zones inside the [[it.unibo.intelliserra.server.zone.ZoneManagerActor]]
    */
-  case class ZonesResult(zones: List[String]) extends ZoneManagerResponse
+  final case class ZonesResult(zones: List[String]) extends ZoneManagerResponse
 
   /**
    * Message sent as a failure response on assignment
    * @param zone identifier of the zone to which the entity is already assigned
    */
-  case class AlreadyAssigned(zone: String) extends ZoneManagerResponse
+  final case class AlreadyAssigned(zone: String) extends ZoneManagerResponse
 
   /**
    * Message sent as a successful assignment response
@@ -170,7 +170,7 @@ object Messages {
    * Message used to represent a generic error on assign request
    * @param error explanation of the error
    */
-  case class AssignError(error: String) extends ZoneManagerResponse
+  final case class AssignError(error: String) extends ZoneManagerResponse
 
   /**
    * Message sent as a failure response on dissociation
@@ -186,12 +186,12 @@ object Messages {
    * Message sent to add the specified entity to the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class AddEntity(entityChannel: DeviceChannel) extends ZoneRequest
+  final case class AddEntity(entityChannel: DeviceChannel) extends ZoneRequest
   /**
    * Message sent to remove the specified entity from the ones associated to [[it.unibo.intelliserra.server.zone.ZoneActor]]
    * @param entityChannel entity to add
    */
-  case class DeleteEntity(entityChannel: DeviceChannel) extends ZoneRequest
+  final case class DeleteEntity(entityChannel: DeviceChannel) extends ZoneRequest
 
   /**
    * Message sent to get the state of the zone
@@ -202,13 +202,13 @@ object Messages {
    * Message sent to say what are the inferred action
    * @param actions inferred actions
    */
-  case class DoActions(actions: Set[Action]) extends ZoneRequest
+  final case class DoActions(actions: Set[Action]) extends ZoneRequest
 
   /**
    * Message sent by [[it.unibo.intelliserra.server.zone.ZoneActor]] to communicate its state
    * @param state state of the zone
    */
-  case class MyState(state : State)
+  final case class MyState(state : State)
 
   /**
    * Trait to represent requests forwarded to [[it.unibo.intelliserra.server.entityManager.EntityManagerActor]]
@@ -220,13 +220,13 @@ object Messages {
    * @param zoneRef actorRef of the zone
    * @param zoneID identifier of the zone
    */
-  case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
+  final case class DissociateFrom(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
   /**
    * Message sent to associate an entity to a zone
    * @param zoneRef actorRef of the zone
    * @param zoneID identifier of the zone
    */
-  case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
+  final case class AssociateTo(zoneRef: ActorRef, zoneID: String) extends EntityRequest//From ZoneManager to Sensor/ Actuator
 
   /**
    * Message sent to inform that an [[it.unibo.intelliserra.common.communication.Messages.AssociateTo]] message is received
@@ -243,19 +243,19 @@ object Messages {
    * Message sent to enable an existing rule
    * @param ruleID rule identifier
    */
-  case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
+  final case class EnableRule(ruleID: String) extends RuleEntityManagerRequest
 
   /**
    * Message sent to disable an existing rule
    * @param ruleID rule identifier
    */
-  case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
+  final case class DisableRule(ruleID: String) extends RuleEntityManagerRequest
 
   /**
    * Message sent to infer actions from the state of a zone
    * @param state represent the state of zone
    */
-  case class InferActions(state: State) extends RuleEntityManagerRequest
+  final case class InferActions(state: State) extends RuleEntityManagerRequest
 
   /**
    * Message sent to get all rules
@@ -271,7 +271,7 @@ object Messages {
    * Message obtained, containing all the rules
    * @param ruleInfo list of all rules.
    */
-  case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
+  final case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
   /**
    * These are response messages common to all entities in the system.
@@ -281,8 +281,8 @@ object Messages {
   case object Error
 
   /* --- From SensorActor to ZoneActor --- */
-  case class SensorMeasureUpdated(measure: Measure)
+  final case class SensorMeasureUpdated(measure: Measure)
 
   /* --- From ActuatorActor to ZoneActor --- */
-  case class ActuatorStateChanged(operationalState: OperationalState)
+  final case class ActuatorStateChanged(operationalState: OperationalState)
 }
