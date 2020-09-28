@@ -273,7 +273,9 @@ object Messages {
    */
   case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
-  // TODO: documentation
+  /**
+   * These are response messages common to all entities in the system.
+   */
   case object Ok
   case object NotFound
   case object Error

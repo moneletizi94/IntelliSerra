@@ -40,14 +40,16 @@ private[server] class RuleEngineService(private val rules: List[Rule]) extends A
   }
 }
 
-/**
- * Object for RuleEngineService.
- * It contains an apply function to create a instance of RuleEngineImpl.
- */
+/** Factory for [[it.unibo.intelliserra.server.rule.RuleEngineService]] instances. */
 object RuleEngineService {
   val name = "RuleEngineService"
 
-  // TODO: scaladoc 
+  /** Creates a RuleEngineService actor with a given all rules.
+   *
+   * @param rules list of rules, it contains all rules
+   * @param actorSystem represent the actorSystem
+   * @return an actorRef representing an actor, which is a new RuleEngineService with all rules and the specified name.
+   */
   def apply(rules: List[Rule])(implicit actorSystem: ActorSystem): ActorRef = actorSystem actorOf(Props(new RuleEngineService(rules)), name)
 
 }

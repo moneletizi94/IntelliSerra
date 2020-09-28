@@ -1,11 +1,5 @@
 package it.unibo.intelliserra.common.utils
 
-import java.util
-
-import akka.actor.AbstractActor.ActorContext
-import akka.actor.{Actor, ActorLogging}
-import it.unibo.intelliserra.server.aggregation.Aggregator
-
 import scala.util.Try
 
 object Utils {
