@@ -12,6 +12,7 @@ import spray.json._
 trait WeatherService {
   def provider: String
   def currentWeather(): Option[WeatherData]
+  def asStream: Stream[WeatherData]
 }
 
 object WeatherService {
@@ -52,6 +53,11 @@ object OpenWeatherService {
         source.close()
         response
       }
+
+    override def asStream: Stream[WeatherData] = Stream.continually(currentWeather()).flatMap {
+      case Some(value) => Stream(value)
+      case None => Stream.empty
+    }
   }
 
 

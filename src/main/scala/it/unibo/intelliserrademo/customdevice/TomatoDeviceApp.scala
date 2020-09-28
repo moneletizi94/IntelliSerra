@@ -3,7 +3,8 @@ package it.unibo.intelliserrademo.customdevice
 import akka.dispatch.ExecutionContexts
 import it.unibo.intelliserra.core.entity.Device
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.device.core.{Actuator, Sensor}
+import it.unibo.intelliserra.device.core.actuator.Actuator
+import it.unibo.intelliserra.device.core.sensor.Sensor
 import it.unibo.intelliserrademo.common.DefaultAppConfig
 import it.unibo.intelliserrademo.customdevice.TomatoActuators.{Dehumidifiers, FanActuator, HeatActuator, WaterActuator}
 import it.unibo.intelliserrademo.customdevice.TomatoSensors._

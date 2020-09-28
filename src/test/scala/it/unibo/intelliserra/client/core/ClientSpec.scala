@@ -2,8 +2,8 @@ package it.unibo.intelliserra.client.core
 
 import it.unibo.intelliserra.core.rule.RuleInfo
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.device.core.Sensor
 import it.unibo.intelliserra.core.state.State
+import it.unibo.intelliserra.device.core.sensor.Sensor
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -26,8 +26,8 @@ class ClientSpec extends WordSpecLike
   private val ruleID = "rule0"
   private val rule1ID = "rule1"
   private val notAddedSensor: String = "notAddedSensor"
-  private val sensor1: Sensor = mockSensor("sensor1")
-  private val sensor2: Sensor = mockSensor("sensor2")
+  private val sensor1: Sensor = mockTemperatureSensor("sensor1")
+  private val sensor2: Sensor = mockTemperatureSensor("sensor2")
 
   before {
     this.server = GreenHouseServer(defaultConfigWithRule)

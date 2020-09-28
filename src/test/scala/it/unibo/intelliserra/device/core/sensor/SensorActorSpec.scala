@@ -5,8 +5,7 @@ import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import it.unibo.intelliserra.common.communication.Messages.{Ack, AssociateTo, DissociateFrom, SensorMeasureUpdated}
 import it.unibo.intelliserra.core.entity.Capability
 import it.unibo.intelliserra.core.perception
-import it.unibo.intelliserra.core.perception.Measure
-import it.unibo.intelliserra.device.core.Sensor
+import it.unibo.intelliserra.core.perception.{IntType, Measure}
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Categories.{Humidity, Temperature}
 import org.junit.runner.RunWith
@@ -29,15 +28,15 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
 
   private val SensorName = "MockSensor"
   private val SensorPeriod = 2 seconds
-  private val SensorCapability = Capability.sensing(Temperature)
+  private val SensorCategory = Temperature
   private val NotSupportedCategory = Humidity
-  private val MeasureStream = Stream.continually(perception.Measure(Temperature)(Random.nextInt(100)))
+  private val MeasureStream = Stream.continually(IntType(Random.nextInt(100)))
   private var sensor: Sensor = _
 
   private var sensorActor: TestActorRef[SensorActor] = _
 
   before {
-    sensor = spy(mockSensor(SensorName, SensorCapability, SensorPeriod, MeasureStream))
+    sensor = Sensor(SensorName, SensorCategory, SensorPeriod)(MeasureStream)
     sensorActor = TestActorRef.create(system, SensorActor.props(sensor))
   }
 
@@ -52,19 +51,9 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
 
   "A sensor" must {
 
-    "handle init event when actor start" in {
-      verify(sensor).onInit()
-    }
-
-    "handle association event when is associated to zone from server" in {
+    "send an ack when is associated to zone from server" in {
       sensorActor.tell(AssociateTo(testActor, testActorName), testActor)
       expectMsg(Ack)
-      verify(sensor).onAssociateZone(any[String])
-    }
-
-    "handle dissociation event when is associated to zone from server" in {
-      sensorActor.tell(DissociateFrom(testActor, testActorName), testActor)
-      verify(sensor).onDissociateZone(any[String])
     }
 
     "handle periodic measure sampling after zone association" in {
@@ -74,10 +63,12 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
     }
 
     "send only measure with category declared in capability" in {
-      when(sensor.read()).thenReturn(Option(perception.Measure(NotSupportedCategory)(0)))
-      sensorActor.tell(AssociateTo(testActor, testActorName), testActor)
+      val wrongSensor = WrongSensor()
+      val wrongSensorActor = SensorActor(wrongSensor)
+      wrongSensorActor.tell(AssociateTo(testActor, testActorName), testActor)
       expectMsg(Ack)
       expectNoMessage(SensorPeriod * 2)
+      wrongSensorActor ! PoisonPill
     }
 
     "stop to handle periodic measure sampling when dissociated" in {
@@ -87,5 +78,12 @@ class SensorActorSpec extends TestKit(ActorSystem("device"))
       sensorActor.tell(DissociateFrom(testActor, testActorName), testActor)
       expectNoMessage(SensorPeriod * 2)
     }
+  }
+
+  private case class WrongSensor() extends Sensor {
+    override def sensePeriod: FiniteDuration = SensorPeriod
+    override protected def read(): Measure = Measure(NotSupportedCategory)(0)
+    override def identifier: String = SensorName
+    override def capability: Capability = Capability.sensing(SensorCategory)
   }
 }

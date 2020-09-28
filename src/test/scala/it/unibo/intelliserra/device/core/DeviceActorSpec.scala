@@ -22,7 +22,7 @@ class DeviceActorSpec extends TestKit(ActorSystem("device"))
   private var zoneManagerProbe: TestProbe = _
   private var zoneProbe: TestProbe = _
   private val zoneID = "ZONE1"
-  private val deviceMocked = mockSensor("mockSensor")
+  private val deviceMocked = mockTemperatureSensor("mockSensor")
 
   before {
     zoneManagerProbe = TestProbe()

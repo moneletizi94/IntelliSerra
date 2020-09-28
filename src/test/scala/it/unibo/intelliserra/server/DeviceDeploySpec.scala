@@ -1,7 +1,8 @@
 package it.unibo.intelliserra.server
 
 import it.unibo.intelliserra.device.DeviceDeploy
-import it.unibo.intelliserra.device.core.{Actuator, Sensor}
+import it.unibo.intelliserra.device.core.actuator.Actuator
+import it.unibo.intelliserra.device.core.sensor.Sensor
 import it.unibo.intelliserra.server.core.GreenHouseServer
 import it.unibo.intelliserra.utils.TestUtility
 import org.junit.runner.RunWith
@@ -27,8 +28,8 @@ private class DeviceDeploySpec extends AsyncWordSpecLike
     this.server = GreenHouseServer(defaultServerConfig)
     this.deviceDeploy = DeviceDeploy(GreenhouseName, Hostname, Port)
     awaitReady(this.server.start())
-    sensor = mockSensor("sensor")
-    sensor2 = mockSensor("sensor2")
+    sensor = mockTemperatureSensor("sensor")
+    sensor2 = mockTemperatureSensor("sensor2")
     actuator = mockActuator("actuator")
     actuator2 = mockActuator("actuator2")
   }
