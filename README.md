@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/moneletizi94/IntelliSerra.svg?branch=develop)](https://travis-ci.org/moneletizi94/IntelliSerra)
 [![codecov.io](https://codecov.io/github/moneletizi94/IntelliSerra/coverage.svg?branch=develop)](https://codecov.io/github/moneletizi94/IntelliSerra?branch=develop)
 
-
+IntelliSerra (iSerra) is a framework for the management of an intelligent greenhouse intended as a self-regulating environment that creates an optimal micro-climate for plant growth. The climatic conditions inside the greenhouse (temperature, humidity, brightness, soil moisture, ..) are continuously monitored by sensors. Small variations in these conditions trigger automatic actions in response through actuators. Our system allows the management of a territorially extended monoculture greenhouse divided into zones. Each zone can contain different types of sensors and actuators.
 
 ### Tech
 Main technologies used are:
