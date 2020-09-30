@@ -9,7 +9,6 @@ import it.unibo.intelliserra.device.core.actuator.ActuatorActor.OnOperationCompl
 import it.unibo.intelliserra.utils.TestUtility
 import it.unibo.intelliserra.utils.TestUtility.Actions.{Fan, OpenWindow, Water}
 import org.junit.runner.RunWith
-import org.mockito.scalatest.MockitoSugar
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.junit.JUnitRunner
 

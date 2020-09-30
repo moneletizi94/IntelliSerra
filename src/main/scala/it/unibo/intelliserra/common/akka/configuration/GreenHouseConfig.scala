@@ -38,11 +38,16 @@ object GreenHouseConfig {
   private val defaultConfig = ConfigFactory.parseString(
     """
       |akka {
+      |  loglevel = "DEBUG"
       |  actor {
       |    # provider=remote is possible, but prefer cluster
       |    provider = remote
       |    allow-java-serialization = true
       |    warn-about-java-serializer-usage = false
+      |    debug {
+      |      # enable DEBUG logging of all AutoReceiveMessages (Kill, PoisonPill etc.)
+      |      receive = on
+      |    }
       |  }
       |  remote.artery.enabled = false
       |  remote.classic {

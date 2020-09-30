@@ -274,11 +274,20 @@ object Messages {
   final case class Rules(ruleInfo: List[RuleInfo]) extends RuleEntityResponse
 
   /**
-   * These are response messages common to all entities in the system.
+   * Message sent when a rule has been successfully disabled
    */
-  case object Ok
-  case object NotFound
-  case object Error
+  case object DisableOk extends RuleEntityResponse
+
+  /**
+   * Message sent when a rule has been successfully enabled
+   */
+  case object EnableOk extends RuleEntityResponse
+
+  /**
+   * Message sent when the rule does not exist or
+   * when you are asked to enable an already enabled rule and vice versa.
+   */
+  case object Error extends RuleEntityResponse
 
   /* --- From SensorActor to ZoneActor --- */
   final case class SensorMeasureUpdated(measure: Measure)

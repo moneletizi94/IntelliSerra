@@ -48,9 +48,9 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
 
     "enable an existing rule" in {
       ruleEngineService ! DisableRule(ruleID)
-      expectMsg(Ok)
+      expectMsg(DisableOk)
       ruleEngineService ! EnableRule(ruleID)
-      expectMsg(Ok)
+      expectMsg(EnableOk)
     }
 
     "not enable an nonexistent rule" in {
@@ -60,7 +60,7 @@ class RuleEngineServiceSpec extends TestKit(ActorSystem("RuleEngineServiceSpec")
 
     "disable an existing rule" in {
       ruleEngineService ! DisableRule(ruleID)
-      expectMsg(Ok)
+      expectMsg(DisableOk)
     }
 
     "not disable an nonexistent rule" in {
