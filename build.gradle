@@ -3,20 +3,85 @@ plugins {
     id 'scala'
     id "com.github.alisiikh.scalastyle" version "3.4.1"
     id "org.scoverage" version "4.0.2"
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "6.0.0"
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'it.unibo'
+version '1.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
+}
+
+ext {
+    akkaVersion = "2.6.8"
+    scalaBinary = "2.12"
 }
 
 dependencies {
     implementation 'org.scala-lang:scala-library:2.12.8'
+    implementation 'org.scala-lang.modules:scala-swing_2.12:2.1.1'
+    implementation "com.typesafe.akka:akka-actor_${scalaBinary}:${akkaVersion}"
+    implementation "com.typesafe.akka:akka-remote_${scalaBinary}:${akkaVersion}"
+    implementation "io.netty:netty:3.10.6.Final"
+
+    implementation 'it.unibo.alice.tuprolog:2p-core:4.1.1'
+    implementation 'it.unibo.alice.tuprolog:2p-parser:4.1.1'
+    implementation "io.spray:spray-json_${scalaBinary}:1.3.5"
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.scalatest:scalatest_2.12:3.0.8'
+    testImplementation "com.typesafe.akka:akka-testkit_${scalaBinary}:${akkaVersion}"
 
     testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.12:1.2.0'
+}
+
+scoverage {
+    excludedPackages = [".*examples.*", "it.unibo.intelliserrademo.*"]
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'intelliserra'
+            from components.java
+            pom {
+                name = 'intelliserra'
+            }
+        }
+    }
+}
+
+task serverDemo(type: Jar, dependsOn: shadowJar) {
+    baseName "server"
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.server.ServerMain'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+task clientDemo(type: Jar, dependsOn: shadowJar) {
+    baseName 'client'
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.gui.ISerraGui'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+task deviceDemo(type: Jar, dependsOn: shadowJar) {
+    baseName 'devices'
+    manifest {
+        attributes 'Main-Class': 'it.unibo.intelliserrademo.customdevice.TomatoDeviceApp'
+    }
+    from zipTree(shadowJar.archiveFile)
+}
+
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
+shadowJar {
+    transform(AppendingTransformer) {
+        resource = 'reference.conf'
+    } with jar
 }
