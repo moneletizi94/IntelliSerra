@@ -14,7 +14,7 @@ class RuleCheckerActor(override val repeatedActionRate: FiniteDuration, ruleEngi
   val ruleEngineService = context.actorSelection(ruleEnginePath)
 
   override def receive: Receive = {
-    case EvaluateActions() => context.parent ! GetState ; log.info("get zone’s state to evaluate action to do based on rules")
+    case EvaluateActions() => context.parent ! GetState
     case MyState(state) => ruleEngineService.tell(InferActions(state), context.parent)
   }
 
