@@ -26,9 +26,6 @@ trait Aggregator {
 
 object Aggregator{
 
-  implicit def ImplicitNumericIntTypeToOps(int: IntType): intTypeFractional.FractionalOps = intTypeFractional.mkNumericOps(int)
-  implicit def ImplicitNumericDoubleTypeToOps(double: DoubleType): doubleTypeFractional.FractionalOps = doubleTypeFractional.mkNumericOps(double)
-
   /**
    * @param category The aggregator category
    * @param aggregateFunction The aggregation strategy

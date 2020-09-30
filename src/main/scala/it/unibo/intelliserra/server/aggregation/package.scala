@@ -1,6 +1,5 @@
 package it.unibo.intelliserra.server
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.NumberType
 import it.unibo.intelliserra.core.perception.{DoubleType, IntType}
 
 import scala.collection.LinearSeq
@@ -16,7 +15,6 @@ package object aggregation {
   implicit class RichSeq[T](seq: LinearSeq[T]){
     def hasUniqueValueForProperty[B](property : T => B) : Boolean = seq.groupBy(property(_)).forall(_._2.lengthCompare(1) == 0)
   }
-
 
   val intTypeFractional: Fractional[IntType] = new Fractional[IntType] {
     override def plus(x: IntType, y: IntType): IntType = x.value + y.value
@@ -65,5 +63,8 @@ package object aggregation {
 
     override def div(x: DoubleType, y: DoubleType): DoubleType = x.value / y.value
   }
+
+  implicit def ImplicitNumericIntTypeToOps(int: IntType): intTypeFractional.FractionalOps = intTypeFractional.mkNumericOps(int)
+  implicit def ImplicitNumericDoubleTypeToOps(double: DoubleType): doubleTypeFractional.FractionalOps = doubleTypeFractional.mkNumericOps(double)
 
 }
